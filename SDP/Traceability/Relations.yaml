@@ -134,6 +134,13 @@ relations:
   - { from: SL-001-001-001, type: addresses, to: CR-007 }
   - { from: SL-001-001-001, type: reviewed_by, to: RVW-001-001-001 }
   - { from: SL-001-001-001, type: verified_by, to: VER-001-001-001 }
+  - { from: RVW-001-001-001, type: resolves, to: CR-001 }
+  - { from: RVW-001-001-001, type: resolves, to: CR-002 }
+  - { from: RVW-001-001-001, type: resolves, to: CR-003 }
+  - { from: RVW-001-001-001, type: resolves, to: CR-004 }
+  - { from: RVW-001-001-001, type: resolves, to: CR-005 }
+  - { from: RVW-001-001-001, type: resolves, to: CR-006 }
+  - { from: RVW-001-001-001, type: resolves, to: CR-007 }
 
   - { from: IT-001-002, type: contains, to: SL-001-002-001 }
   - { from: SPR-001, type: contains, to: IT-001-002 }

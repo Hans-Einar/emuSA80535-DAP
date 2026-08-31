@@ -177,3 +177,22 @@ candidate product work as planned `IT-001-002` / `SL-001-002-001`. No product
 or test implementation was created. `CR-001`–`CR-007` remain `in_progress`,
 not resolved, pending independent `RVW-001-001-001`; the corrective slice is
 therefore handed off as `in_review`.
+
+### Corrective re-review `RVW-001-001-001`
+
+**Reviewed commit:** `e76936c02957fa92b784d947a86837c1fe3be70f`
+
+**Disposition:** **accepted; no blocking review finding remains**
+
+The fresh reviewer reproduced the corrected DAP instruction-breakpoint reason,
+opaque-versus-numeric address and offset round trip, complete Slice-1 stepping
+failure semantics, honest exact-count negative disassembly placeholders,
+minimum contract without raw CODE read, separate adapter/child states through
+yield/pause/timeout/disconnect, and single-document JSON fences. YAML, NDJSON,
+relation endpoints, status vocabulary, fence balance, and the documentation-only
+diff also passed re-review.
+
+`CR-001`–`CR-007` are resolved, `RVW-001-001-001` is closed, and
+`SL-001-001-001` is implemented awaiting `VER-001-001-001`. The corrective
+iteration remains active only for verification and Master integration. Product
+`IT-001-002` / `SL-001-002-001` remains planned and must not start.

@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-08-31T20:03:59Z"
+updatedAt: "2026-08-31T20:14:49Z"
 items:
   - id: M-001
     kind: mandate
@@ -356,43 +356,43 @@ items:
   - id: CR-001
     kind: review_finding
     title: Correct DAP instruction-breakpoint stopped reason
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-002
     kind: review_finding
     title: Separate DAP memory references from disassembly addresses
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-003
     kind: review_finding
     title: Freeze advertised stepping-granularity semantics
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-004
     kind: review_finding
     title: Define defensible backward disassembly behavior
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-005
     kind: review_finding
     title: Remove or justify accidental Slice-1 CODE read
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-006
     kind: review_finding
     title: Define child state across bounded run yields
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-007
     kind: review_finding
     title: Make handshake example fence structurally valid
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
 
@@ -413,15 +413,15 @@ items:
   - id: SL-001-001-001
     kind: slice
     title: Resolve SDP foundation review findings
-    status: in_review
+    status: implemented
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
   - id: RVW-001-001-001
     kind: review
     title: Corrective re-review of SDP foundation
-    status: planned
-    state: target
+    status: closed
+    state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
 
   - id: VER-001-001-001

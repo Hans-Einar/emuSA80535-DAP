@@ -172,3 +172,79 @@ checks pass.
 `CR-001` through `CR-007` without product implementation. A separate reviewer
 must then confirm the exact DAP/schema and state-machine corrections before the
 verifier runs.
+
+## Corrective re-review addendum — `RVW-001-001-001`
+
+**Reviewed commit:** `e76936c02957fa92b784d947a86837c1fe3be70f`
+
+**Review date:** 2026-08-31  
+**Reviewer role:** fresh independent corrective reviewer  
+**Disposition:** **accepted — no blocking review finding remains**
+
+The reviewer did not author the corrective documents and reviewed the exact
+commit above against Issue #1, the `IT-001-001` corrective contract, and every
+required correction from the first review.
+
+### Finding disposition
+
+- `CR-001` **resolved:** the child-internal `breakpoint` reason maps
+  consistently to DAP `stopped.reason = "instruction breakpoint"`.
+- `CR-002` **resolved:** opaque `code:HHHH` memory/instruction-pointer
+  references are distinct from numeric `0xHHHH`
+  `DisassembledInstruction.address` values; parsing, one-time signed offset,
+  range rejection, canonicalization, and the real-VS-Code round trip are frozen
+  in design and acceptance evidence.
+- `CR-003` **resolved:** omitted, `statement`, and `instruction` `stepIn`
+  granularities each mean one instruction; `line`, `next`, and `stepOut` fail
+  `notSupported` without a child command, resume, or state change.
+- `CR-004` **resolved:** negative disassembly uses only known predecessor
+  boundaries and honest one-byte `unknown-predecessor`/`<invalid>` records. The
+  response remains exact-count, range checked, and never labels guessed bytes
+  authoritative.
+- `CR-005` **resolved:** raw CODE read is absent from the Slice-1 command and
+  capability minimum; `decodeCode` is the sole Slice-1 disassembly dependency,
+  while DAP and emulator memory reads remain near-term.
+- `CR-006` **resolved:** adapter logical running is separated from child
+  `idle`/`run-active` state, with explicit yield, next-chunk, pause, timeout,
+  disconnect, snapshot-validity, cleanup, and termination transitions.
+- `CR-007` **resolved:** each fenced `json` example is one parseable JSON
+  document.
+
+### Re-challenge result
+
+No new blocker was found. The separate TypeScript DAP process and launch-owned
+NDJSON child remain proportionate to the available maintained library,
+cross-platform process isolation, and lack of a stable emulator ABI. DAP
+lifecycle, stop reasons, address forms, replacement breakpoints, stepping,
+handle epochs, and exact-count disassembly are internally coherent. Slice 1
+still exposes only a truthful current-PC frame; later observed logical
+call/return/IRQ/RETI frames retain explicit degraded behavior and do not infer a
+C ABI stack from RAM. No private emulator layout crosses the protocol boundary,
+and the current default remains distinct from the unmerged emulator candidate.
+
+P1000 semantics, physical host I/O, source mapping, logical stacks, memory
+views, writes, watchpoints, attach, bundling, and Marketplace publication remain
+outside Slice 1. The candidate slice is narrow, the Linux/Windows VSIX path is
+testable, all ten current emulator prerequisites remain explicit blockers, and
+deferred facilities are not minimum dependencies. Publisher/package-root,
+engine/runtime floors, emulator release ownership, and CI matrix remain honest
+Steering decisions rather than hidden implementation assumptions.
+
+### Mechanical re-review evidence
+
+- YAML parsing passed for `CurrentIndex.yaml` and `Relations.yaml`; item IDs are
+  unique and every relation endpoint resolves.
+- Every ledger line parses independently as JSON and event IDs are unique.
+- All seven `json` fences parse as single JSON documents; Markdown fences are
+  balanced.
+- The diff from `origin/main` is documentation and document-supporting
+  traceability only; it adds no source, manifest, dependency, build
+  configuration, firmware fixture, or emulator change.
+- Fresh repository-state confirmation found emulator default `master` at
+  `5dc681275151c4a5d7b85ec9ff4ceb1b25abd5a8` and open PR #1 at
+  `62f40127e1aa3b24e9d8d54c2458e847bfe86488`, matching the reviewed baseline.
+
+`RVW-001-001-001` is closed and `CR-001`–`CR-007` are resolved.
+`SL-001-001-001` is implemented and awaits independent
+`VER-001-001-001`; this review does not claim verification or start product
+Slice 1.
