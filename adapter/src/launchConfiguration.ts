@@ -61,7 +61,7 @@ export function validateLaunchConfiguration(
     );
   }
 
-  if (args.stopOnEntry === false) {
+  if (args.stopOnEntry !== undefined && args.stopOnEntry !== true) {
     throw new LaunchConfigurationError(
       "CONFIG_STOP_ON_ENTRY",
       "Slice 1 requires stopOnEntry to be true",
@@ -75,11 +75,16 @@ export function validateLaunchConfiguration(
     );
   }
 
-  if (args.emulatorPath !== undefined && args.emulatorPath.length === 0) {
-    throw new LaunchConfigurationError(
-      "CONFIG_EMULATOR_PATH",
-      "emulatorPath must be omitted or contain an executable path",
-    );
+  if (args.emulatorPath !== undefined) {
+    if (
+      typeof args.emulatorPath !== "string" ||
+      args.emulatorPath.length === 0
+    ) {
+      throw new LaunchConfigurationError(
+        "CONFIG_EMULATOR_PATH",
+        "emulatorPath must be omitted or contain a non-empty executable path string",
+      );
+    }
   }
 
   const validated: ValidatedLaunchConfiguration = {
