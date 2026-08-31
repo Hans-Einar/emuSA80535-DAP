@@ -1,7 +1,7 @@
 # DAP-REQ-001 — Product and readiness requirements
 
 **Traceability:** `R-001` through `R-031` derive from `M-001`, `S-001`, and
-`UC-001`.  
+`UC-001`.
 **State:** Target requirements; implementation has not started.
 
 ## Use case

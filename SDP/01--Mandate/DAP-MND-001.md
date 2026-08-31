@@ -1,7 +1,7 @@
 # DAP-MND-001 — Mandate for emuSA80535-DAP
 
-**Traceability:** `M-001`  
-**Authority:** [GitHub Issue #1](https://github.com/Hans-Einar/emuSA80535-DAP/issues/1)  
+**Traceability:** `M-001`
+**Authority:** [GitHub Issue #1](https://github.com/Hans-Einar/emuSA80535-DAP/issues/1)
 **State:** Target architecture; no debugger implementation exists
 
 ## Mission

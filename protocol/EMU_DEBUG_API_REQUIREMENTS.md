@@ -1,7 +1,7 @@
 # Emulator debug-control API requirements
 
-**Contract:** `emu-debug` protocol `1.0` target baseline  
-**Consumers:** `emuSA80535-DAP` adapter and `emuSA80535-N` headless runtime  
+**Contract:** `emu-debug` protocol `1.0` target baseline
+**Consumers:** `emuSA80535-DAP` adapter and `emuSA80535-N` headless runtime
 **State:** Frozen requirement for Slice-1 planning; not implemented on the
 current emulator default branch
 

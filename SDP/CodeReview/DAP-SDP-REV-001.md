@@ -177,8 +177,8 @@ verifier runs.
 
 **Reviewed commit:** `e76936c02957fa92b784d947a86837c1fe3be70f`
 
-**Review date:** 2026-08-31  
-**Reviewer role:** fresh independent corrective reviewer  
+**Review date:** 2026-08-31
+**Reviewer role:** fresh independent corrective reviewer
 **Disposition:** **accepted — no blocking review finding remains**
 
 The reviewer did not author the corrective documents and reviewed the exact

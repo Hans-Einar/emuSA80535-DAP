@@ -1,6 +1,6 @@
 # DAP-ARCH-001 — Target architecture
 
-**Traceability:** `A-001`–`A-008` realize `R-001`–`R-030`.  
+**Traceability:** `A-001`–`A-008` realize `R-001`–`R-030`.
 **State:** Target only; diagrams do not claim implementation.
 
 ## System boundary (`A-001`)

@@ -2,8 +2,8 @@
 
 ## IT-001-000 — SDP foundation and Slice-1 readiness
 
-**State:** Active pre-implementation documentation iteration  
-**Slice:** `SL-001-000-001`  
+**State:** Active pre-implementation documentation iteration
+**Slice:** `SL-001-000-001`
 **Authority:** GitHub Issue #1
 
 ### Why now

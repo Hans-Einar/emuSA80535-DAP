@@ -1,6 +1,6 @@
 # DAP-DES-001 — Documentation-level design
 
-**Traceability:** `D-001`–`D-010` refine `A-001`–`A-008`.  
+**Traceability:** `D-001`–`D-010` refine `A-001`–`A-008`.
 **State:** Target interface design only; code blocks are contracts/examples,
 not implementation files.
 

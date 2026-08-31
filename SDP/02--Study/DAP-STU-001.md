@@ -1,7 +1,7 @@
 # DAP-STU-001 — DAP, VS Code, and emulator integration study
 
-**Traceability:** `S-001` supports `M-001` and `UC-001`  
-**Evidence cut:** 2026-08-31  
+**Traceability:** `S-001` supports `M-001` and `UC-001`
+**Evidence cut:** 2026-08-31
 **State labels:** **current-default** means merged `emuSA80535-N/master`;
 **candidate/unmerged** means open emulator PR #1; **target** means this
 repository's proposed design.
