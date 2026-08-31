@@ -45,16 +45,17 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Not done
 
-- Any production or test implementation.
+- Worker B/C product implementation and complete Slice-1 integration.
 - Any emulator-repository change, Issue, or PR.
 - Product implementation/review/verification for `IT-001-002`.
 - Steering approval of the decisions below and merge disposition for PR #2.
 
 ## Exact next step
 
-Worker A implements the package/extension/DAP foundation from the active slice
-contract and produces a focused commit. A fresh reviewer then performs
-`RVW-001-002-001` before Worker B starts.
+A fresh reviewer performs `RVW-001-002-001` against exact Worker A commit
+`a30129bfcbd17c8fd0e57696700ff9f2440bb639`. Worker B must not start until
+Master records that disposition and either resolves findings or accepts the
+foundation for forward work.
 
 ## Verification completed
 

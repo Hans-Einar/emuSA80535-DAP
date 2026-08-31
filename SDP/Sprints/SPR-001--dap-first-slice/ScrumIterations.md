@@ -377,3 +377,24 @@ Review findings are recorded before the next responsibility pass begins.
 - At activation, the real default contains the Stage-1 timer merge but no
   headless `emu-debug` server PR/issue evidence; real integration remains
   blocked and cannot be inferred from the core seams.
+
+### Worker A result
+
+**Implementation commit:** `a30129bfcbd17c8fd0e57696700ff9f2440bb639`
+
+Worker A added the repository-root manifest/lockfile, pinned TypeScript/lint/test
+tooling, VS Code debugger contribution and launch schema/setting, external
+adapter-process descriptor, DAP lifecycle skeleton, VSIX allowlist/packaging,
+Linux CI foundation, README usage, and six focused foundation tests. Launch
+fails explicitly with `EMU_INTEGRATION_PENDING` rather than claiming an
+emulator integration that belongs to Worker B.
+
+Worker evidence passed `npm ci`, lint, build/test (6/6), VSIX package and
+contents policy, and local VSIX installation in VS Code 1.134.0 on Windows.
+The generated package contained no emulator binary; its worker-stage SHA-256
+was `92F8EC943F48E7F7A6F3B378EF9DA04AAD525E10E96310A806CD4386B6DDE04B`.
+Linux CI has been authored but not yet run remotely, and `actionlint` was not
+available locally. These remain review/verification items.
+
+The product slice remains in progress. `RVW-001-002-001` must independently
+review this exact commit before Worker B starts.

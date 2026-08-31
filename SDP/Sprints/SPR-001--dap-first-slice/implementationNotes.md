@@ -77,3 +77,12 @@ claimed.
 When Steering later starts the product slice, append verified build/test/VSIX,
 fake-emulator, real-emulator-contract, Linux/Windows, and VS Code disassembly UI
 evidence here. Do not infer completion from file presence or capability flags.
+
+## Worker A — foundation (awaiting independent review)
+
+Commit `a30129bfcbd17c8fd0e57696700ff9f2440bb639` implements the package,
+extension contribution, external DAP process skeleton, pinned build/test/lint
+tooling, CI foundation, and VSIX packaging boundary. Worker checks passed
+`npm ci`, lint, 6/6 tests, package/content policy, and a local Windows VS Code
+1.134.0 install. This is worker evidence only; `RVW-001-002-001` is active and
+the complete slice remains unverified.
