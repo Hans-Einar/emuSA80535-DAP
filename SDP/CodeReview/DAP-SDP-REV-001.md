@@ -248,3 +248,60 @@ Steering decisions rather than hidden implementation assumptions.
 `SL-001-001-001` is implemented and awaits independent
 `VER-001-001-001`; this review does not claim verification or start product
 Slice 1.
+
+## Baseline-refresh review addendum — `RVW-001-001-002`
+
+**Reviewed commit:** `4982f34143d465107758d5101f9973057928d7a0`
+
+**Review date:** 2026-08-31
+**Reviewer role:** fresh independent baseline-refresh reviewer
+**Disposition:** **accepted — no blocking review finding remains**
+
+The reviewer did not author the refreshed baseline documents and reviewed the
+exact commit above against Issue #1 and the `SL-001-001-002` contract.
+
+Live GitHub state independently confirms `emuSA80535-N` default branch
+`master` at `a20815e24778760a308130cf1f9aa6d0f55b6af3`, PR #1 merged as
+`0cf6792b794070bcbbb1bfdddc30eb9cdc4c3723` from head `62f4012…`, and PR #3
+merged as `a20815e…` from head `e40bf26…`. Exact-commit source inspection
+confirms deterministic variant/reset and exact 64-KiB raw loading; bounded
+run/run-until-PC and exact step with typed stops; one pre-execution CODE
+breakpoint; `decode()`; immutable instruction/SFR/MOVX trace; and Siemens IRQ
+state plus record-only request/accept/release observation. The same tree and
+Makefile confirm that the no-curses headless executable, NDJSON server and
+handshake, atomic debugger snapshot, `decodeCode` wire operation, replacement
+breakpoint table, integrated chunk scheduler/pause boundary, and portable
+process-lifecycle suite do not yet exist.
+
+The resulting blocker matrix is accurate: `EMU-BLK-004` is satisfied by the
+current core; `EMU-BLK-006`, `EMU-BLK-007`, `EMU-BLK-008`, and `EMU-BLK-009`
+are partial; and `EMU-BLK-001`, `EMU-BLK-002`, `EMU-BLK-003`, `EMU-BLK-005`,
+and `EMU-BLK-010` are missing. No merged core seam is described as unavailable,
+and no missing headless, snapshot, cross-process `decodeCode`, replacement-
+breakpoint, or process seam is described as available. Stage-1 IRQ seams remain
+near-term and do not expand candidate Slice 1.
+
+The earlier re-review's statements that live `master` was `5dc6812`, PR #1 was
+open at `62f4012`, the candidate was unmerged, and all ten prerequisites were
+undifferentiated blockers reflected the earlier/local reviewed snapshot but
+were superseded by the merge during the review/verification window. This
+addendum corrects the live state without rewriting that historical record.
+
+Mandate, study, requirements, architecture, protocol contract, sprint, notes,
+and handoff consistently separate merged C feasibility seams from the still-
+missing versioned process contract. The accepted `CR-001`–`CR-007` corrections
+remain intact: stopped reasons, address forms, step failure behavior, honest
+backward-disassembly placeholders, the minimum without raw CODE read, split
+adapter/child states, and single-document JSON examples remain coherent.
+
+Mechanical re-review parsed both YAML files, all 26 pre-review NDJSON records,
+and all seven JSON fences; found unique item/event IDs and resolvable relation
+endpoints; and confirmed the exact reviewed diff contains documentation and
+document-supporting traceability only. No product source, manifest, dependency,
+build configuration, firmware fixture, emulator change, or P1000 semantic was
+introduced.
+
+`CR-008` is resolved, `RVW-001-001-002` is closed/current, and
+`SL-001-001-002` is implemented awaiting independent `VER-001-001-002`.
+Product `IT-001-002` / `SL-001-002-001` remains planned and unstarted; this
+review does not claim final verification or `READY-FOR-SLICE-1`.

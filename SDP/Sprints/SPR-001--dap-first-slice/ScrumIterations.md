@@ -256,3 +256,20 @@ behavior. Product `IT-001-002` / `SL-001-002-001` remains planned and unstarted.
 `CR-008` remains `in_progress` for independent review. The slice moves to
 `in_review`; `RVW-001-001-002` and `VER-001-001-002` remain planned and must be
 performed by fresh agents.
+
+### Baseline-refresh review `RVW-001-001-002`
+
+**Reviewed commit:** `4982f34143d465107758d5101f9973057928d7a0`
+
+**Disposition:** **accepted; no blocking review finding remains**
+
+The fresh reviewer independently confirmed live emulator `master` at
+`a20815e`, the PR #1/PR #3 merge states and commits, the cited current core
+seams, and the satisfied/partial/missing `EMU-BLK-001`–`010` matrix. The dated
+`5dc6812`/`62f4012` record is retained as history and explicitly superseded for
+live-state use. Stage-1 IRQ support remains outside candidate Slice 1, and the
+architecture, requirements, protocol contract, and sprint remain consistent.
+
+`CR-008` is resolved, `RVW-001-001-002` is closed/current, and
+`SL-001-001-002` is implemented awaiting `VER-001-001-002`. Product
+`IT-001-002` / `SL-001-002-001` remains planned and unstarted.

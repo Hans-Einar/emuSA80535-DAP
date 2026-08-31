@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-08-31T20:49:16Z"
+updatedAt: "2026-08-31T20:55:32Z"
 items:
   - id: M-001
     kind: mandate
@@ -434,22 +434,22 @@ items:
   - id: CR-008
     kind: review_finding
     title: Refresh emulator baseline after dependency merges
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
   - id: SL-001-001-002
     kind: slice
     title: Refresh merged emulator baseline
-    status: in_review
+    status: implemented
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
   - id: RVW-001-001-002
     kind: review
     title: Review merged-emulator baseline refresh
-    status: planned
-    state: target
+    status: closed
+    state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
 
   - id: VER-001-001-002
