@@ -422,3 +422,20 @@ then raised three persistent findings:
 Worker B remains paused. A fresh corrective worker must fix only these findings
 and add adversarial regression tests. A separate fresh reviewer performs
 `RVW-001-002-004` before forward work resumes.
+
+### Worker A corrective result
+
+**Corrective commit:** `a01c48c917186a98152d849565660081ff11746e`
+
+The fresh corrective worker addressed `CR-009`–`CR-011` without adding Worker
+B/C scope. The session now has monotonic lifecycle, launch/termination
+generations, post-await ownership guards, exactly-once pending-launch settling,
+configuration invalidation, duplicate/post-terminal request rejection,
+coalesced cleanup, and structured cleanup-failure reporting. Launch validation
+now rejects wrong runtime JSON types, and README states the real current limit.
+
+Worker evidence passed lint, build, 18/18 tests, VSIX package/content policy,
+and diff whitespace checks. The worker-stage VSIX SHA-256 was
+`8F0B006416483CABFFEB5E4BBB284D9BA952D6D6E509E58A18EE78094B17FEA7`.
+`CR-009`–`CR-011` remain in progress until independent
+`RVW-001-002-004` accepts the exact corrective commit.

@@ -91,3 +91,7 @@ Independent `RVW-001-002-001` returned changes-required. `CR-009` blocks the
 foundation because terminated state can be reopened by an in-flight launch;
 `CR-010` requires strict raw-DAP runtime types; and `CR-011` corrects README
 truthfulness. These findings are not resolved by passing build/package checks.
+
+Corrective commit `a01c48c917186a98152d849565660081ff11746e` addresses the
+three findings and adds adversarial lifecycle/type tests; worker checks pass
+18/18. The correction remains in review and is not yet accepted evidence.

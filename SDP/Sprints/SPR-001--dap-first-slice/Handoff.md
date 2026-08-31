@@ -52,10 +52,10 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh corrective worker addresses only `CR-009`–`CR-011` against reviewed
-Worker A commit `a30129bfcbd17c8fd0e57696700ff9f2440bb639`, adds adversarial
-regression tests, and produces one corrective commit. A separate fresh reviewer
-then performs `RVW-001-002-004`. Worker B must not start before acceptance.
+A fresh reviewer performs `RVW-001-002-004` against exact corrective commit
+`a01c48c917186a98152d849565660081ff11746e`, reproduces the original race and
+invalid-type probes, and decides `CR-009`–`CR-011`. Worker B must not start
+before acceptance.
 
 ## Verification completed
 
