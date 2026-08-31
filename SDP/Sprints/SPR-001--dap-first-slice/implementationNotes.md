@@ -86,3 +86,8 @@ tooling, CI foundation, and VSIX packaging boundary. Worker checks passed
 `npm ci`, lint, 6/6 tests, package/content policy, and a local Windows VS Code
 1.134.0 install. This is worker evidence only; `RVW-001-002-001` is active and
 the complete slice remains unverified.
+
+Independent `RVW-001-002-001` returned changes-required. `CR-009` blocks the
+foundation because terminated state can be reopened by an in-flight launch;
+`CR-010` requires strict raw-DAP runtime types; and `CR-011` corrects README
+truthfulness. These findings are not resolved by passing build/package checks.

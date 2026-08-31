@@ -398,3 +398,27 @@ available locally. These remain review/verification items.
 
 The product slice remains in progress. `RVW-001-002-001` must independently
 review this exact commit before Worker B starts.
+
+### Worker A review `RVW-001-002-001`
+
+**Reviewed commit:** `a30129bfcbd17c8fd0e57696700ff9f2440bb639`
+
+**Review commit:** `bd1b8b7bac41c9cba71bb5d099ba21ca2fc024cd`
+
+**Disposition:** **changes-required**
+
+The fresh reviewer reproduced the worker checks and package/install boundary,
+then raised three persistent findings:
+
+- `CR-009` (blocking/high): an asynchronous launch can complete after
+  disconnect, emit `initialized` after `terminated`, and later succeed both
+  `configurationDone` and the stale launch request; cleanup rejection is also
+  swallowed.
+- `CR-010` (medium): raw DAP launch validation accepts wrong JSON types for
+  `stopOnEntry` and `emulatorPath`.
+- `CR-011` (low): README incorrectly says Worker B/C integration already
+  exists.
+
+Worker B remains paused. A fresh corrective worker must fix only these findings
+and add adversarial regression tests. A separate fresh reviewer performs
+`RVW-001-002-004` before forward work resumes.
