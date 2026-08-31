@@ -3,8 +3,9 @@
 ## Status
 
 - Candidate implementation sprint: **planned; not started**
-- Active pre-implementation iteration: `IT-001-000`
-- Active documentation readiness slice: `SL-001-000-001`
+- Reviewed foundation iteration: `IT-001-000` — rework required
+- Active corrective documentation iteration: `IT-001-001`
+- Active corrective documentation slice: `SL-001-001-001`
 - Steering authority: [GitHub Issue #1](https://github.com/Hans-Einar/emuSA80535-DAP/issues/1)
 
 Issue #1 defines and verifies the contract only. It must stop at
@@ -48,7 +49,9 @@ transport, packaging, or emulator API assumptions.
 
 `M-001`, `S-001`, `UC-001`, `R-001`–`R-031`, `A-001`–`A-008`,
 `D-001`–`D-010`, `SPR-001`, `IT-001-000`, `SL-001-000-001`,
-`RVW-001-000-001`, `VER-001-000-001`.
+`RVW-001-000-001`, `IT-001-001`, `SL-001-001-001`,
+`RVW-001-001-001`, `VER-001-001-001`, `IT-001-002`, and
+`SL-001-002-001`.
 
 ### Completion signal
 
@@ -57,6 +60,12 @@ is open, and traceability records `READY-FOR-SLICE-1` while `SPR-001` remains
 planned/not started.
 
 ## Candidate product Slice 1
+
+**Planned iteration:** `IT-001-002`
+
+**Planned slice:** `SL-001-002-001`
+
+**State:** planned; not started
 
 ### Goal
 
@@ -79,18 +88,27 @@ instruction-breakpoint set; continue/pause; and execute instruction-granularity
 5. DAP lifecycle covers initialize (once), launch, initialized/configuration,
    configurationDone, disconnect, and termination.
 6. DAP capabilities include configurationDone, instruction breakpoints,
-   disassemble, and stepping granularity; unsupported flags remain false/absent.
+   disassemble, and stepping granularity. Omitted/`statement`/`instruction`
+   `stepIn` each mean one instruction; `line` fails without resume.
 7. One logical thread, one current frame with `code:HHHH`
    `instructionPointerReference`, one read-only Registers scope, and variables
    PC/A/B/PSW/SP/DPTR/R0–R7 derive from one stopped snapshot.
-8. `disassemble` returns exactly the requested instruction count from emulator
-   `decodeCode`, using CODE references, with no source claims.
-9. `setInstructionBreakpoints` globally replaces the set. The protocol
-   negotiates `maxBreakpoints >= 1`; acceptance exercises exactly one.
-10. Continue uses synchronous bounded emulator run chunks. Adapter-local pause
-    waits for the active chunk, schedules no next chunk, and emits a pause stop.
-11. `stepIn` executes exactly one architectural instruction. `next` and
-    `stepOut` are not advertised.
+8. `disassemble` takes an opaque `code:HHHH` reference and returns exactly the
+   requested instruction count with numeric `0xHHHH` addresses. Negative
+   offsets use known predecessors or explicit invalid one-byte placeholders,
+   never guessed authoritative boundaries.
+9. `setInstructionBreakpoints` accepts the numeric address returned by
+   disassembly, applies its signed offset once, canonicalizes the target, and
+   globally replaces the set. The protocol negotiates `maxBreakpoints >= 1`;
+   acceptance exercises exactly one. A child `breakpoint` stop maps to DAP
+   reason `instruction breakpoint`.
+10. Continue uses synchronous bounded emulator run chunks. At every yield the
+    child is idle at a boundary while the adapter remains logically running.
+    Adapter-local pause is acknowledged first, waits for the active chunk or
+    uses the latest yield, schedules no next chunk, and emits a pause stop.
+11. `stepIn` executes exactly one architectural instruction under the accepted
+    granularities. Because no DAP capability flags exist for `next`/`stepOut`,
+    their handlers fail `notSupported` without a child command or state change.
 12. Errors, logs, handle epochs, child cleanup, Linux/Windows process behavior,
     and `.vsix` packaging follow the frozen design.
 
@@ -112,10 +130,10 @@ instruction-breakpoint set; continue/pause; and execute instruction-granularity
 |---|---|
 | `AC-001` | Given the packaged extension and compatible fake/real contract server, when F5 launches the synthetic fixture, then hello precedes load/reset and VS Code stops at configured entry with reason `entry`. |
 | `AC-002` | While stopped, `threads -> stackTrace -> scopes -> variables` yields one thread, one valid required-field current frame, and the exact basic-register snapshot. |
-| `AC-003` | A disassemble request for N valid forward or backward instructions returns exactly N ordered authoritative `decodeCode` records with canonical `code:HHHH` addresses; the chosen `engines.vscode` build displays them. |
-| `AC-004` | Setting one instruction breakpoint from VS Code's disassembly UI globally replaces the child table, reports verified, and stops before executing that address after continue. |
-| `AC-005` | `stepIn` from stop advances exactly one completed instruction and emits one `step` stop at the resulting PC; `next`/`stepOut` capabilities are absent. |
-| `AC-006` | Pause requested during continue is acknowledged, waits no more than the current negotiated chunk, schedules no new chunk, and emits one `pause` stop. |
+| `AC-003` | A disassemble request returns exactly N ordered records with numeric `0xHHHH` addresses. Forward and known-predecessor records contain emulator decoder output; unknown predecessors are clearly invalid one-byte placeholders. Range crossing fails without wrap/partial output, and the chosen `engines.vscode` build displays the result. |
+| `AC-004` | Setting one instruction breakpoint from VS Code's disassembly UI sends the returned numeric address back through `instructionReference`; a tested non-zero offset is applied once and canonicalized, overflow is rejected, the valid target globally replaces the child table, and its hit emits DAP reason `instruction breakpoint` before that instruction executes. |
+| `AC-005` | `stepIn` from stop with omitted, `statement`, or `instruction` granularity advances exactly one completed instruction and emits one `step` stop; `line`, `next`, and `stepOut` fail `notSupported` without resume. |
+| `AC-006` | Pause requested during continue is acknowledged before its event, waits no more than the current negotiated chunk (or uses the latest idle yield boundary), schedules no new chunk, and emits one `pause` stop; timeout/disconnect never promotes an unproven snapshot. |
 | `AC-007` | Frame/scope/variable handles from one stop fail after resume and new handles reflect the next stop epoch. |
 | `AC-008` | Missing executable, version/capability mismatch, malformed record, timeout, and child crash each produce a failed DAP response or terminal event as designed, actionable diagnostics, and no orphan. |
 | `AC-009` | Disconnect terminates/reaps the launch-owned child, closes pipes, and emits `terminated` exactly once. |
@@ -128,9 +146,10 @@ Every blocker `EMU-BLK-001` through `EMU-BLK-010` in
 `protocol/EMU_DEBUG_API_REQUIREMENTS.md` is a hard precondition. Specifically,
 the accepted emulator default/release must supply the headless NDJSON server,
 protocol 1.0 hello, exact raw loader, deterministic reset, atomic snapshot,
-side-effect-free CODE read, required authoritative `decodeCode`, replacement
-breakpoints, bounded run, exact step, and clean lifecycle. Candidate PR #1 is
-not sufficient merely because it contains some unmerged low-level primitives.
+required exact-count `decodeCode` behavior, replacement breakpoints, bounded
+run, exact step, and clean lifecycle. Raw CODE read is near-term, not a Slice-1
+blocker. Candidate PR #1 is not sufficient merely because it contains some
+unmerged low-level primitives.
 
 ## Test fixtures
 

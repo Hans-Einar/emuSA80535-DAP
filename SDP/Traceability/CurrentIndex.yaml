@@ -1,11 +1,11 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-08-31T19:34:52Z"
+updatedAt: "2026-08-31T20:03:59Z"
 items:
   - id: M-001
     kind: mandate
     title: Offline VS Code DAP integration for emuSA80535-N
-    status: authored
+    status: active
     state: target
     doc: SDP/01--Mandate/DAP-MND-001.md
     summary: Safe firmware-generic debugger boundary and READY-FOR-SLICE-1 definition.
@@ -13,7 +13,7 @@ items:
   - id: S-001
     kind: study
     title: DAP, VS Code, packaging, and current-emulator study
-    status: authored
+    status: active
     state: target
     doc: SDP/02--Study/DAP-STU-001.md
     summary: Evidence and decisions at the 2026-08-31 inspection cut.
@@ -21,7 +21,7 @@ items:
   - id: UC-001
     kind: use_case
     title: Launch and instruction-debug a synthetic SAB80535 image
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
     summary: Deterministic launch, entry/register view, disassembly, breakpoint, continue, pause, and step.
@@ -29,304 +29,304 @@ items:
   - id: R-001
     kind: requirement
     title: Emulator protocol compatibility handshake
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-002
     kind: requirement
     title: Deterministic launch lifecycle and raw CODE load
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-003
     kind: requirement
     title: Coherent session state
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-004
     kind: requirement
     title: PC and canonical CODE references
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-005
     kind: requirement
     title: Instruction breakpoints
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-006
     kind: requirement
     title: Bounded continue
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-007
     kind: requirement
     title: Adapter-local bounded pause
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-008
     kind: requirement
     title: Instruction stepIn
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-009
     kind: requirement
     title: Call-aware step over
-    status: deferred_near_term
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-010
     kind: requirement
     title: Logical-frame step out
-    status: deferred_near_term
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-011
     kind: requirement
     title: One logical MCU thread
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-012
     kind: requirement
     title: Truthful current-PC frame
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-013
     kind: requirement
     title: Atomic basic-register scope
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-014
     kind: requirement
     title: Side-effect-free SFR presentation
-    status: deferred_near_term
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-015
     kind: requirement
     title: Variant-aware IRAM reads
-    status: deferred_near_term
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-016
     kind: requirement
     title: Distinct CODE and XDATA reads
-    status: deferred_near_term
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-017
     kind: requirement
     title: Minimal authoritative disassembly
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-018
     kind: requirement
     title: Source mapping and source breakpoints
-    status: deferred_near_term
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-019
     kind: requirement
     title: Generic symbol map
-    status: deferred_near_term
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-020
     kind: requirement
     title: Observed logical stack
-    status: deferred_near_term
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-021
     kind: requirement
     title: Interrupt state on one thread
-    status: deferred_near_term
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-022
     kind: requirement
     title: Structured DAP errors and diagnostics
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-023
     kind: requirement
     title: Semantically versioned VSIX
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-024
     kind: requirement
     title: Linux and Windows support
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-025
     kind: requirement
     title: Hardware-free automated tests
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-026
     kind: requirement
     title: Graceful protocol and process failure
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-027
     kind: requirement
     title: Data breakpoints and watchpoints
-    status: deferred
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-028
     kind: requirement
     title: Opt-in state mutation
-    status: deferred
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-029
     kind: requirement
     title: No physical host I/O
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-030
     kind: requirement
     title: No P1000 hard-coding
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-031
     kind: requirement
     title: Launch-owned disconnect and termination lifecycle
-    status: defined
+    status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
 
   - id: A-001
     kind: architecture
     title: VS Code adapter emulator process boundary
-    status: authored
+    status: target
     state: target
     doc: SDP/04--Architecture/DAP-ARCH-001.md
   - id: A-002
     kind: architecture
     title: Launch and configuration lifecycle
-    status: authored
+    status: target
     state: target
     doc: SDP/04--Architecture/DAP-ARCH-001.md
   - id: A-003
     kind: architecture
     title: Breakpoint continue stop flow
-    status: authored
+    status: target
     state: target
     doc: SDP/04--Architecture/DAP-ARCH-001.md
   - id: A-004
     kind: architecture
     title: Current and logical stack data flow
-    status: authored
+    status: target
     state: target
     doc: SDP/04--Architecture/DAP-ARCH-001.md
   - id: A-005
     kind: architecture
     title: Generic source and symbol mapping
-    status: authored
+    status: target
     state: target
     doc: SDP/04--Architecture/DAP-ARCH-001.md
   - id: A-006
     kind: architecture
     title: Protocol version and capability negotiation
-    status: authored
+    status: target
     state: target
     doc: SDP/04--Architecture/DAP-ARCH-001.md
   - id: A-007
     kind: architecture
     title: VSIX packaging boundary
-    status: authored
+    status: target
     state: target
     doc: SDP/04--Architecture/DAP-ARCH-001.md
   - id: A-008
     kind: architecture
     title: Runtime state and failure isolation
-    status: authored
+    status: target
     state: target
     doc: SDP/04--Architecture/DAP-ARCH-001.md
 
   - id: D-001
     kind: design
     title: Proposed source layout
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
   - id: D-002
     kind: design
     title: Launch configuration
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
   - id: D-003
     kind: design
     title: Emulator control envelope and commands
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
   - id: D-004
     kind: design
     title: Adapter state machine
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
   - id: D-005
     kind: design
     title: DAP mappings and disassembly
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
   - id: D-006
     kind: design
     title: Replacement breakpoint table
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
   - id: D-007
     kind: design
     title: Memory-space references
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
   - id: D-008
     kind: design
     title: Logical frame model
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
   - id: D-009
     kind: design
     title: Generic symbol map schema
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
   - id: D-010
     kind: design
     title: Error logging and fake interfaces
-    status: authored
+    status: target
     state: target
     doc: SDP/05--Design/DAP-DES-001.md
 
   - id: SPR-001
     kind: sprint
     title: DAP first implementation slice
-    status: planned_not_started
+    status: planned
     state: target
     doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
     summary: Candidate thin vertical product slice; no implementation has begun.
@@ -334,14 +334,14 @@ items:
   - id: IT-001-000
     kind: iteration
     title: SDP foundation and Slice-1 readiness
-    status: active
+    status: rework
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
   - id: SL-001-000-001
     kind: slice
     title: Architecture documentation through READY-FOR-SLICE-1
-    status: review_changes_required
+    status: rework
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
     summary: Worker pass reviewed; blocking documentation corrections and re-review required.
@@ -349,56 +349,98 @@ items:
   - id: RVW-001-000-001
     kind: review
     title: Independent review of SDP foundation
-    status: changes_required
+    status: closed
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
 
   - id: CR-001
     kind: review_finding
     title: Correct DAP instruction-breakpoint stopped reason
-    status: open_blocking
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-002
     kind: review_finding
     title: Separate DAP memory references from disassembly addresses
-    status: open_blocking
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-003
     kind: review_finding
     title: Freeze advertised stepping-granularity semantics
-    status: open_blocking
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-004
     kind: review_finding
     title: Define defensible backward disassembly behavior
-    status: open_blocking
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-005
     kind: review_finding
     title: Remove or justify accidental Slice-1 CODE read
-    status: open_blocking
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-006
     kind: review_finding
     title: Define child state across bounded run yields
-    status: open_blocking
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
   - id: CR-007
     kind: review_finding
     title: Make handshake example fence structurally valid
-    status: open_blocking
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
 
   - id: VER-001-000-001
     kind: verification
     title: Verification of SDP foundation and traceability
-    status: blocked_by_review
+    status: blocked
     state: target
     doc: SDP/Verification/DAP-SDP-VER-001.md
+
+  - id: IT-001-001
+    kind: iteration
+    title: Corrective SDP review closure
+    status: active
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: SL-001-001-001
+    kind: slice
+    title: Resolve SDP foundation review findings
+    status: in_review
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: RVW-001-001-001
+    kind: review
+    title: Corrective re-review of SDP foundation
+    status: planned
+    state: target
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+
+  - id: VER-001-001-001
+    kind: verification
+    title: Final verification of SDP foundation and traceability
+    status: planned
+    state: target
+    doc: SDP/Verification/DAP-SDP-VER-001.md
+
+  - id: IT-001-002
+    kind: iteration
+    title: Candidate first product implementation iteration
+    status: planned
+    state: target
+    doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
+
+  - id: SL-001-002-001
+    kind: slice
+    title: Candidate first product vertical slice
+    status: planned
+    state: target
+    doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md

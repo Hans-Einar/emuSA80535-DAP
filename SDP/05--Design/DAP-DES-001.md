@@ -84,25 +84,29 @@ Minimum request surface frozen for Slice 1:
 | `hello` | client protocol `1.0`, required capabilities | server protocol/product/commit, limits, capability names |
 | `load` | absolute raw image path, format `raw-code-64k`, expected SHA-256 | loaded image SHA-256 |
 | `reset` | seed, entry address, stop `entry` | atomic stopped snapshot |
-| `getState` | none | state plus atomic snapshot if stopped |
-| `readMemory` | space `code`, address, count | base64 bytes, address, unreadable count; side-effect-free |
-| `decodeCode` | reference CODE address, signed byte offset, signed instruction offset, instruction count | exactly the requested number of authoritative address/size/text records or a structured range error |
+| `getState` | none | child lifecycle/command state plus the latest valid instruction-boundary snapshot when idle |
+| `decodeCode` | reference CODE address, signed byte offset, signed instruction offset, instruction count | exactly the requested number of ordered valid decode records and/or explicit invalid one-byte predecessor placeholders, or a structured range error |
 | `replaceCodeBreakpoints` | full array of 16-bit addresses | accepted/rejected arrays and limit |
 | `run` | chunk instruction limit | `yield` plus boundary snapshot, or architectural stop result; one bounded chunk only |
 | `stepInstruction` | none | exactly one completed instruction and `step` snapshot |
 | `terminate` | none | clean shutdown acknowledgment |
 
 Pause is adapter-local: while one synchronous `run` chunk is outstanding, the
-adapter records the DAP pause intent, acknowledges DAP pause, awaits the chunk,
-sends no next chunk, and emits a pause stop. The child protocol has no Slice-1
-`pause` command and does not need concurrent request multiplexing. An unbounded
-child `run` is non-conforming.
+adapter records the DAP pause intent, acknowledges DAP pause before the stop
+event, awaits the chunk, sends no next chunk, and emits a pause stop using the
+returned boundary. Between run requests the child is idle at an instruction
+boundary even though the adapter remains logically running. The child protocol
+has no Slice-1 `pause` command and does not need concurrent request
+multiplexing. An unbounded child `run` is non-conforming.
 
 Example handshake:
 
 ```json
-{"type":"request","id":1,"command":"hello","arguments":{"protocol":{"major":1,"minor":0},"requiredCapabilities":["rawCode64k","deterministicReset","snapshotBasicRegisters","readCode","decodeCode","replaceCodeBreakpoints","boundedRun","stepInstruction"]}}
-{"type":"response","id":1,"command":"hello","success":true,"body":{"protocol":{"major":1,"minor":0},"product":"emuSA80535-N","productVersion":"candidate","commit":"...","capabilities":["rawCode64k","deterministicReset","snapshotBasicRegisters","readCode","decodeCode","replaceCodeBreakpoints","boundedRun","stepInstruction"],"limits":{"maxBreakpoints":1,"maxRunChunkInstructions":1024,"maxReadBytes":4096}}}
+{"type":"request","id":1,"command":"hello","arguments":{"protocol":{"major":1,"minor":0},"requiredCapabilities":["rawCode64k","deterministicReset","snapshotBasicRegisters","decodeCode","replaceCodeBreakpoints","boundedRun","stepInstruction"]}}
+```
+
+```json
+{"type":"response","id":1,"command":"hello","success":true,"body":{"protocol":{"major":1,"minor":0},"product":"emuSA80535-N","productVersion":"candidate","commit":"...","capabilities":["rawCode64k","deterministicReset","snapshotBasicRegisters","decodeCode","replaceCodeBreakpoints","boundedRun","stepInstruction"],"limits":{"maxBreakpoints":1,"maxRunChunkInstructions":1024,"maxDisassembleInstructions":256,"maxRecordBytes":65536}}}
 ```
 
 `snapshotBasicRegisters` returns `pc`, `a`, `b`, `psw`, `sp`, `dptr`, `r[8]`,
@@ -125,6 +129,35 @@ stateDiagram-v2
     Terminated --> [*]
 ```
 
+This diagram is the adapter's logical DAP state, not the state of a
+synchronous child process. The child uses a separate lifecycle/command state:
+
+```mermaid
+stateDiagram-v2
+    [*] --> ChildStarting
+    ChildStarting --> IdleAtBoundary: hello / load / reset complete
+    IdleAtBoundary --> RunCommandActive: run request sent
+    RunCommandActive --> IdleAtBoundary: yield or architectural-stop response
+    IdleAtBoundary --> OtherCommandActive: serialized non-run request
+    OtherCommandActive --> IdleAtBoundary: response
+    IdleAtBoundary --> ChildTerminating: terminate / disconnect
+    RunCommandActive --> ChildTerminating: timeout / disconnect cleanup
+    OtherCommandActive --> ChildTerminating: timeout / disconnect cleanup
+    ChildTerminating --> ChildExited: acknowledgment or kill + reap
+    ChildExited --> [*]
+```
+
+A `run` yield returns a boundary snapshot and moves the child to
+`IdleAtBoundary`; it does not move the adapter out of `Running`. Before sending
+the next chunk, the adapter checks pause and termination intent. With neither
+intent, it invalidates the yielded snapshot by sending the next `run`. With
+pause intent, it sends no command, promotes that boundary into a new stop
+epoch, moves to `Stopped`, and emits the pause stop after the already-sent pause
+response. With termination intent, it never exposes the yield snapshot and
+enters cleanup. An architectural stop instead creates the new stop epoch
+immediately. A timeout, malformed response, EOF, or child exit proves no safe
+boundary, invalidates every snapshot, and terminates the session.
+
 Allowed reads (`threads`, `stackTrace`, `scopes`, `variables`, `disassemble`)
 require `Stopped`, except disassembly may use immutable loaded CODE if identity
 is unchanged. `continue`/`stepIn` require `Stopped`; repeated pause while stopped
@@ -133,7 +166,9 @@ unless cleanup is the documented result.
 
 Every stop increments `stopEpoch`. Frame/scope/variable handles encode that
 epoch and expire on resume; stale handles fail rather than returning new-state
-data under an old identity.
+data under an old identity. A yield snapshot is private scheduler state, valid
+only at the current child boundary and for the current image. It is never
+readable through DAP unless pause promotes it to the stopped epoch.
 
 ## DAP mappings (`D-005`)
 
@@ -141,32 +176,53 @@ data under an old identity.
 |---|---|
 | `initialize` | Once; respond with `supportsConfigurationDoneRequest`, `supportsInstructionBreakpoints`, `supportsDisassembleRequest`, and `supportsSteppingGranularity`; omit unsupported flags |
 | `launch` | Resolve/spawn/hello/load/reset; send `initialized`; await configuration |
-| `setInstructionBreakpoints` | Parse all `instructionReference`s, globally replace emulator table, return DAP-order results |
+| `setInstructionBreakpoints` | Accept `code:HHHH`, `0x` hexadecimal, or unsigned decimal CODE references; apply each signed byte offset once, range-check, canonicalize, globally replace the emulator table, and return DAP-order results |
 | `configurationDone` | Complete launch and emit entry stop |
 | `threads` | `[{id: 1, name: "SAB80535"}]` |
 | `stackTrace` | One current frame with required id/name/line/column and `instructionPointerReference` |
 | `scopes` | One read-only `Registers` scope |
 | `variables` | PC, A, B, PSW, SP, DPTR, R0–R7; values formatted hex |
-| `disassemble` | Resolve `code:` reference and byte offset, decode forward/backward as designed, return exactly requested instruction count or explicit unreadable placeholders |
-| `continue` | Respond to the client request, then schedule repeated bounded `run`; do not emit `continued` for this normal requested transition; later emit exactly one stop/termination |
-| `pause` | Record adapter-local intent, acknowledge, await current chunk, send no next chunk, and emit `stopped(reason="pause")` |
-| `stepIn` | `stepInstruction`; emit `stopped(reason="step")` |
+| `disassemble` | Resolve opaque `code:` reference and byte offset, apply instruction offset as designed, and return exactly the requested count with DAP-numeric `0xHHHH` addresses and explicit invalid placeholders where predecessor boundaries are unknown |
+| `continue` | Respond to the client request, then schedule repeated bounded `run`; a yield leaves the child idle while the adapter remains running; do not emit `continued` for this normal requested transition; later emit exactly one stop/termination |
+| `pause` | Record adapter-local intent, acknowledge before the stop event, await the active chunk or use the latest idle yield boundary, send no next chunk, and emit `stopped(reason="pause")` |
+| `stepIn` | Omitted/`statement`/`instruction` granularity maps to one `stepInstruction` and `stopped(reason="step")`; `line` fails `notSupported` while remaining stopped |
+| `next`, `stepOut` | DAP provides no capability flags; handlers always fail `notSupported` in Slice 1 without sending a child command or changing state |
+| breakpoint stop event | Map child-internal reason `breakpoint` to DAP `stopped(reason="instruction breakpoint")` |
 | `disconnect` | Terminate launch-owned child, invalidate handles, emit `terminated` once |
 
 `terminate` is advertised only when its complete lifecycle is implemented.
-`next` and `stepOut` remain near-term because mapping them to one instruction
-would falsely advertise call-aware step-over/out semantics.
+`supportsSteppingGranularity` is advertised only with the complete `stepIn`
+mapping above. Mapping `next` or `stepOut` to one instruction would falsely
+claim call-aware step-over/out semantics.
 
 ### Minimal disassembly
 
-Inputs must use `memoryReference = "code:HHHH"`. The adapter passes DAP byte
-`offset`, signed `instructionOffset`, and `instructionCount` to the required
-emulator `decodeCode` operation, which owns variable-length boundary traversal
-in both directions. Addresses do not wrap; Slice 1 returns a structured range
-error if the requested window crosses `0x0000` or `0xFFFF`. The adapter may not
-maintain a divergent opcode decoder. The response length is exactly
-`instructionCount`, using explicit unreadable entries if the protocol permits
-and otherwise a failed response.
+Inputs must use opaque `memoryReference = "code:HHHH"`. The adapter first adds
+the signed DAP byte `offset` to that reference with no wrapping, then passes the
+result, signed `instructionOffset`, and positive `instructionCount` to the
+required emulator `decodeCode` operation. Every returned
+`DisassembledInstruction.address` is the numeric string `0xHHHH`; it is never a
+`code:` reference.
+
+For a non-negative instruction offset, decoding walks forward from the adjusted
+address. For a negative instruction offset, the server walks a contiguous chain
+of predecessor boundaries it actually knows. A boundary is known only when it
+was established by an architectural instruction boundary plus forward decoder
+records, or by an observed completed sequential instruction; raw-byte pattern
+search is not evidence. At the first unknown predecessor, and for any further
+unknown predecessor slots, traversal moves back exactly one byte per slot and
+returns a record with `size: 1`, `valid: false`, reason
+`unknown-predecessor`, and display text `<invalid>`. Such a placeholder is
+deliberately not authoritative instruction text. Known predecessor and forward
+records use `valid: true` and exact emulator decoder output.
+
+The returned window is ordered by increasing CODE address and contains exactly
+`instructionCount` records. If constructing that exact window would cross
+`0x0000` or `0xFFFF`, the whole request fails with a structured range error;
+addresses never wrap and partial arrays are not returned. The adapter may not
+guess predecessor lengths or maintain a divergent opcode decoder. Slice-1 tests
+cover forward decoding, a fully known predecessor chain, a mixed/unknown chain,
+range failure, and the exact-count invariant.
 
 ## Breakpoint table (`D-006`)
 
@@ -190,18 +246,30 @@ Validate scheme/range, de-duplicate for the emulator while retaining DAP-order
 responses, atomically replace the old table, and reject entries beyond the
 negotiated limit. Empty input clears the table.
 
+Accepted `instructionReference` grammar is canonical `code:HHHH`, a `0x`/`0X`
+hexadecimal integer containing one to four hex digits, or an unsigned decimal
+integer in `0`–`65535`. Leading/trailing whitespace, signs, other schemes, and
+larger values are rejected. Missing `offset` means zero; otherwise the signed
+integer offset is added once to the parsed byte address and the result must stay
+within uint16. The final target is canonicalized internally to `code:HHHH` and
+reported in a successful DAP `Breakpoint.instructionReference` as that opaque
+canonical reference. Thus `DisassembledInstruction.address = "0x0010"` plus
+offset `2` reaches child address `0x0012`/`code:0012` without string ambiguity.
+
 ## Address spaces (`D-007`)
 
 | Space | Canonical reference | Range | Slice 1 |
 |---|---|---:|---|
-| CODE | `code:0000` | `0000`–`FFFF` | Read for disassembly/breakpoints |
+| CODE | `code:0000` | `0000`–`FFFF` | Opaque reference for decode/execution/breakpoints; raw DAP read is near-term |
 | IRAM | `iram:00` | `00`–`FF` subject to variant | Near-term |
 | SFR | `sfr:80` | `80`–`FF` | Near-term |
 | XDATA | `xdata:0000` | `0000`–`FFFF` | Near-term |
 
 Grammar is lowercase scheme, colon, uppercase fixed-width hex. CODE and XDATA
-never alias. Reads are byte-addressed and side-effect-free. Future DAP
-`readMemory` returns base64 bytes and an `unreadableBytes` count when applicable.
+never alias. `code:` values used in Slice 1 identify a location but do not
+require a raw child memory-read command. Future DAP `readMemory` uses
+byte-addressed, side-effect-free reads and returns base64 bytes plus an
+`unreadableBytes` count when applicable.
 
 ## Logical stack frame (`D-008`)
 

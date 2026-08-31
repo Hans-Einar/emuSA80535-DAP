@@ -123,3 +123,27 @@ relations:
   - { from: CR-006, type: concerns, to: R-006 }
   - { from: CR-006, type: concerns, to: R-007 }
   - { from: CR-007, type: concerns, to: D-003 }
+
+  - { from: IT-001-001, type: contains, to: SL-001-001-001 }
+  - { from: SL-001-001-001, type: addresses, to: CR-001 }
+  - { from: SL-001-001-001, type: addresses, to: CR-002 }
+  - { from: SL-001-001-001, type: addresses, to: CR-003 }
+  - { from: SL-001-001-001, type: addresses, to: CR-004 }
+  - { from: SL-001-001-001, type: addresses, to: CR-005 }
+  - { from: SL-001-001-001, type: addresses, to: CR-006 }
+  - { from: SL-001-001-001, type: addresses, to: CR-007 }
+  - { from: SL-001-001-001, type: reviewed_by, to: RVW-001-001-001 }
+  - { from: SL-001-001-001, type: verified_by, to: VER-001-001-001 }
+
+  - { from: IT-001-002, type: contains, to: SL-001-002-001 }
+  - { from: SPR-001, type: contains, to: IT-001-002 }
+  - { from: D-001, type: planned_for, to: SL-001-002-001 }
+  - { from: D-002, type: planned_for, to: SL-001-002-001 }
+  - { from: D-003, type: planned_for, to: SL-001-002-001 }
+  - { from: D-004, type: planned_for, to: SL-001-002-001 }
+  - { from: D-005, type: planned_for, to: SL-001-002-001 }
+  - { from: D-006, type: planned_for, to: SL-001-002-001 }
+  - { from: D-007, type: planned_for, to: SL-001-002-001 }
+  - { from: D-008, type: planned_for, to: SL-001-002-001 }
+  - { from: D-009, type: planned_for, to: SL-001-002-001 }
+  - { from: D-010, type: planned_for, to: SL-001-002-001 }

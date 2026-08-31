@@ -62,13 +62,13 @@ only in `62f4012` is treated as currently available.
 | `stackTrace` | Slice 1 | Return at least one current-PC frame with `instructionPointerReference`. |
 | `scopes`, `variables` | Slice 1 | Expose a read-only basic-register scope including PC, A, B, PSW, SP, DPTR and R0-R7. |
 | `setInstructionBreakpoints` | Slice 1 | CODE-address breakpoints; initially one, or a documented small protocol limit. |
-| `disassemble` | Slice 1 | Minimal CODE disassembly around a `code:` memory reference so VS Code can originate instruction breakpoints from its disassembly view. |
-| `continue`, `pause`, `stepIn` | Slice 1 | Instruction granularity; continue executes bounded chunks so pause is serviced predictably. |
+| `disassemble` | Slice 1 | Minimal CODE disassembly around an opaque `code:` memory reference; each returned instruction has a DAP-numeric `0xHHHH` address so VS Code can originate instruction breakpoints from its disassembly view. |
+| `continue`, `pause`, `stepIn` | Slice 1 | Continue executes bounded chunks so pause is serviced predictably. `stepIn` accepts omitted, `statement`, or `instruction` granularity as exactly one instruction and rejects `line` without resuming. |
 | `stopped`, `terminated` | Slice 1 | Deterministic state events with reason and current PC; a normal client-requested continue uses its response, not an unsolicited `continued` event. |
 | `disconnect`, optional `terminate` | Slice 1 | Clean child shutdown; advertise terminate only if implemented. |
 | `setBreakpoints`, `breakpointLocations` | Near-term | Source-line breakpoints after generic source maps exist; a source request replaces the complete set for that source. |
 | richer `disassemble`, `readMemory` | Near-term | Named/sourced disassembly and CODE/IRAM/SFR/XDATA memory views. |
-| `next`, `stepOut` | Near-term | Require defensible logical-frame semantics, not guessed hardware-stack reconstruction. |
+| `next`, `stepOut` | Near-term | Require defensible logical-frame semantics, not guessed hardware-stack reconstruction. DAP has no capability flags for these requests, so Slice 1 implements handlers that fail `notSupported` without resuming. |
 | `evaluate` | Near-term | Read-only register/symbol/address expressions; mutation is not implied. |
 | interrupt frames/state, `exceptionInfo` | Near-term | Requires explicit emulator events/state. |
 | attach | Near-term | Local socket transport only after launch protocol is stable. |
@@ -76,22 +76,35 @@ only in `62f4012` is treated as currently available.
 | data breakpoints/watchpoints | Deferred | Requires emulator access instrumentation. |
 | deep logical stack history | Deferred | Requires call/return/IRQ/RETI observations and corruption handling. |
 
-`stepIn` is the instruction-step request in Slice 1. `next` and `stepOut` must
-not be advertised as aliases that provide misleading source/call semantics.
+`supportsSteppingGranularity` is advertised because Slice 1 defines the full
+`stepIn` behavior needed at this boundary: omitted granularity (DAP default
+`statement`), explicit `statement`, and explicit `instruction` each execute one
+architectural instruction; `line` fails as unsupported while the adapter stays
+stopped. DAP defines no `next` or `stepOut` capability flags, so those requests
+cannot be hidden by omitting a flag. Slice 1 deliberately handles both with a
+failed `notSupported` response and no resume or state change.
 
 ### Instruction versus source breakpoints
 
 An instruction breakpoint is keyed by a DAP `instructionReference` plus optional
-byte offset and maps directly to a 16-bit CODE address. A source breakpoint is
-keyed by source path/line and is meaningful only after the adapter resolves a
-generic source map. The first is Slice 1; the second is near-term. The adapter
-must return actual verified/unverified breakpoints rather than pretending a
-line mapping exists.
+signed byte offset and maps directly to a 16-bit CODE address. The adapter
+accepts its opaque `code:HHHH` form and the DAP-numeric address forms it emits
+from disassembly (`0xHHHH`) or their unsigned decimal equivalent. It parses the
+base, applies the offset exactly once, rejects overflow/underflow, and
+canonicalizes the resulting internal address to `code:HHHH`. A source
+breakpoint is keyed by source path/line and is meaningful only after the
+adapter resolves a generic source map. The first is Slice 1; the second is
+near-term. The adapter must return actual verified/unverified breakpoints
+rather than pretending a line mapping exists.
 
 Minimal `disassemble` is a Slice-1 dependency because the practical VS Code
-instruction-breakpoint UI is its disassembly view. Each returned instruction
-uses a `code:HHHH` address/memory reference; the current frame exposes the same
-form through `instructionPointerReference`.
+instruction-breakpoint UI is its disassembly view. The request and current
+frame use opaque `code:HHHH` values in `memoryReference` and
+`instructionPointerReference`. Each `DisassembledInstruction.address` instead
+uses the DAP numeric form `0xHHHH`. Slice-1 acceptance must prove that the
+chosen VS Code engine sends that returned numeric address back as the
+instruction breakpoint reference and that the adapter's offset and
+canonicalization rules select the same CODE byte address.
 
 ### Single-core thread and state model
 
@@ -108,11 +121,12 @@ fake concurrent threads.
 ### Memory spaces
 
 CODE, IRAM, SFR, and XDATA are separate address spaces even where numeric
-addresses overlap. Canonical references are `code:HHHH`, `iram:HH`, `sfr:HH`,
-and `xdata:HHHH`. Slice 1 consumes CODE for raw-image disassembly and execution.
-Near-term DAP `readMemory` and scopes use the same identifiers. Reads must be
-side-effect-free; a debugger read must not invoke device callbacks that change
-emulated state.
+addresses overlap. Canonical opaque references are `code:HHHH`, `iram:HH`,
+`sfr:HH`, and `xdata:HHHH`. Slice 1 consumes CODE through emulator-owned
+`decodeCode` and execution; it does not require a raw CODE-read command.
+Near-term DAP `readMemory` and scopes use these identifiers and will require
+side-effect-free reads that do not invoke device callbacks or change emulated
+state.
 
 ### Source and symbol mapping
 
@@ -246,8 +260,10 @@ both require CI and packaged-VSIX validation.
 Frozen for Slice-1 planning: Node/TypeScript external adapter, DAP stdio,
 headless emulator child over versioned NDJSON stdio, launch-first, no bundle,
 path-resolution order, one thread/current frame, raw 64-KiB CODE, basic
-registers, minimal disassembly, instruction breakpoints, bounded continue/pause,
-and instruction `stepIn`.
+registers, minimal disassembly through `decodeCode`, instruction breakpoints,
+bounded continue/pause, and the explicit one-instruction `stepIn` semantics
+above. An emulator-internal stop reason `breakpoint` maps to the distinct DAP
+stopped reason `instruction breakpoint`.
 
 Steering must approve before implementation: the cross-repository emulator work
 and release/version owner; the extension publisher/identifier and initial

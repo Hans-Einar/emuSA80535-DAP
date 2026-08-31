@@ -80,7 +80,7 @@ sequenceDiagram
     participant V as VS Code
     participant A as Adapter
     participant E as Emulator
-    V->>A: setInstructionBreakpoints([code:0010])
+    V->>A: setInstructionBreakpoints([0x0010])
     A->>E: breakpoints.replace([0x0010])
     E-->>A: accepted([0x0010])
     A-->>V: Breakpoint(verified=true)
@@ -89,12 +89,12 @@ sequenceDiagram
     A->>E: run
     loop bounded instruction chunks
         E->>E: execute <= negotiated chunk
-        E-->>A: running or stop result
+        E-->>A: yield boundary or architectural stop
         A->>A: service pause/termination
     end
-    E-->>A: stopped(reason=breakpoint, pc=0x0010)
+    E-->>A: stopped(internal reason=breakpoint, pc=0x0010)
     A->>A: create new stopped-state epoch
-    A-->>V: stopped(reason="breakpoint", threadId=1)
+    A-->>V: stopped(reason="instruction breakpoint", threadId=1)
 ```
 
 `setInstructionBreakpoints` is a global replacement, not an incremental update.
@@ -102,11 +102,22 @@ The emulator server returns the accepted set; the adapter preserves DAP order
 and reports rejections. The negotiated maximum is at least one, and Slice-1
 acceptance exercises exactly one; larger limits are compatible but not required.
 
-Stop reason mapping is exact: entry→`entry`, code breakpoint→`breakpoint`,
-step completion→`step`, user pause→`pause`, emulator exception→`exception`.
-Halt/end or fatal transport terminates unless a reviewed future mapping applies.
-Each transition to running expires all frame, scope, and variable handles.
-Each new stop creates a new handle epoch.
+Stop reason mapping keeps protocol vocabularies distinct: emulator-internal
+entry→DAP `entry`, emulator-internal CODE `breakpoint`→DAP
+`instruction breakpoint`, step completion→DAP `step`, adapter-local user
+pause→DAP `pause`, and emulator exception→DAP `exception`. Halt/end or fatal
+transport terminates unless a reviewed future mapping applies. Each transition
+to running expires all frame, scope, and variable handles. Each new stop creates
+a new handle epoch.
+
+The address forms are also deliberately distinct. A frame and a DAP
+`DisassembleArguments.memoryReference` use opaque `code:HHHH`. Returned
+`DisassembledInstruction.address` uses numeric `0xHHHH`. When VS Code sends
+that address back as `InstructionBreakpoint.instructionReference`, the adapter
+accepts it, applies the optional signed byte offset exactly once, rejects a
+result outside `0x0000`–`0xFFFF`, and canonicalizes the child request to a
+uint16/code reference. The adapter also accepts its own opaque form and an
+unsigned decimal DAP address; it does not accept other address spaces.
 
 ## Current frame and future stack data flow (`A-004`)
 
@@ -195,14 +206,45 @@ identity and publishing credentials remain Steering/release decisions.
 
 ## Runtime state and failure isolation (`A-008`)
 
-The adapter has one session and one emulator child. It serializes state-changing
-commands and correlates every emulator request/response. Each synchronous
-emulator `run` request is bounded. If VS Code requests pause while a chunk is
-outstanding, the adapter records a local pause intent, acknowledges the DAP
-request, awaits that chunk, sends no next chunk, and reports the resulting pause
-stop. No concurrent child request multiplexing is required. Timeouts are
-command-specific and end in a known stopped or terminated state—never an
-assumed state.
+The adapter has one session and one emulator child. Two state axes are kept
+separate:
+
+- adapter logical session: `starting`, `stopped`, `running`, `terminating`, or
+  `terminated`;
+- child lifecycle/command state: `starting`, `idle-at-boundary`,
+  `run-command-active`, `other-command-active`, `terminating`, or `exited`.
+
+The child is not executing between requests. A successful synchronous `run`
+response always leaves it `idle-at-boundary`. A `yield` is only a chunk-boundary
+result, not an architectural stop. The adapter remains logically `running`,
+keeps DAP stopped-state reads disabled, and sends the next chunk only after it
+has checked that no pause or termination intent exists. An architectural stop
+result (`breakpoint`, `exception`, or `halt`) also leaves the child idle, but
+causes the adapter to stop or terminate according to the frozen mapping.
+
+If VS Code requests pause while a chunk is outstanding, the adapter records a
+local pause intent, acknowledges the DAP request before any stop event, awaits
+that chunk, sends no next chunk, promotes the yielded boundary snapshot to a
+new DAP stopped epoch, and emits one pause stop. If the request arrives after a
+yield but before the next chunk is sent, the same transition uses that most
+recent boundary directly. No child `pause` command or concurrent request
+multiplexing is required.
+
+Boundary snapshot validity is explicit. An architectural-stop/reset/step
+snapshot becomes the current stopped epoch. A yield snapshot is private resume
+state and is valid only while the child remains idle with the same loaded image;
+it becomes a DAP snapshot only when pause promotes it. Sending another run,
+resetting/loading, disconnecting, a timeout, malformed response, EOF, or child
+exit invalidates it. On a command timeout there is no proven boundary: the
+adapter must terminate/kill and reap the child rather than claim a stopped
+state.
+
+Disconnect sets termination intent. If a run is active, the adapter waits only
+its bounded command timeout, schedules no next chunk, ignores any returned
+snapshot for DAP presentation, then requests clean termination when possible or
+kills the child. Pipes are closed, the child is reaped, handles are invalidated,
+and exactly one DAP `terminated` event is emitted. All emulator commands are
+serialized and every request/response is correlated.
 
 DAP request errors are failed DAP responses with structured details; output
 events are diagnostics, not substitutes for failed responses. Malformed

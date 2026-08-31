@@ -22,21 +22,21 @@ hardware.
 |---|---|---|
 | `R-001` | Slice 1 | The adapter shall handshake with the emulator using protocol major/minor versions and named capabilities before loading or executing firmware; an incompatible major shall fail before execution. |
 | `R-002` | Slice 1 | A launch session shall spawn one headless emulator child without a shell, load one exactly 65,536-byte raw CODE image, reset with an explicit deterministic seed, and stop at the configured 16-bit entry address. |
-| `R-003` | Slice 1 | Session state shall be one of starting, stopped, running, terminating, or terminated, and DAP requests/events shall not claim contradictory states. |
-| `R-004` | Slice 1 | PC and every CODE instruction address shall be 16-bit (`0x0000`–`0xFFFF`) and represented through canonical `code:HHHH` instruction/memory references. |
-| `R-005` | Slice 1 | The adapter shall implement `setInstructionBreakpoints` for at least one CODE address and report each breakpoint as verified or rejected with a reason. |
-| `R-006` | Slice 1 | `continue` shall run bounded instruction chunks and stop on a configured instruction breakpoint, emulator exception/halt, pause, child failure, or explicit limit condition. |
-| `R-007` | Slice 1 | `pause` shall be serviced after a bounded execution chunk and result in one DAP `stopped` event with reason `pause`; it shall not depend on physical-time timing. |
-| `R-008` | Slice 1 | instruction-granularity `stepIn` shall execute exactly one completed instruction from a stopped state and report the resulting PC in a `step` stop. |
-| `R-009` | Near-term | `next` shall implement a defensible step-over rule using decoded call behavior and logical events; until then it shall not be advertised. |
-| `R-010` | Near-term | `stepOut` shall require an observed logical caller/interrupt frame; until then it shall not be advertised. |
+| `R-003` | Slice 1 | Adapter logical session state shall be one of starting, stopped, running, terminating, or terminated. It shall be modeled separately from the child transport/command lifecycle, whose server is idle at an instruction boundary between synchronous `run` requests; DAP requests/events shall not claim contradictory state. |
+| `R-004` | Slice 1 | PC and every CODE instruction address shall be 16-bit (`0x0000`–`0xFFFF`). Opaque DAP `memoryReference`/`instructionPointerReference` values shall use canonical `code:HHHH`, while `DisassembledInstruction.address` shall use the DAP-numeric form `0xHHHH`. Accepted instruction-breakpoint references and offsets shall range-check and canonicalize to one CODE byte address. |
+| `R-005` | Slice 1 | The adapter shall implement `setInstructionBreakpoints` for at least one CODE address and report each breakpoint as verified or rejected with a reason. An emulator-internal `breakpoint` stop shall map to DAP `stopped.reason = "instruction breakpoint"`. |
+| `R-006` | Slice 1 | `continue` shall run bounded synchronous instruction chunks. A `yield` shall leave the child idle at a boundary while the adapter remains logically running and schedules another chunk; an instruction breakpoint, emulator exception/halt, pause intent, child failure, or explicit limit outcome shall follow the defined stop/termination transition. |
+| `R-007` | Slice 1 | `pause` shall be acknowledged before its stop event, serviced using the current or most recent valid yielded boundary, schedule no further chunk, and result in one DAP `stopped` event with reason `pause`; it shall not depend on physical-time timing. |
+| `R-008` | Slice 1 | From a stopped state, `stepIn` with omitted granularity, `statement`, or `instruction` shall execute exactly one completed instruction and report the resulting PC in a `step` stop. `line` shall fail `notSupported` without resuming. |
+| `R-009` | Near-term | `next` shall implement a defensible step-over rule using decoded call behavior and logical events. Because DAP has no capability flag for `next`, Slice 1 shall handle it with a failed `notSupported` response and no state change. |
+| `R-010` | Near-term | `stepOut` shall require an observed logical caller/interrupt frame. Because DAP has no capability flag for `stepOut`, Slice 1 shall handle it with a failed `notSupported` response and no state change. |
 | `R-011` | Slice 1 | DAP `threads` shall expose exactly one stable logical MCU thread. |
 | `R-012` | Slice 1 | `stackTrace` shall expose at least one truthful current-PC frame with `instructionPointerReference`; it shall not reconstruct frames from arbitrary IRAM bytes. |
 | `R-013` | Slice 1 | `scopes`/`variables` shall expose a read-only basic-register scope containing PC, A, B, PSW, SP, DPTR, and bank-selected R0–R7 from one atomic stopped-state snapshot. |
 | `R-014` | Near-term | SFR shall be exposed as an address-preserving, side-effect-free read scope/memory space. |
 | `R-015` | Near-term | IRAM shall be readable as a distinct memory space, including upper IRAM only when the negotiated CPU variant supports it. |
 | `R-016` | Near-term | CODE and XDATA shall be readable as distinct spaces; identical numeric addresses shall never alias across spaces. |
-| `R-017` | Slice 1 | Minimal `disassemble` shall decode CODE around a `code:` reference and return stable instruction addresses sufficient for the VS Code disassembly/instruction-breakpoint flow. |
+| `R-017` | Slice 1 | Minimal `disassemble` shall decode CODE around a `code:` reference and return exactly the requested count using DAP-numeric `0xHHHH` addresses. Negative instruction offsets shall use known predecessor boundaries when available and clearly invalid one-byte placeholders when a predecessor is unknown; guessed raw-image predecessors shall never be presented as authoritative. |
 | `R-018` | Near-term | Source-line `setBreakpoints`, `breakpointLocations`, richer disassembly, and source attribution shall use a validated generic symbol/source map. |
 | `R-019` | Near-term | The generic symbol map shall map CODE address to optional symbol and optional file/line/column, identify architecture/image checksum/schema version, and contain no firmware-family semantics. |
 | `R-020` | Near-term | Logical stack frames shall be based on observed call/return/IRQ/RETI events, label provenance/confidence, preserve nested interrupt order, and degrade honestly on mismatches or reset. |
@@ -68,3 +68,11 @@ tests. Deferred or near-term requests must be omitted or return a standards-
 conformant unsupported response; they must not be advertised speculatively.
 All reads used for debugger presentation must be from a stopped-state snapshot
 and must not trigger emulated device side effects.
+
+`supportsSteppingGranularity` is included only with the `R-008` behavior. The
+real-VS-Code acceptance path must cover explicit `instruction` stepping and the
+disassembly-address round trip into `setInstructionBreakpoints`, including a
+non-zero accepted offset and an overflow rejection. The negative-disassembly
+contract must be tested with both a known predecessor chain and an unknown
+predecessor that produces invalid placeholders. Findings `CR-001`–`CR-007`
+remain `in_progress` until the independent re-review accepts these corrections.

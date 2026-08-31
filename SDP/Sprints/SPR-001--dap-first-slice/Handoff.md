@@ -2,9 +2,10 @@
 
 ## Current objective
 
-Independently review and verify the Issue #1 documentation package, then let the
-Master decide whether to record `READY-FOR-SLICE-1` and open the
-documentation-only PR. Do not start product Slice 1.
+Obtain a separate re-review of the corrective documentation, then verify the
+Issue #1 package before the Master decides whether to record
+`READY-FOR-SLICE-1` and open the documentation-only PR. Do not start product
+Slice 1.
 
 ## Authoritative source documents
 
@@ -24,10 +25,15 @@ documentation-only PR. Do not start product Slice 1.
 - Authored mandate through design and the minimum cross-repository contract.
 - Defined a narrow candidate Slice 1 and explicit non-scope/acceptance.
 - Updated planned workflow documents and worker traceability.
+- Corrected `CR-001`–`CR-007` at documentation level without marking them
+  resolved: exact DAP stop/address/step semantics, honest backward
+  disassembly, minimum emulator surface, child/adapter state, and JSON fences.
+- Normalized traceability vocabulary and retained planned product
+  `IT-001-002` / `SL-001-002-001`.
 
 ## Not done
 
-- Independent review or verification report.
+- Corrective re-review or independent verification report.
 - Master reconciliation, commit, push, PR, or readiness decision.
 - Any production or test implementation.
 - Any emulator-repository change, Issue, or PR.
@@ -35,29 +41,35 @@ documentation-only PR. Do not start product Slice 1.
 
 ## Exact next step
 
-A fresh reviewer reads the package, challenges every Issue #1 topic, and writes
-`SDP/CodeReview/DAP-SDP-REV-001.md` plus its review traceability event. The
-reviewer must not silently fix authored documents. Master assigns correction if
-needed, then a fresh verifier runs the evidence plan.
+A separate fresh reviewer executes `RVW-001-001-001` against the corrected
+contracts and appends its disposition to reviewer-owned
+`SDP/CodeReview/DAP-SDP-REV-001.md`. The reviewer, not this worker, decides
+whether `CR-001`–`CR-007` are resolved. Verification runs only after an accepted
+re-review.
 
 ## Worker checks completed
 
-Worker-level mechanical checks and their exact commands/results are to be
-reported to Master after authoring. These do not substitute for
-`VER-001-000-001`.
+Worker-level mechanical checks passed for diff whitespace, every JSON fence,
+both YAML files, every ledger line, relation endpoints/duplicate IDs/status
+vocabulary, and the documentation-only allowlist. Exact commands/results were
+reported to the Master. These do not substitute for `VER-001-001-001`.
 
 ## Traceability IDs in play
 
 `M-001`, `S-001`, `UC-001`, `R-001`–`R-031`, `A-001`–`A-008`,
 `D-001`–`D-010`, `SPR-001`, `IT-001-000`, `SL-001-000-001`,
-`RVW-001-000-001`, `VER-001-000-001`.
+`RVW-001-000-001`, `CR-001`–`CR-007`, `IT-001-001`,
+`SL-001-001-001`, `RVW-001-001-001`, `VER-001-001-001`,
+`IT-001-002`, and `SL-001-002-001`.
 
 ## Traceability update state
 
-- CurrentIndex: worker-authored items/status updated; reviewer/verifier pending.
-- Relations: mandate-to-slice-to-review/verification chains updated.
-- Ledger: append-only worker `slice_completed` event added; review and
-  verification events pending their independent passes.
+- CurrentIndex: one active iteration; corrective slice `in_review`; findings
+  `in_progress`; candidate product iteration/slice remain planned.
+- Relations: findings link to the corrective slice and every design decision
+  links to the planned product slice; re-review and verification remain linked.
+- Ledger: append-only corrective `slice_completed` event recorded; re-review
+  and verification events remain pending their independent passes.
 
 ## Open Steering decisions
 

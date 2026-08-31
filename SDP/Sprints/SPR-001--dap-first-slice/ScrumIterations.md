@@ -93,3 +93,87 @@ Full evidence and required corrections are in
 `SDP/CodeReview/DAP-SDP-REV-001.md`. `VER-001-000-001` must not start until a
 fresh corrective worker resolves these findings and a separate re-review
 accepts the correction.
+
+## IT-001-001 — Corrective SDP review closure
+
+**State:** Active corrective documentation iteration
+
+**Slice:** `SL-001-001-001` (`in_review`)
+
+**Authority:** Issue #1 plus `RVW-001-000-001` / `CR-001`–`CR-007`
+
+### Goal
+
+Resolve all seven blocking review findings at documentation level, normalize
+the traceability status vocabulary, and make the candidate product slice
+traceable as planned without implementing it.
+
+### Files expected to change
+
+- `SDP/02--Study/DAP-STU-001.md`
+- `SDP/03--Requirements/DAP-REQ-001.md`
+- `SDP/04--Architecture/DAP-ARCH-001.md`
+- `SDP/05--Design/DAP-DES-001.md`
+- `protocol/EMU_DEBUG_API_REQUIREMENTS.md`
+- sprint planning/handoff/notes in this folder
+- `SDP/CodeReview/DAP-SDP-REV-001.md` only for a reviewer-owned re-review addendum
+- `SDP/Traceability/CurrentIndex.yaml`, `Relations.yaml`, and `Ledger.ndjson`
+
+### Invariants and non-goals
+
+- Preserve the selected external TypeScript adapter and launch-owned child
+  boundary unless review evidence proves it invalid.
+- Preserve current-default versus candidate/unmerged emulator labels.
+- Use exact DAP wire semantics and separate them from emulator-internal terms.
+- Keep Slice 1 address-level, hardware-free, and firmware-generic.
+- Do not create product/test code, package manifests, build configuration,
+  fixtures, Issues, PRs, or emulator-repository changes.
+
+### Required corrections
+
+1. Map an emulator CODE-breakpoint stop to DAP reason `instruction breakpoint`.
+2. Separate opaque `memoryReference` values from numeric disassembly addresses
+   and freeze the VS Code instruction-breakpoint round trip.
+3. Define `statement`, `instruction`, omitted, and unsupported `line` stepping
+   granularity behavior; `next` and `stepOut` must fail explicitly because DAP
+   has no capability flags for them.
+4. Replace the unsupported claim of authoritative backward disassembly with an
+   honest deterministic exact-count placeholder/boundary rule.
+5. Remove raw CODE read from the Slice-1 minimum when `decodeCode` is the only
+   disassembly consumer; leave debugger `readMemory` near-term.
+6. Separate adapter logical running state from an idle child at synchronous
+   chunk boundaries and define every yield/pause/error transition.
+7. Make each `json` fence one valid JSON document.
+8. Normalize traceability statuses to the repository status model and add a
+   planned product iteration/slice distinct from this documentation rework.
+
+### Traceability and verification
+
+`SL-001-001-001` addresses `CR-001`–`CR-007`, is re-reviewed by
+`RVW-001-001-001`, and is verified by `VER-001-001-001`. Re-review must
+reproduce the corrected DAP/schema semantics. Verification must parse all
+examples, YAML, and NDJSON; validate relations; check links and Mermaid; and
+prove the final diff remains documentation-only.
+
+### Completion signal
+
+The re-review resolves `CR-001`–`CR-007` with no new blocker. Only then may the
+independent verifier run; the product sprint remains planned/not started.
+
+### Corrective worker result
+
+The documentation pass distinguishes the child `breakpoint` reason from DAP
+`instruction breakpoint`; separates opaque `code:HHHH` references from numeric
+`0xHHHH` disassembly addresses and freezes reference/offset canonicalization;
+defines every stepping granularity plus explicit `next`/`stepOut` failure;
+defines honest exact-count backward disassembly placeholders; removes raw CODE
+read from the minimum emulator contract; and separates adapter logical state
+from synchronous child command state across yield, pause, timeout, disconnect,
+and snapshot invalidation. Every `json` fence is intended to contain one JSON
+document.
+
+The worker also normalized the traceability status vocabulary and retained the
+candidate product work as planned `IT-001-002` / `SL-001-002-001`. No product
+or test implementation was created. `CR-001`–`CR-007` remain `in_progress`,
+not resolved, pending independent `RVW-001-001-001`; the corrective slice is
+therefore handed off as `in_review`.

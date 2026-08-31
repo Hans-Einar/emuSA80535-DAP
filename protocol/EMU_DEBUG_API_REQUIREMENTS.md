@@ -39,16 +39,16 @@ has `success`, and carries either `body` or a structured `error`. Server events
 use `type: "event"`. Unknown fields are ignored within protocol major 1;
 unknown required commands/capabilities fail explicitly.
 
-The initial maximum line size, timeouts, execution-chunk maximum, memory-read
-maximum, and breakpoint maximum are returned by `hello`. Implementations must
-bound all allocation and work derived from input.
+The initial maximum line size, timeouts, execution-chunk maximum,
+disassembly-count maximum, and breakpoint maximum are returned by `hello`.
+Implementations must bound all allocation and work derived from input.
 
 ## Version and capability handshake
 
 The first command is:
 
 ```json
-{"type":"request","id":1,"command":"hello","arguments":{"protocol":{"major":1,"minor":0},"requiredCapabilities":["rawCode64k","deterministicReset","snapshotBasicRegisters","readCode","decodeCode","replaceCodeBreakpoints","boundedRun","stepInstruction"]}}
+{"type":"request","id":1,"command":"hello","arguments":{"protocol":{"major":1,"minor":0},"requiredCapabilities":["rawCode64k","deterministicReset","snapshotBasicRegisters","decodeCode","replaceCodeBreakpoints","boundedRun","stepInstruction"]}}
 ```
 
 A success returns protocol major/minor, emulator product/version/commit, CPU
@@ -57,10 +57,11 @@ minor mismatch is acceptable only when all named required capabilities are
 present and message semantics are compatible. Product version/commit is
 diagnostic and must not substitute for the protocol version.
 
-The Slice-1 required capability names above are frozen. Adding optional
-capabilities is backward compatible; renaming/removing a required capability or
-changing its semantics requires a protocol-major change or an explicit
-compatibility design.
+The Slice-1 required capability names above are frozen. Raw CODE reading is not
+required: `decodeCode` is the only Slice-1 disassembly consumer, while DAP
+`readMemory` remains near-term. Adding optional capabilities is backward
+compatible; renaming/removing a required capability or changing its semantics
+requires a protocol-major change or an explicit compatibility design.
 
 ## Minimum needed for Slice 1
 
@@ -83,13 +84,20 @@ bounded cleanup. Headless mode must not initialize curses or physical host I/O.
 
 ### State and atomic snapshot
 
-Server state is `starting`, `stopped`, `running`, `terminating`, or
-`terminated`. `getState`, `reset`, `stepInstruction`, and any stop result return
-one atomic instruction-boundary snapshot:
+The child does not mirror the adapter's logical DAP state. Its independent
+lifecycle/command state is `starting`, `idle`, `run-active`, `command-active`,
+`terminating`, or `terminated`. Because commands are serialized, a successful
+synchronous `run` response changes `run-active` back to `idle` at an
+instruction boundary. The child is not executing between requests, even while
+the adapter remains logically running and intends to send another chunk.
+
+`getState`, `reset`, `stepInstruction`, every architectural stop result, and
+every yield return one atomic instruction-boundary snapshot:
 
 ```json
 {
-  "state":"stopped",
+  "state":"idle",
+  "resultKind":"architectural-stop",
   "reason":"entry",
   "pc":0,
   "registers":{
@@ -107,26 +115,47 @@ to the bank selected by the snapshot PSW. PC and registers must come from the
 same point in execution. Private pointers, padding, callbacks, and struct layout
 are never serialized.
 
-Canonical stop reasons are `entry`, `breakpoint`, `step`, `pause`,
+When processed at `idle`, `getState` returns the latest still-valid boundary and
+labels its provenance as `architectural-stop` or `yield`; it never reports a
+persistent child `running` state. While a command is active no second request is
+processed. Load/reset or another executing command invalidates the older
+boundary as described under continue/pause.
+
+Child architectural stop reasons are `entry`, `breakpoint`, `step`,
 `exception`, and `halt`; exceptions additionally carry a stable code and
-message. A request invalid for the current state fails and leaves state
-unchanged.
+message. `pause` is not a child stop reason in Slice 1: it is synthesized by the
+adapter when it promotes a yielded boundary after a DAP pause request. The
+internal reason `breakpoint` is likewise not the DAP wire string; the adapter
+maps it to DAP `instruction breakpoint`. A request invalid for the current
+child command/lifecycle state fails and leaves state unchanged.
 
-### CODE reads and disassembly support
-
-`readMemory` accepts `space: "code"`, a uint16 address, and a positive byte
-count within negotiated limits. It returns the actual start address, base64
-bytes, and unreadable count. Reads are side-effect-free and never call device
-callbacks. A request crossing `0xFFFF` fails rather than wrapping in Slice 1.
+### Disassembly support
 
 The required `decodeCode` command accepts a uint16 reference CODE address,
 signed byte offset, signed instruction offset, and positive instruction count
-within a negotiated limit. It owns variable-length boundary traversal in both
-directions and returns exactly that many ordered records with uint16 address,
-positive byte size, and authoritative instruction text. It returns a structured
-range error rather than wrapping when the window crosses `0x0000` or `0xFFFF`.
-The adapter must not duplicate private opcode tables. The current C `decode()`
-function is feasibility evidence but is not a cross-process contract.
+within a negotiated limit. It returns exactly that many ordered records. A
+valid record contains uint16 address, positive byte size, `valid: true`, and
+exact emulator decoder text. An invalid predecessor placeholder contains the
+selected byte address, `size: 1`, `valid: false`, stable reason
+`unknown-predecessor`, and display text `<invalid>`.
+
+The byte offset is applied first without uint16 wrapping. Non-negative
+instruction offsets decode forward. For a negative instruction offset, the
+server traverses only a contiguous predecessor chain whose boundaries are
+known from an architectural boundary plus forward decode results or from an
+observed completed sequential instruction. It must not scan raw bytes and guess
+which variable-length predecessor was intended. At the first unknown
+predecessor, and for further unknown slots, it moves back exactly one byte and
+emits the invalid one-byte placeholder. Known records remain valid and
+authoritative decoder output; placeholders are explicitly non-authoritative.
+
+The exact returned window must fit `0x0000`–`0xFFFF`. Otherwise the command
+returns a structured range error rather than wrapping or returning a partial
+array. The adapter must not duplicate private opcode tables. The current C
+`decode()` function is feasibility evidence but is not a cross-process
+contract. A raw CODE-read operation is not in the Slice-1 command or capability
+set because it has no Slice-1 consumer; debugger `readMemory` remains a
+near-term requirement.
 
 ### CODE breakpoints
 
@@ -135,6 +164,8 @@ addresses. It atomically replaces all prior debugger breakpoints and returns
 accepted and rejected addresses with stable reasons. Empty input clears the
 set. `hello.limits.maxBreakpoints` is at least one. Breakpoints stop before the
 instruction at that PC executes and return reason `breakpoint` and the same PC.
+`breakpoint` is the emulator protocol's internal reason; the DAP adapter must
+emit the distinct standard reason `instruction breakpoint`.
 
 This replacement contract matches DAP `setInstructionBreakpoints`, which
 replaces the global set. It must not share a TUI global or require adapter
@@ -147,23 +178,34 @@ returns either:
 
 - `yield` with progress counters and an atomic instruction-boundary snapshot
   when the chunk ends without an architectural stop; or
-- one stopped snapshot for breakpoint, pause, exception, or halt.
+- one architectural-stop snapshot for breakpoint, exception, or halt.
 
 The adapter schedules repeated chunks for DAP continue and keeps its DAP state
-running across `yield` boundaries. A DAP pause is an adapter-local intent: the
-adapter awaits the current synchronous chunk, sends no next chunk, and maps the
-yield snapshot to a pause stop. The child protocol has no Slice-1 `pause`
-command and requires no concurrent request multiplexing. The negotiated maximum
-chunk supplies the deterministic service bound. Physical elapsed time is not
-part of the execution result.
+running across `yield` boundaries, although the child returns to `idle` at each
+boundary and executes nothing until the next request. Before sending another
+chunk, the adapter checks pause and termination intent. A DAP pause is an
+adapter-local intent: the adapter acknowledges it before the eventual stopped
+event, awaits an active chunk or uses the most recent still-valid yield, sends
+no next chunk, and promotes that boundary snapshot to a DAP pause stop. The
+child protocol has no Slice-1 `pause` command and requires no concurrent request
+multiplexing. The negotiated maximum chunk supplies the deterministic service
+bound. Physical elapsed time is not part of the execution result.
+
+A yield snapshot is valid only while the child is idle with the same loaded
+image. Sending the next run, load/reset, timeout, malformed response, EOF,
+disconnect, or exit invalidates it. Disconnect sets termination intent and
+schedules no next chunk; any snapshot returned during cleanup is not exposed as
+a DAP stop. A run timeout proves no safe boundary, so the adapter kills/reaps
+the child and terminates instead of assuming a stopped state.
 
 ### Single instruction
 
-`stepInstruction` is valid only while stopped. It completes exactly one
-architectural instruction, including required machine cycles, and returns at
-the next instruction boundary with reason `step`, unless a higher-priority
-exception/halt outcome is explicitly returned. This is the server primitive for
-DAP `stepIn` in Slice 1. It does not imply call-aware `next` or `stepOut`.
+`stepInstruction` is valid while the child is `idle` at a boundary; the adapter
+sends it only while the logical DAP session is stopped. It completes exactly
+one architectural instruction, including required machine cycles, and returns
+at the next instruction boundary with reason `step`, unless a higher-priority
+exception/halt outcome is explicitly returned. This is the server primitive
+for DAP `stepIn` in Slice 1. It does not imply call-aware `next` or `stepOut`.
 
 ### Errors and termination
 
@@ -194,7 +236,7 @@ before DAP Slice 1 starts:
 | `EMU-BLK-003` | `hello` version/capability/limits handshake for protocol 1.0 |
 | `EMU-BLK-004` | Deterministic SAB80535 initialization/reset and exact 64-KiB raw CODE loading |
 | `EMU-BLK-005` | Atomic stopped-state PC/basic-register snapshot API independent of private struct layout |
-| `EMU-BLK-006` | Side-effect-free CODE read plus required `decodeCode` command/capability with authoritative address/size/text records |
+| `EMU-BLK-006` | Required `decodeCode` command/capability with exact-count valid records, deterministic invalid predecessor placeholders, and range behavior |
 | `EMU-BLK-007` | Atomic replacement CODE-breakpoint table with at least one entry and pre-execution stop semantics |
 | `EMU-BLK-008` | Bounded run primitive and bounded/responsive pause behavior |
 | `EMU-BLK-009` | Exactly-one-instruction step primitive and stable stop reasons |
@@ -206,7 +248,8 @@ breakpoint, and has no headless protocol. Those blockers remain open.
 
 ## Needed for later slices
 
-- side-effect-free IRAM, SFR, and XDATA read operations and variant ranges;
+- side-effect-free CODE, IRAM, SFR, and XDATA read operations and variant
+  ranges for DAP `readMemory` and richer scopes;
 - call/return/IRQ-entry/RETI event stream with call site, target/vector,
   return PC, priority, nesting, and monotonic sequence;
 - interrupt state snapshot and exception detail;
@@ -244,7 +287,8 @@ symbol-map input.
 - exact-size image and hash tests;
 - deterministic replay with fixed seed;
 - atomic snapshot/register-bank tests;
-- side-effect-free CODE read and decode boundary tests;
+- forward, known-predecessor, unknown-placeholder, range, and exact-count
+  `decodeCode` tests;
 - breakpoint replacement/clear/limit and pre-execution stop tests;
 - bounded run/pause and exact-step tests;
 - exception/crash/EOF/terminate cleanup tests;
