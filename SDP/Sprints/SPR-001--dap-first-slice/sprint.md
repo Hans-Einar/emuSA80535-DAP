@@ -2,13 +2,17 @@
 
 ## Status
 
-- Candidate implementation sprint: **planned; not started**
+- Product implementation sprint: **active under Issue #3**
 - Reviewed foundation iteration: `IT-001-000` — historical rework required
 - Corrective documentation iteration: `IT-001-001` — closed
 - Accepted DAP-semantics correction: `SL-001-001-001` — verification blocked by dependency drift
 - Factual-baseline correction: `SL-001-001-002` — verified
 - Documentation gate: **READY-FOR-SLICE-1** (`VER-001-001-002`)
-- Steering authority: [GitHub Issue #1](https://github.com/Hans-Einar/emuSA80535-DAP/issues/1)
+- Steering/Master authority: [GitHub Issue #3](https://github.com/Hans-Einar/emuSA80535-DAP/issues/3)
+- Active iteration/slice: `IT-001-002` / `SL-001-002-001`
+- Real-emulator gate: **required before READY**; current revalidated emulator
+  default is `c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`, which does not yet expose
+  the frozen headless `emu-debug` 1.0 process contract.
 
 Issue #1 defines and verifies the contract only. It must stop at
 `READY-FOR-SLICE-1`; no item below is an implementation-status claim.
@@ -69,7 +73,8 @@ planned/not started.
 
 **Planned slice:** `SL-001-002-001`
 
-**State:** planned; not started
+**State:** active; fake-backed implementation authorized, real-emulator final
+acceptance blocked until every required `EMU-BLK-001`–`EMU-BLK-010` item passes
 
 ### Goal
 
@@ -202,3 +207,7 @@ Before product implementation begins:
    the emulator default/release and identified by version/commit.
 5. Master explicitly opens a new implementation iteration/slice; readiness or
    PR merge alone does not start `SPR-001`.
+
+Issue #3 and `SteeringActivation.md` satisfy item 5 and explicitly permit
+contract-faithful fake-backed implementation while the real emulator is
+completed. They do not satisfy the final real-emulator integration gate.

@@ -2,13 +2,15 @@
 
 ## Current objective
 
-The Issue #1 documentation gate is `READY-FOR-SLICE-1` after independent
-`RVW-001-001-002` and `VER-001-001-002`. Documentation-only PR #2 remains open.
-Do not start product Slice 1 without Steering decisions and explicit Master
-activation.
+Issue #3 has activated `IT-001-002 / SL-001-002-001` on branch
+`codex/dap-first-slice`. Implement the complete narrow Slice 1 through separate
+Worker A/B/C and independent reviewer passes. Preserve all completed fake-backed
+work if the real runtime is unavailable, but report `NOT_READY` until the
+real-emulator contract and VS Code smoke gates pass.
 
 ## Authoritative source documents
 
+- [GitHub Issue #3](https://github.com/Hans-Einar/emuSA80535-DAP/issues/3)
 - [GitHub Issue #1](https://github.com/Hans-Einar/emuSA80535-DAP/issues/1)
 - `SDP/01--Mandate/DAP-MND-001.md`
 - `SDP/02--Study/DAP-STU-001.md`
@@ -45,15 +47,14 @@ activation.
 
 - Any production or test implementation.
 - Any emulator-repository change, Issue, or PR.
-- Product `SPR-001` start.
+- Product implementation/review/verification for `IT-001-002`.
 - Steering approval of the decisions below and merge disposition for PR #2.
 
 ## Exact next step
 
-Steering reviews PR #2 and the open decisions below. If a later implementation
-is authorized, the Master must first revalidate the emulator release/commit,
-resolve every remaining partial/missing blocker, and explicitly activate
-`IT-001-002` / `SL-001-002-001` under a fresh worker/reviewer/verifier cycle.
+Worker A implements the package/extension/DAP foundation from the active slice
+contract and produces a focused commit. A fresh reviewer then performs
+`RVW-001-002-001` before Worker B starts.
 
 ## Verification completed
 
@@ -65,6 +66,10 @@ static Mermaid structure, P1000 neutrality, README status, and PR #2 state.
 The report records the bounded npmjs automation response and lack of a local
 Mermaid renderer as non-blocking limitations.
 
+For Issue #3, Master revalidated `emuSA80535-N/master` at
+`c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`. No real Slice-1 integration
+evidence exists yet.
+
 ## Traceability IDs in play
 
 `M-001`, `S-001`, `UC-001`, `R-001`–`R-031`, `A-001`–`A-008`,
@@ -72,31 +77,32 @@ Mermaid renderer as non-blocking limitations.
 `RVW-001-000-001`, `CR-001`–`CR-007`, `IT-001-001`,
 `SL-001-001-001`, `RVW-001-001-001`, `VER-001-001-001`, `CR-008`,
 `SL-001-001-002`, `RVW-001-001-002`, `VER-001-001-002`, `IT-001-002`,
-and `SL-001-002-001`.
+and `SL-001-002-001`, `RVW-001-002-001`–`RVW-001-002-003`, and
+`VER-001-002-001`.
 
 ## Traceability update state
 
-- CurrentIndex: `IT-001-001` closed; `SL-001-001-002` and
-  `VER-001-001-002` verified/current; prior blocked verifications retained;
-  product sprint/iteration/slice planned.
-- Relations: findings, corrective slices, reviews, verification, readiness,
-  iteration closure, and planned product chain are linked.
-- Ledger: verification, readiness, and iteration-closure events appended after
-  the historical review events.
+- CurrentIndex: `SPR-001`/`IT-001-002` active and `SL-001-002-001` in progress;
+  three reviews and final verification are planned.
+- Relations: the active product slice is linked to all three reviews and final
+  verification in addition to its requirement/design chain.
+- Ledger: Issue #3 activation and `slice_started` are appended after the
+  historical documentation events.
 
-## Open Steering decisions
+## Steering decisions and remaining gate
 
-These do not change the frozen minimum behavior but must be approved before
-implementation:
+Issue #3 resolved the implementation-time choices: repository-root package
+layout with `extension/` and `adapter/` boundaries, Node.js/TypeScript, version
+`0.1.0`, local identifier `emuSA80535-dap` subject to manifest normalization,
+Linux CI, and mandatory Windows acceptance. Marketplace publication remains
+out of scope. The remaining external gate is:
 
 1. Assign/accept ownership, branch/release, and versioning for every remaining
    partial/missing part of `EMU-BLK-001`–`EMU-BLK-010` in `emuSA80535-N`;
    `EMU-BLK-004` is already satisfied by the current core.
-2. Choose extension publisher/identifier, initial semantic version, and
-   Marketplace ownership.
-3. Freeze extension package-root layout and supported `engines.vscode`/Node
-   floor after the required disassembly-UI compatibility test.
-4. Approve Linux/Windows support matrix and CI runners.
+
+The exact supported VS Code/Node floor must be pinned and proven during package
+and disassembly-UI acceptance, not guessed from the earlier study.
 
 The breakpoint minimum is not open: protocol negotiates
 `maxBreakpoints >= 1`, and Slice-1 acceptance uses exactly one. Emulator
@@ -118,6 +124,7 @@ Marketplace publication remain later scoped decisions.
 
 ## Worktree/agent notes
 
-The branch is `codex/dap-sdp-foundation`; PR #2 targets `main`. All Issue #1
-changes are documentation/traceability only. No product worker should be
-started from this handoff; the Master owns later activation and PR operations.
+The branch is `codex/dap-first-slice`, based on PR #2 branch HEAD `ede8226`.
+PR #2 still targets `main`; the Slice-1 implementation PR must also target
+`main` so its accepted SDP ancestry is visible, and it must not be merged.
+No worker/reviewer agent is intentionally left idle.

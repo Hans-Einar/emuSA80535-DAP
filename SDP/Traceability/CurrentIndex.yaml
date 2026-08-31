@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-08-31T21:07:29Z"
+updatedAt: "2026-08-31T23:17:50Z"
 items:
   - id: M-001
     kind: mandate
@@ -326,10 +326,10 @@ items:
   - id: SPR-001
     kind: sprint
     title: DAP first implementation slice
-    status: planned
+    status: active
     state: target
     doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
-    summary: Candidate thin vertical product slice; no implementation has begun.
+    summary: Active Issue #3 vertical slice with fake-backed work allowed and real-emulator acceptance still gated.
 
   - id: IT-001-000
     kind: iteration
@@ -461,14 +461,42 @@ items:
 
   - id: IT-001-002
     kind: iteration
-    title: Candidate first product implementation iteration
-    status: planned
+    title: DAP first product implementation iteration
+    status: active
     state: target
-    doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
   - id: SL-001-002-001
     kind: slice
-    title: Candidate first product vertical slice
+    title: DAP launch, registers, disassembly, breakpoint and step
+    status: in_progress
+    state: target
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: RVW-001-002-001
+    kind: review
+    title: Review package, extension, and DAP foundation
     status: planned
     state: target
-    doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: RVW-001-002-002
+    kind: review
+    title: Review emulator protocol client and contract fake
+    status: planned
+    state: target
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: RVW-001-002-003
+    kind: review
+    title: Review Slice-1 debug behavior and lifecycle
+    status: planned
+    state: target
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: VER-001-002-001
+    kind: verification
+    title: Verify complete Slice 1 against fake and real emulator
+    status: planned
+    state: target
+    doc: SDP/Verification/DAP-SLICE1-VER-001.md

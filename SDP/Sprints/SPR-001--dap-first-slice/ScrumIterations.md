@@ -296,3 +296,84 @@ limitations in `SDP/Verification/DAP-SDP-VER-001.md`.
 `SPR-001`, `IT-001-002`, and `SL-001-002-001` remain planned and unstarted.
 Readiness authorizes no implementation; Steering decisions in `Handoff.md` and
 explicit Master activation remain mandatory.
+
+## IT-001-002 — DAP first product implementation
+
+**State:** Active under Issue #3
+
+**Slice:** `SL-001-002-001`
+
+**Authority:** GitHub Issue #3, accepted PR #2 baseline, and
+`SteeringActivation.md`
+
+### Slice contract
+
+**Goal:** Implement only Slice 1: a packaged Node.js/TypeScript VS Code
+debugger that launches a separate contract-compatible emulator, stops at entry,
+exposes one MCU thread/current frame/basic-register scope, disassembles CODE,
+replaces one instruction breakpoint, continues with bounded chunks, pauses at a
+proven boundary, and executes exact instruction-level `stepIn`.
+
+**Why now:** `VER-001-001-002` established the documentation gate and Issue #3
+explicitly re-baselined the start gate so adapter work may use a
+contract-faithful fake. The same tests must later pass against an accepted real
+emulator before READY.
+
+**Expected modules/files:** repository-root package/build/CI configuration;
+`extension/`; `adapter/`; `test-fixtures/fake-emulator/`;
+`test-fixtures/firmware/`; automated unit/contract/DAP/package tests; and the
+active sprint, review, verification, and traceability records.
+
+**Invariants:** DAP and child NDJSON use separate pipes; the child is launched
+without a shell; protocol stdout is never human logging; state is exposed only
+from proven stopped epochs; addresses never wrap; breakpoints replace globally;
+pause schedules no next chunk; timeouts never promote an unproven boundary;
+child cleanup and `terminated` are exactly once; no emulator private structs,
+P1000 semantics, physical I/O, fake-only product command, or bundled emulator.
+
+**Non-goals:** every item in Issue #3's Non-scope section, including source
+breakpoints/maps, richer stacks, `readMemory`, `evaluate`, writes, watchpoints,
+attach/TCP, emulator bundling/auto-download, and Marketplace publication.
+
+**Traceability:** `M-001`, `S-001`, `UC-001`, Slice-1 requirements `R-001`–
+`R-008`, `R-011`–`R-013`, `R-017`, `R-022`–`R-026`, `R-029`–`R-031`,
+`A-001`–`A-008`, `D-001`–`D-010`, `SPR-001`, `IT-001-002`,
+`SL-001-002-001`, `RVW-001-002-001`–`RVW-001-002-003`, and
+`VER-001-002-001`.
+
+**Required verification:** automated `AC-001`–`AC-011`; focused protocol,
+address, scheduler, handle-epoch, lifecycle, safety, Linux/Windows, installable
+VSIX, and real VS Code smoke evidence listed in Issue #3; exact package/lock,
+Node/VS Code, adapter HEAD, and emulator commit capture; and a fresh
+`EMU-BLK-001`–`EMU-BLK-010` evidence map against the real default/runtime.
+
+**Expected completion signal:** all three responsibility passes independently
+reviewed with no blocking finding; complete verification PASS against both the
+fake and accepted real runtime; all ACs pass; the implementation PR remains
+open and unmerged. Without the real gate, disposition is `NOT_READY`.
+
+### Worker and review sequence
+
+1. Worker A — package/extension/DAP foundation; independent
+   `RVW-001-002-001`.
+2. Worker B — strict emulator protocol client and contract-faithful fake;
+   independent `RVW-001-002-002`.
+3. Worker C — stop epochs, registers, disassembly, breakpoints, bounded
+   continue/pause, and exact step; independent `RVW-001-002-003`.
+4. Fresh verifier — `VER-001-002-001`, including real-emulator and VS Code
+   integration gates.
+
+Each worker must keep changes within this single active Slice-1 contract,
+produce a reviewable commit, run focused checks, and hand off exact evidence.
+Review findings are recorded before the next responsibility pass begins.
+
+### Activation evidence
+
+- Branch: `codex/dap-first-slice`, based on accepted PR #2 HEAD
+  `ede8226f23c21a13c44b0da99fe63be9ac1ea1c4` (whose independently reviewed
+  content baseline is `cfe1871b180f7f93dc9cb9f47656ef1816b173d4`).
+- Revalidated `emuSA80535-N/master`:
+  `c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`.
+- At activation, the real default contains the Stage-1 timer merge but no
+  headless `emu-debug` server PR/issue evidence; real integration remains
+  blocked and cannot be inferred from the core seams.

@@ -2,9 +2,10 @@
 
 ## Product implementation status
 
-**Planned; not started.** No extension, adapter, emulator client, package
-manifest, build configuration, test code, or fixture implementation was added
-under Issue #1.
+**Active under Issue #3.** Master activation and traceability are recorded;
+product implementation is delegated through Worker A/B/C and has no verified
+product result yet. Fake-backed work is authorized, but READY remains blocked
+until the real-emulator gate passes.
 
 ## Documentation readiness worker pass
 
