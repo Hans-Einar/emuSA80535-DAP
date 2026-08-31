@@ -3,10 +3,11 @@
 ## Status
 
 - Candidate implementation sprint: **planned; not started**
-- Reviewed foundation iteration: `IT-001-000` — rework required
-- Active corrective documentation iteration: `IT-001-001`
+- Reviewed foundation iteration: `IT-001-000` — historical rework required
+- Corrective documentation iteration: `IT-001-001` — closed
 - Accepted DAP-semantics correction: `SL-001-001-001` — verification blocked by dependency drift
-- Active factual-baseline correction: `SL-001-001-002`
+- Factual-baseline correction: `SL-001-001-002` — verified
+- Documentation gate: **READY-FOR-SLICE-1** (`VER-001-001-002`)
 - Steering authority: [GitHub Issue #1](https://github.com/Hans-Einar/emuSA80535-DAP/issues/1)
 
 Issue #1 defines and verifies the contract only. It must stop at

@@ -53,9 +53,23 @@ The refresh does not claim that those seams form the accepted debug service.
 The buildable no-curses process, NDJSON/version handshake, atomic debugger
 snapshot, `decodeCode` wire contract, replacement breakpoint table, bounded
 child scheduling/pause integration, and process lifecycle tests remain explicit
-gaps. IRQ frames/state stay near-term; candidate Slice 1 is unchanged. `CR-008`
-is `in_progress`, `SL-001-001-002` is `in_review`, and
-`RVW-001-001-002`/`VER-001-001-002` remain planned for independent passes.
+gaps. IRQ frames/state stay near-term; candidate Slice 1 is unchanged. The
+independent refresh review resolved `CR-008`, and `VER-001-001-002` later
+verified `SL-001-001-002` against the unchanged live baseline.
+
+## Documentation readiness verification
+
+`VER-001-001-002` independently verified exact reviewed content commit
+`e210c4bbfb8e8690f0d4b82f6cc4be2c3853950f` and open documentation-only PR #2.
+Required documents, live emulator evidence, the blocker matrix, corrected DAP
+semantics, generic schema, JSON/YAML/NDJSON examples, traceability chains,
+links, static Mermaid structure, README status, and the no-code diff all passed.
+The result is `READY-FOR-SLICE-1`; `IT-001-001` is closed and
+`SL-001-001-002` is verified.
+
+This is verified documentation work only. Product `SPR-001`, `IT-001-002`, and
+`SL-001-002-001` remain planned and unstarted, and no product evidence is
+claimed.
 
 ## Future implementation evidence
 

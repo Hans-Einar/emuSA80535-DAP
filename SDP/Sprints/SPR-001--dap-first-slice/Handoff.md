@@ -2,10 +2,10 @@
 
 ## Current objective
 
-Refresh the merged emulator baseline under `SL-001-001-002`, obtain a separate
-review, then rerun verification before the Master records
-`READY-FOR-SLICE-1`. Documentation-only PR #2 is open. Do not start product
-Slice 1.
+The Issue #1 documentation gate is `READY-FOR-SLICE-1` after independent
+`RVW-001-001-002` and `VER-001-001-002`. Documentation-only PR #2 remains open.
+Do not start product Slice 1 without Steering decisions and explicit Master
+activation.
 
 ## Authoritative source documents
 
@@ -36,33 +36,34 @@ Slice 1.
   `5dc6812`/`62f4012` observations as explicitly dated history.
 - Reclassified merged core seams separately from missing headless protocol
   work and added satisfied/partial/missing status to `EMU-BLK-001`–`010`.
+- Obtained independent baseline-refresh review and verification of exact
+  reviewed commit `e210c4bbfb8e8690f0d4b82f6cc4be2c3853950f`.
+- Recorded `READY-FOR-SLICE-1`, closed `IT-001-001`, and kept the product
+  sprint/iteration/slice planned and unstarted.
 
 ## Not done
 
-- Independent review of the merged-emulator refresh or final verification
-  report.
-- Final Master reconciliation or readiness decision.
 - Any production or test implementation.
 - Any emulator-repository change, Issue, or PR.
 - Product `SPR-001` start.
+- Steering approval of the decisions below and merge disposition for PR #2.
 
 ## Exact next step
 
-A separate reviewer validates `SL-001-001-002` and records
-`RVW-001-001-002` without treating this worker's claims as acceptance. If
-accepted, a fresh verifier reruns the complete evidence plan as
-`VER-001-001-002` against PR #2.
+Steering reviews PR #2 and the open decisions below. If a later implementation
+is authorized, the Master must first revalidate the emulator release/commit,
+resolve every remaining partial/missing blocker, and explicitly activate
+`IT-001-002` / `SL-001-002-001` under a fresh worker/reviewer/verifier cycle.
 
-## Worker checks completed
+## Verification completed
 
-Worker-level mechanical checks passed for diff whitespace, all seven JSON
-fences, both YAML files, all 26 ledger records, 74 unique trace IDs, 150 unique
-relations with valid endpoints, status vocabulary/one-active-iteration rules,
-and the documentation-only allowlist. Local immutable-object inspection and the
-already completed live GitHub check agree on current emulator `master` at
-`a20815e`, Stage-0 merge `0cf6792`, and the PR #1/PR #3 merge state. Exact
-commands/results were reported to the Master. These author checks do not
-substitute for `RVW-001-001-002` or `VER-001-001-002`.
+`VER-001-001-002` passed the full Issue #1 evidence plan: exact source/live
+baseline, all substantive deliverables, DAP semantics, diff whitespace and
+documentation-only allowlist, JSON/YAML/NDJSON parsing, unique trace IDs and
+relations, end-to-end relation chains, internal and bounded external links,
+static Mermaid structure, P1000 neutrality, README status, and PR #2 state.
+The report records the bounded npmjs automation response and lack of a local
+Mermaid renderer as non-blocking limitations.
 
 ## Traceability IDs in play
 
@@ -75,14 +76,13 @@ and `SL-001-002-001`.
 
 ## Traceability update state
 
-- CurrentIndex: one active iteration; baseline-refresh slice `in_review`;
-  `CR-008` `in_progress`; review/verification and candidate product
-  iteration/slice remain planned.
-- Relations: findings link to the corrective slice and every design decision
-  links to the planned product slice; re-review and verification remain linked.
-- Ledger: append-only baseline-refresh `slice_completed` event recorded after
-  `LE-000025`; review and verification events remain pending their independent
-  passes.
+- CurrentIndex: `IT-001-001` closed; `SL-001-001-002` and
+  `VER-001-001-002` verified/current; prior blocked verifications retained;
+  product sprint/iteration/slice planned.
+- Relations: findings, corrective slices, reviews, verification, readiness,
+  iteration closure, and planned product chain are linked.
+- Ledger: verification, readiness, and iteration-closure events appended after
+  the historical review events.
 
 ## Open Steering decisions
 
@@ -118,7 +118,6 @@ Marketplace publication remain later scoped decisions.
 
 ## Worktree/agent notes
 
-The branch is `codex/dap-sdp-foundation`. The documentation worker edited only
-documentation/metadata and created no review/verification report. No worker,
-reviewer, or verifier should be intentionally left idle after its bounded pass;
-the Master owns agent lifecycle and PR operations.
+The branch is `codex/dap-sdp-foundation`; PR #2 targets `main`. All Issue #1
+changes are documentation/traceability only. No product worker should be
+started from this handoff; the Master owns later activation and PR operations.

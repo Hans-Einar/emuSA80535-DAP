@@ -163,3 +163,5 @@ relations:
   - { from: SL-001-001-002, type: reviewed_by, to: RVW-001-001-002 }
   - { from: SL-001-001-002, type: verified_by, to: VER-001-001-002 }
   - { from: RVW-001-001-002, type: resolves, to: CR-008 }
+  - { from: VER-001-001-002, type: closes, to: IT-001-001 }
+  - { from: VER-001-001-002, type: establishes_readiness_for, to: SPR-001 }

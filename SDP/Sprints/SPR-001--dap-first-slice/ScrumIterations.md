@@ -2,7 +2,7 @@
 
 ## IT-001-000 — SDP foundation and Slice-1 readiness
 
-**State:** Active pre-implementation documentation iteration
+**State:** Historical rework; superseded by `IT-001-001`
 **Slice:** `SL-001-000-001`
 **Authority:** GitHub Issue #1
 
@@ -96,9 +96,10 @@ accepts the correction.
 
 ## IT-001-001 — Corrective SDP review closure
 
-**State:** Active corrective documentation iteration
+**State:** Closed after `VER-001-001-002`
 
-**Slice:** `SL-001-001-001` (`in_review`)
+**Slices:** `SL-001-001-001` (implemented; historical verification block) and
+`SL-001-001-002` (verified)
 
 **Authority:** Issue #1 plus `RVW-001-000-001` / `CR-001`–`CR-007`
 
@@ -273,3 +274,25 @@ architecture, requirements, protocol contract, and sprint remain consistent.
 `CR-008` is resolved, `RVW-001-001-002` is closed/current, and
 `SL-001-001-002` is implemented awaiting `VER-001-001-002`. Product
 `IT-001-002` / `SL-001-002-001` remains planned and unstarted.
+
+### Final verification `VER-001-001-002`
+
+**Verified content commit:** `e210c4bbfb8e8690f0d4b82f6cc4be2c3853950f`
+
+**Disposition:** **PASS — READY-FOR-SLICE-1**
+
+The fresh verifier reconfirmed live emulator `master` at `a20815e`, merged PR
+#1/#3 state, exact source claims, and the `EMU-BLK` classification. The full
+Issue #1 deliverable set, corrected DAP semantics, generic symbol schema,
+documentation-only allowlist, JSON/YAML/NDJSON parsing, traceability chains,
+internal links, bounded external links, static Mermaid structure, README
+status, and open PR #2 state passed. The npmjs HTML page rejected automated
+HEAD access, but the npm registry queries succeeded; Mermaid was statically
+checked without installing a renderer. Both are documented non-blocking
+limitations in `SDP/Verification/DAP-SDP-VER-001.md`.
+
+`IT-001-001` is closed and `SL-001-001-002` is verified. The historical
+`VER-001-000-001` and `VER-001-001-001` blocked records are retained. Product
+`SPR-001`, `IT-001-002`, and `SL-001-002-001` remain planned and unstarted.
+Readiness authorizes no implementation; Steering decisions in `Handoff.md` and
+explicit Master activation remain mandatory.

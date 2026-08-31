@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-08-31T20:55:32Z"
+updatedAt: "2026-08-31T21:07:29Z"
 items:
   - id: M-001
     kind: mandate
@@ -406,7 +406,7 @@ items:
   - id: IT-001-001
     kind: iteration
     title: Corrective SDP review closure
-    status: active
+    status: closed
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
@@ -441,7 +441,7 @@ items:
   - id: SL-001-001-002
     kind: slice
     title: Refresh merged emulator baseline
-    status: implemented
+    status: verified
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
@@ -455,8 +455,8 @@ items:
   - id: VER-001-001-002
     kind: verification
     title: Final verification after emulator baseline refresh
-    status: planned
-    state: target
+    status: verified
+    state: current
     doc: SDP/Verification/DAP-SDP-VER-001.md
 
   - id: IT-001-002
