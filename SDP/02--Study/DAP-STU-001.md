@@ -1,10 +1,13 @@
 # DAP-STU-001 — DAP, VS Code, and emulator integration study
 
 **Traceability:** `S-001` supports `M-001` and `UC-001`
-**Evidence cut:** 2026-08-31
-**State labels:** **current-default** means merged `emuSA80535-N/master`;
-**candidate/unmerged** means open emulator PR #1; **target** means this
-repository's proposed design.
+**Original evidence cut:** 2026-08-31, when `master` was `5dc6812` and emulator
+PR #1 head `62f4012` was still unmerged.
+**Live baseline refresh:** 2026-08-31, `emuSA80535-N/master` at `a20815e` after
+the Stage-0 and Stage-1 merges.
+**State labels:** **historical evidence** preserves facts as observed at the
+original cut; **current-default** means merged `emuSA80535-N/master` at the live
+refresh; **target** means this repository's proposed design.
 
 ## Executive recommendation
 
@@ -44,14 +47,19 @@ debugging with one logical thread and one current-PC frame.
 ### Emulator repositories and revisions
 
 - **current-default:** `Hans-Einar/emuSA80535-N`, `master`,
-  [`5dc681275151c4a5d7b85ec9ff4ceb1b25abd5a8`](https://github.com/Hans-Einar/emuSA80535-N/tree/5dc681275151c4a5d7b85ec9ff4ceb1b25abd5a8).
-- **candidate/unmerged:** open
-  [emulator PR #1](https://github.com/Hans-Einar/emuSA80535-N/pull/1), branch
-  `codex/sab80535-foundation`,
-  [`62f40127e1aa3b24e9d8d54c2458e847bfe86488`](https://github.com/Hans-Einar/emuSA80535-N/tree/62f40127e1aa3b24e9d8d54c2458e847bfe86488).
+  [`a20815e24778760a308130cf1f9aa6d0f55b6af3`](https://github.com/Hans-Einar/emuSA80535-N/tree/a20815e24778760a308130cf1f9aa6d0f55b6af3).
+- **merged Stage 0:** [emulator PR #1](https://github.com/Hans-Einar/emuSA80535-N/pull/1),
+  head [`62f40127e1aa3b24e9d8d54c2458e847bfe86488`](https://github.com/Hans-Einar/emuSA80535-N/tree/62f40127e1aa3b24e9d8d54c2458e847bfe86488),
+  merged as [`0cf6792b794070bcbbb1bfdddc30eb9cdc4c3723`](https://github.com/Hans-Einar/emuSA80535-N/commit/0cf6792b794070bcbbb1bfdddc30eb9cdc4c3723).
+- **merged Stage 1:** [emulator PR #3](https://github.com/Hans-Einar/emuSA80535-N/pull/3),
+  merged as current-default
+  [`a20815e24778760a308130cf1f9aa6d0f55b6af3`](https://github.com/Hans-Einar/emuSA80535-N/commit/a20815e24778760a308130cf1f9aa6d0f55b6af3).
 
-The default branch remains `master` at `5dc6812`; therefore no API introduced
-only in `62f4012` is treated as currently available.
+At the original 2026-08-31 study cut, `master` was
+[`5dc681275151c4a5d7b85ec9ff4ceb1b25abd5a8`](https://github.com/Hans-Einar/emuSA80535-N/tree/5dc681275151c4a5d7b85ec9ff4ceb1b25abd5a8)
+and PR #1 head `62f4012` was correctly classified as candidate/unmerged. That
+classification is retained as dated historical evidence, not as the current
+dependency state.
 
 ## DAP capability decision
 
@@ -168,40 +176,50 @@ does not invent a future version number.
 
 ## Actual emulator capability inspection
 
-| Need | current-default `5dc6812` | candidate/unmerged `62f4012` | Classification/action |
-|---|---|---|---|
-| Reset/load | `reset`, Intel HEX `load_obj`; TUI-owned allocation | deterministic variant/reset seed and exact 64-KiB raw loader added | Partial; raw deterministic launch is unmerged |
-| Run/continue | TUI `runmode` loops over `tick` | bounded `em8051_run` added | Missing stable headless service on default |
-| Pause | keyboard changes TUI `runmode` | bounded run returns at a limit, but no asynchronous protocol pause | Missing; child must schedule bounded chunks |
-| Single instruction | core `tick` is a machine-cycle API; TUI loops depending on option | `em8051_step_instruction` added | Missing on default; candidate unmerged |
-| PC | public struct field `mPC` | still a struct field and run-result field | Value exists; stable snapshot API/protocol missing |
-| Registers | SFR/IRAM are public struct storage | SFR gateway added, storage remains exposed | Data exists; stable read-only snapshot missing |
-| CODE/IRAM/SFR/XDATA read | arrays/pointers exposed in `struct em8051` | SFR gateway and trace improvements only | Stable side-effect-free memory-read API missing |
-| Breakpoints | one TUI global `breakpoint` | one core breakpoint added | Default is UI-only; candidate still single/unmerged |
-| Instruction hooks | none as a public observer | immutable instruction/SFR/MOVX trace callback | Missing on default; candidate partial and unmerged |
-| Call/return hooks | none | no dedicated events | Missing |
-| IRQ entry/RETI hooks | internal `mInterruptActive`; RETI implementation | no dedicated events | Missing |
-| Determinism | reset can use process `rand`; TUI timing/input | seeded reset, bounded execution/counts added | Missing on default; candidate strong but unmerged |
-| Disassembly | public `decode` over current CODE | same | Low-level decode exists, but no headless protocol |
-| Symbol/source map | none | none | Adapter responsibility/input format |
-| Watchpoints | SFR and XDATA callbacks are functional device seams, not debugger watchpoints | immutable SFR/MOVX trace is partial instrumentation | Missing stable watchpoint contract |
-| Writes | direct storage/private-style access is possible | SFR write gateway added | Deferred; unsafe as debugger contract |
-| Version query/headless protocol | none | none | Missing Slice-1 blocker |
+| Need | Current-default `a20815e` evidence | Classification/action |
+|---|---|---|
+| Reset/load | Stable variant selection and seeded reset are public core calls; the raw loader accepts exactly 65,536 bytes and rejects other sizes. | **Available core seam.** The headless `load`/`reset` commands, image hash, entry-stop snapshot, and replay contract remain missing. |
+| Run/continue | `em8051_run` and `em8051_run_until_pc` are bounded by instruction count and return typed results at completed boundaries. | **Available core seam; partial Slice-1 prerequisite.** The child scheduler and wire command remain missing. |
+| Pause | A bounded run returns at an instruction boundary; there is no asynchronous core or wire pause. | **Partial.** The selected design intentionally services pause between bounded child commands; that server/scheduler integration is missing. |
+| Single instruction | `em8051_step_instruction` delegates to a one-instruction bounded run with typed result. | **Available core seam; partial Slice-1 prerequisite.** The `stepInstruction` wire command and lifecycle rules remain missing. |
+| PC | `mPC` and `em8051_run_result.pc` exist. | **Partial.** A stable atomic debugger snapshot/accessor independent of `struct em8051` remains missing. |
+| Registers | SFR/IRAM storage and validated SFR gateways exist. | **Partial.** One atomic PC/basic-register snapshot, including bank-selected R0–R7, remains missing. |
+| CODE/IRAM/SFR/XDATA read | Storage and SFR access gateways exist as C core seams. | **Partial for later work.** Stable side-effect-free debugger read accessors/commands by memory space remain missing. |
+| Breakpoints | `em8051_set_breakpoint` supplies one core CODE breakpoint; bounded run checks it before executing the instruction and reports `EM8051_STOP_BREAKPOINT`. | **Partial.** The atomic `replaceCodeBreakpoints` server command/table and clear/reject reporting remain missing. |
+| Instruction hooks | An immutable record-only observer emits instruction, SFR-write, and supported/unsupported MOVX read/write records. | **Available core seam; partial later instrumentation.** It is not a negotiated server event stream or watchpoint facility. |
+| Call/return hooks | No dedicated call/return observer exists. | **Missing later seam.** Opcode-trace derivation is not accepted as a stable logical-frame contract. |
+| IRQ entry/RETI hooks and state | Stage 1 exposes stable Siemens source/vector identities, in-service state, and a record-only request/accept/release observer; acceptance/release correspond to IRQ entry/RETI lifecycle. | **Available core seam; partial near-term prerequisite.** Atomic interrupt snapshot and versioned cross-process events with sequence/backpressure remain missing. IRQ frames/state stay outside Slice 1. |
+| Determinism | Seeded reset, architectural instruction stepping, bounded execution, and instruction/machine-cycle counters are merged and tested. | **Available core seam.** End-to-end deterministic headless launch/replay remains unproven until the server and process tests exist. |
+| Disassembly | Public `decode()` returns emulator decoder text and instruction length for a CODE address. | **Partial.** The cross-process `decodeCode` exact-count, range, and backward-predecessor contract remains missing. |
+| Symbol/source map | No emulator symbol/source-map API exists. | **Adapter responsibility/input format**, as designed. |
+| Watchpoints | Immutable SFR/MOVX records provide access evidence but no configurable stop policy. | **Partial later instrumentation.** Stable negotiated data-breakpoint/watchpoint behavior remains missing. |
+| Writes | Direct storage and an SFR write gateway exist. | **Deferred.** They are not a safe, explicitly enabled debugger mutation contract. |
+| Version query/headless protocol | The only built executable remains curses-linked; no headless server, NDJSON protocol, `hello`, or lifecycle process suite exists. | **Missing Slice-1 prerequisites.** |
 
-Source evidence: default
-[`emu8051.h`](https://github.com/Hans-Einar/emuSA80535-N/blob/5dc681275151c4a5d7b85ec9ff4ceb1b25abd5a8/emu8051.h),
-[`core.c`](https://github.com/Hans-Einar/emuSA80535-N/blob/5dc681275151c4a5d7b85ec9ff4ceb1b25abd5a8/core.c),
-and [`emu.c`](https://github.com/Hans-Einar/emuSA80535-N/blob/5dc681275151c4a5d7b85ec9ff4ceb1b25abd5a8/emu.c);
-candidate
-[`emu8051.h`](https://github.com/Hans-Einar/emuSA80535-N/blob/62f40127e1aa3b24e9d8d54c2458e847bfe86488/emu8051.h),
-[`core.c`](https://github.com/Hans-Einar/emuSA80535-N/blob/62f40127e1aa3b24e9d8d54c2458e847bfe86488/core.c),
-and
-[`binary_loader.c`](https://github.com/Hans-Einar/emuSA80535-N/blob/62f40127e1aa3b24e9d8d54c2458e847bfe86488/binary_loader.c).
+Permanent source evidence at current default `a20815e`:
 
-The current structs are implementation storage, not an endorsed cross-repo API.
-All minimum debug-service capabilities in
-`protocol/EMU_DEBUG_API_REQUIREMENTS.md` remain emulator-repository blockers
-until merged and verified on its default branch.
+- variant, reset, stop/result, run/step/breakpoint, trace, IRQ, decoder, and raw
+  loader declarations in
+  [`emu8051.h`](https://github.com/Hans-Einar/emuSA80535-N/blob/a20815e24778760a308130cf1f9aa6d0f55b6af3/emu8051.h#L101-L223)
+  and
+  [`emu8051.h`](https://github.com/Hans-Einar/emuSA80535-N/blob/a20815e24778760a308130cf1f9aa6d0f55b6af3/emu8051.h#L291-L346);
+- pre-execution breakpoint checks, completed-boundary bounded run, exact step,
+  run-until-PC, and `decode()` in
+  [`core.c`](https://github.com/Hans-Einar/emuSA80535-N/blob/a20815e24778760a308130cf1f9aa6d0f55b6af3/core.c#L1036-L1145);
+- exact raw-image validation in
+  [`binary_loader.c`](https://github.com/Hans-Einar/emuSA80535-N/blob/a20815e24778760a308130cf1f9aa6d0f55b6af3/binary_loader.c#L31-L69);
+- Siemens request/accept/release emission in
+  [`core.c`](https://github.com/Hans-Einar/emuSA80535-N/blob/a20815e24778760a308130cf1f9aa6d0f55b6af3/core.c#L699-L816),
+  with record-only observer neutrality tested in
+  [`test_stage1_irq.c`](https://github.com/Hans-Einar/emuSA80535-N/blob/a20815e24778760a308130cf1f9aa6d0f55b6af3/tests/test_stage1_irq.c#L700-L743);
+- deterministic raw-load and run/step/breakpoint behavior in
+  [`test_stage0.c`](https://github.com/Hans-Einar/emuSA80535-N/blob/a20815e24778760a308130cf1f9aa6d0f55b6af3/tests/test_stage0.c#L284-L370).
+
+The current public C functions are lower-level core seams, not the accepted
+cross-process debug service. Private `struct em8051` storage remains outside the
+adapter boundary. The blocker matrix in `protocol/EMU_DEBUG_API_REQUIREMENTS.md`
+therefore distinguishes satisfied core prerequisites from partial or missing
+server/process prerequisites.
 
 ## Emulator transport comparison
 

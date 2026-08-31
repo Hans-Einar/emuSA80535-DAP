@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-08-31T20:14:49Z"
+updatedAt: "2026-08-31T20:49:16Z"
 items:
   - id: M-001
     kind: mandate
@@ -14,9 +14,9 @@ items:
     kind: study
     title: DAP, VS Code, packaging, and current-emulator study
     status: active
-    state: target
+    state: current
     doc: SDP/02--Study/DAP-STU-001.md
-    summary: Evidence and decisions at the 2026-08-31 inspection cut.
+    summary: Live a20815e current-emulator evidence plus explicitly dated 5dc6812/62f4012 historical observations and target architecture decisions.
 
   - id: UC-001
     kind: use_case
@@ -427,6 +427,34 @@ items:
   - id: VER-001-001-001
     kind: verification
     title: Final verification of SDP foundation and traceability
+    status: blocked
+    state: target
+    doc: SDP/Verification/DAP-SDP-VER-001.md
+
+  - id: CR-008
+    kind: review_finding
+    title: Refresh emulator baseline after dependency merges
+    status: in_progress
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: SL-001-001-002
+    kind: slice
+    title: Refresh merged emulator baseline
+    status: in_review
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: RVW-001-001-002
+    kind: review
+    title: Review merged-emulator baseline refresh
+    status: planned
+    state: target
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+
+  - id: VER-001-001-002
+    kind: verification
+    title: Final verification after emulator baseline refresh
     status: planned
     state: target
     doc: SDP/Verification/DAP-SDP-VER-001.md

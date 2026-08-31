@@ -56,10 +56,16 @@ hardware.
 
 `R-001`, `R-002`, `R-004`–`R-008`, `R-013`, `R-017`, `R-022`, `R-025`,
 `R-026`, `R-029`, and `R-031` depend on the minimum emulator contract in
-`protocol/EMU_DEBUG_API_REQUIREMENTS.md`. None of those server-side capabilities
-exists as a merged, versioned headless protocol on the current emulator default
-branch. Slice 1 must not start until Steering assigns and accepts that
-cross-repository prerequisite or explicitly re-baselines this requirement set.
+`protocol/EMU_DEBUG_API_REQUIREMENTS.md`. At current emulator default
+[`a20815e`](https://github.com/Hans-Einar/emuSA80535-N/commit/a20815e24778760a308130cf1f9aa6d0f55b6af3),
+deterministic variant/reset/raw load, bounded execution, exact step, typed stops,
+one pre-execution core breakpoint, `decode()`, generic trace, and Siemens IRQ
+observation are merged lower-level seams. They do not yet constitute the
+versioned headless protocol. The protocol matrix classifies `EMU-BLK-004` as
+satisfied, `EMU-BLK-006`–`009` as partial, and `EMU-BLK-001`–`003`, `005`, and
+`010` as missing. Slice 1 must not start until every remaining protocol/process
+gap is accepted and verified, or Steering explicitly re-baselines this
+requirement set.
 
 ## Acceptance interpretation
 
@@ -75,4 +81,5 @@ disassembly-address round trip into `setInstructionBreakpoints`, including a
 non-zero accepted offset and an overflow rejection. The negative-disassembly
 contract must be tested with both a known predecessor chain and an unknown
 predecessor that produces invalid placeholders. Findings `CR-001`–`CR-007`
-remain `in_progress` until the independent re-review accepts these corrections.
+were accepted as resolved by the 2026-08-31 independent corrective re-review;
+that dated review result is not changed by the later emulator-baseline refresh.

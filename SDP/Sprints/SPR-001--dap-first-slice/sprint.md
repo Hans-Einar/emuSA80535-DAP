@@ -5,7 +5,8 @@
 - Candidate implementation sprint: **planned; not started**
 - Reviewed foundation iteration: `IT-001-000` — rework required
 - Active corrective documentation iteration: `IT-001-001`
-- Active corrective documentation slice: `SL-001-001-001`
+- Accepted DAP-semantics correction: `SL-001-001-001` — verification blocked by dependency drift
+- Active factual-baseline correction: `SL-001-001-002`
 - Steering authority: [GitHub Issue #1](https://github.com/Hans-Einar/emuSA80535-DAP/issues/1)
 
 Issue #1 defines and verifies the contract only. It must stop at
@@ -30,8 +31,10 @@ transport, packaging, or emulator API assumptions.
 
 ### Invariants
 
-- Emulator default `master` at `5dc6812` remains distinct from open PR #1 at
-  `62f4012`; unmerged APIs are not current.
+- At the original 2026-08-31 evidence cut, emulator default `master` at
+  `5dc6812` was correctly distinguished from then-open PR #1 at `62f4012`.
+- The refreshed current baseline is `master` at `a20815e`; merged core seams
+  are classified separately from the still-missing headless process contract.
 - Public DAP, VS Code, package, and VSIX claims cite authoritative sources.
 - Cross-repository needs use a stable headless contract, not private C structs.
 - DAP stdio and emulator NDJSON use different pipes and framing.
@@ -50,8 +53,8 @@ transport, packaging, or emulator API assumptions.
 `M-001`, `S-001`, `UC-001`, `R-001`–`R-031`, `A-001`–`A-008`,
 `D-001`–`D-010`, `SPR-001`, `IT-001-000`, `SL-001-000-001`,
 `RVW-001-000-001`, `IT-001-001`, `SL-001-001-001`,
-`RVW-001-001-001`, `VER-001-001-001`, `IT-001-002`, and
-`SL-001-002-001`.
+`RVW-001-001-001`, `VER-001-001-001`, `CR-008`, `SL-001-001-002`,
+`RVW-001-001-002`, `VER-001-001-002`, `IT-001-002`, and `SL-001-002-001`.
 
 ### Completion signal
 
@@ -148,8 +151,10 @@ the accepted emulator default/release must supply the headless NDJSON server,
 protocol 1.0 hello, exact raw loader, deterministic reset, atomic snapshot,
 required exact-count `decodeCode` behavior, replacement breakpoints, bounded
 run, exact step, and clean lifecycle. Raw CODE read is near-term, not a Slice-1
-blocker. Candidate PR #1 is not sufficient merely because it contains some
-unmerged low-level primitives.
+blocker. Current default `a20815e` satisfies the core beneath `EMU-BLK-004` and
+partially supplies the core beneath `EMU-BLK-006`–`009`; the missing wire,
+snapshot, scheduling, replacement-table, and process-lifecycle parts remain hard
+preconditions. Newly merged IRQ support does not expand this candidate slice.
 
 ## Test fixtures
 

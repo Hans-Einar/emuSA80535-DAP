@@ -123,7 +123,8 @@ traceable as planned without implementing it.
 
 - Preserve the selected external TypeScript adapter and launch-owned child
   boundary unless review evidence proves it invalid.
-- Preserve current-default versus candidate/unmerged emulator labels.
+- Preserve the original evidence-cut current/candidate labels as dated history;
+  do not silently rewrite what the first review observed.
 - Use exact DAP wire semantics and separate them from emulator-internal terms.
 - Keep Slice 1 address-level, hardware-free, and firmware-generic.
 - Do not create product/test code, package manifests, build configuration,
@@ -196,3 +197,62 @@ diff also passed re-review.
 `SL-001-001-001` is implemented awaiting `VER-001-001-001`. The corrective
 iteration remains active only for verification and Master integration. Product
 `IT-001-002` / `SL-001-002-001` remains planned and must not start.
+
+## SL-001-001-002 — Refresh merged emulator baseline
+
+**State:** In review after factual correction
+
+**Authority:** `VER-001-001-001` live-state check and `CR-008`
+
+### Why this correction exists
+
+During final verification, `emuSA80535-N` PR #1 and the stacked Stage-1 PR #3
+were merged. Default `master` moved to `a20815e24778760a308130cf1f9aa6d0f55b6af3`.
+The architecture package was accurate at its earlier evidence cut, but its
+current-state labels became stale before READY-FOR-SLICE-1.
+
+### Goal and files
+
+Refresh the factual current-emulator baseline and blocker classifications in
+the mandate, study, requirements, architecture, protocol contract, sprint
+notes/handoff, and traceability. Preserve the first study/review observations
+as explicitly dated history. No runtime, transport, DAP scope, source layout,
+or candidate product acceptance decision changes merely because the emulator
+dependency advanced.
+
+### Required evidence and invariants
+
+- Record current default `master` at `a20815e…`, Stage-0 merge `0cf6792…`, and
+  Stage-1 merge/PR #3 at `a20815e…` with permanent links.
+- Re-inspect the merged headers/source. Classify deterministic reset/raw load,
+  bounded run/exact step, one core breakpoint, generic trace, and IRQ
+  observer/state as current core seams.
+- Keep missing headless NDJSON/version handshake, debugger snapshot,
+  `decodeCode` wire command, and replacement breakpoint table explicit.
+- Mark satisfied/partial prerequisites honestly rather than calling merged APIs
+  absent. Do not remove a protocol requirement only because its lower-level
+  core primitive now exists.
+- Keep IRQ-aware frames and interrupt scopes outside candidate Slice 1.
+- Keep P1000 and physical host I/O outside the contract.
+- Make documentation/traceability changes only; do not alter either repository's
+  product code, create emulator work, or start product Slice 1.
+
+### Traceability and completion
+
+`SL-001-001-002` addresses `CR-008`, is reviewed by `RVW-001-001-002`, and is
+verified by `VER-001-001-002`. Completion requires a fresh review of the live
+baseline and a full verification rerun against the open DAP PR #2.
+
+### Worker handoff
+
+The worker refreshed mandate, study, requirements, architecture, protocol
+contract, sprint/notes/handoff, and traceability against live default
+`a20815e`. The original `5dc6812`/then-unmerged `62f4012` study and first-review
+observations remain explicitly dated history. Current core seams are separated
+from the missing versioned process contract, and the protocol blocker IDs now
+carry satisfied/partial/missing status without changing the frozen target
+behavior. Product `IT-001-002` / `SL-001-002-001` remains planned and unstarted.
+
+`CR-008` remains `in_progress` for independent review. The slice moves to
+`in_review`; `RVW-001-001-002` and `VER-001-001-002` remain planned and must be
+performed by fresh agents.

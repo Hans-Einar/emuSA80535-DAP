@@ -12,7 +12,9 @@ under Issue #1.
 architecture, design, cross-repository protocol contract, and candidate sprint
 contract. It distinguished emulator default `5dc6812` from unmerged
 `62f4012`, selected the Node/TypeScript external adapter and headless child
-transport, and made every minimum emulator prerequisite explicit.
+transport, and made every minimum emulator prerequisite explicit. That
+`5dc6812`/`62f4012` distinction records the original 2026-08-31 evidence cut;
+it is historical after the later merges.
 
 This records documentation work only. Independent review
 `RVW-001-000-001`, verification `VER-001-000-001`, Master integration, and the
@@ -32,9 +34,28 @@ documents.
 Worker mechanical checks cover JSON fences, YAML, every NDJSON ledger record,
 relation endpoints/duplicates, status vocabulary, documentation-only paths, and
 `git diff --check`. These are authoring checks, not independent acceptance.
-`CR-001`–`CR-007` remain `in_progress` pending `RVW-001-001-001`, and
-`SL-001-001-001` is `in_review`. Product `IT-001-002` /
-`SL-001-002-001` remains planned and unstarted.
+At that worker handoff, `CR-001`–`CR-007` remained `in_progress` pending
+`RVW-001-001-001`, and `SL-001-001-001` was `in_review`. The independent
+2026-08-31 re-review later resolved all seven; this paragraph preserves the
+worker-stage history. Product `IT-001-002` / `SL-001-002-001` remains planned
+and unstarted.
+
+## Merged-emulator baseline refresh
+
+`SL-001-001-002` refreshed current factual claims after emulator PR #1 merged
+as `0cf6792` and Stage-1 PR #3 moved default `master` to `a20815e`. The current
+core seams now include deterministic variant/reset/raw loading, bounded
+run/run-until-PC, exact step, typed stops, one pre-execution breakpoint,
+`decode()`, immutable instruction/SFR/MOVX trace, and Siemens IRQ state plus a
+record-only request/accept/release observer.
+
+The refresh does not claim that those seams form the accepted debug service.
+The buildable no-curses process, NDJSON/version handshake, atomic debugger
+snapshot, `decodeCode` wire contract, replacement breakpoint table, bounded
+child scheduling/pause integration, and process lifecycle tests remain explicit
+gaps. IRQ frames/state stay near-term; candidate Slice 1 is unchanged. `CR-008`
+is `in_progress`, `SL-001-001-002` is `in_review`, and
+`RVW-001-001-002`/`VER-001-001-002` remain planned for independent passes.
 
 ## Future implementation evidence
 

@@ -154,3 +154,11 @@ relations:
   - { from: D-008, type: planned_for, to: SL-001-002-001 }
   - { from: D-009, type: planned_for, to: SL-001-002-001 }
   - { from: D-010, type: planned_for, to: SL-001-002-001 }
+
+  - { from: VER-001-001-001, type: raises, to: CR-008 }
+  - { from: CR-008, type: concerns, to: S-001 }
+  - { from: CR-008, type: concerns, to: A-001 }
+  - { from: IT-001-001, type: contains, to: SL-001-001-002 }
+  - { from: SL-001-001-002, type: addresses, to: CR-008 }
+  - { from: SL-001-001-002, type: reviewed_by, to: RVW-001-001-002 }
+  - { from: SL-001-001-002, type: verified_by, to: VER-001-001-002 }

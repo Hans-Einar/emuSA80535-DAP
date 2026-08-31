@@ -34,8 +34,8 @@ The `emuSA80535-N` repository owns:
 - architectural state, memory, breakpoint enforcement, and execution events.
 
 Cross-repository behavior must use a public, versioned contract. The adapter
-must not read emulator private structs or infer availability from an unmerged
-branch.
+must not read emulator private structs. Merged lower-level C seams are not, by
+themselves, proof that the cross-process debug contract exists.
 
 ## Safety boundary
 
@@ -65,13 +65,14 @@ emulator separately.
 
 ## Ready for Slice 1
 
-`READY-FOR-SLICE-1` means all Issue #1 documents are substantive; the current
-emulator and its unmerged candidate branch are accurately distinguished; the
-DAP/runtime/transport choices and minimum emulator protocol are frozen; every
-missing emulator prerequisite is explicit; requirements trace into architecture,
-design, and a narrow sprint contract; an independent review and verification
-pass have accepted the package; the documentation-only PR is open; and no
-production implementation has begun.
+`READY-FOR-SLICE-1` means all Issue #1 documents are substantive; the live
+emulator default and explicitly dated historical evidence are accurately
+distinguished; the DAP/runtime/transport choices and minimum emulator protocol
+are frozen; every satisfied, partial, or missing emulator prerequisite is
+explicit; requirements trace into architecture, design, and a narrow sprint
+contract; an independent review and verification pass have accepted the
+package; the documentation-only PR is open; and no production implementation
+has begun.
 
 Readiness authorizes a later Steering decision to begin Slice 1. It does not
 itself start `SPR-001`.

@@ -36,6 +36,21 @@ stderr/diagnostic output after redaction.
 | Logging/diagnostics | both, with adapter aggregation | Structured stderr records; correlation and redaction |
 | Test fakes | this repo, test-only | Scriptable fake emulator and DAP integration harness |
 
+### Current emulator dependency baseline
+
+Current `emuSA80535-N/master` at
+[`a20815e`](https://github.com/Hans-Einar/emuSA80535-N/commit/a20815e24778760a308130cf1f9aa6d0f55b6af3)
+provides lower-level C seams for deterministic variant/reset/raw loading,
+bounded run/run-until-PC, exact instruction step, typed stops, one
+pre-execution CODE breakpoint, `decode()`, immutable instruction/SFR/MOVX
+trace, and Siemens IRQ state plus request/accept/release observation. The
+architecture does not move those C APIs across the process boundary. The
+headless process, NDJSON/version handshake, atomic debugger snapshot,
+cross-process `decodeCode`, replacement breakpoint table, bounded child
+scheduler/pause integration, and process lifecycle tests remain prerequisites
+owned by the emulator control-server boundary. IRQ frames/state remain
+near-term and do not expand candidate Slice 1.
+
 ## Launch lifecycle (`A-002`)
 
 ```mermaid
@@ -257,5 +272,7 @@ secrets are not logged.
 - Debugger state is read only while stopped and from one snapshot.
 - The one MCU instruction stream remains one DAP thread.
 - No P1000 semantic enters adapter, protocol, schema, or fixtures.
-- No emulator default-branch capability is claimed from unmerged PR #1.
+- Current emulator claims cite permanent `a20815e` evidence; the original
+  `5dc6812`/unmerged-PR-#1 observations remain dated historical evidence only.
+- Merged C core seams are never substituted for the versioned process contract.
 - No host hardware endpoint is opened by this architecture.
