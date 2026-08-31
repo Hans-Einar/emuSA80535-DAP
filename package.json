@@ -1,0 +1,160 @@
+{
+  "name": "emuSA80535-dap",
+  "displayName": "emuSA80535 Debug Adapter",
+  "description": "Visual Studio Code debug adapter for the offline emuSA80535-N emulator.",
+  "version": "0.1.0",
+  "license": "MIT",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Hans-Einar/emuSA80535-DAP.git"
+  },
+  "engines": {
+    "node": ">=22.13.0",
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Debuggers"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "activationEvents": [
+    "onDebug:emuSA80535"
+  ],
+  "main": "./out/extension/src/extension.js",
+  "contributes": {
+    "configuration": {
+      "title": "emuSA80535 Debug Adapter",
+      "properties": {
+        "emuSA80535.emulatorPath": {
+          "type": "string",
+          "default": "",
+          "scope": "resource",
+          "description": "Path to a compatible emuSA80535-N headless executable. A launch configuration emulatorPath takes precedence; when both are empty, the adapter resolves the executable from PATH."
+        }
+      }
+    },
+    "debuggers": [
+      {
+        "type": "emuSA80535",
+        "label": "emuSA80535",
+        "languages": [],
+        "configurationAttributes": {
+          "launch": {
+            "type": "object",
+            "required": [
+              "program"
+            ],
+            "properties": {
+              "type": {
+                "enum": [
+                  "emuSA80535"
+                ],
+                "description": "Debug adapter type."
+              },
+              "request": {
+                "enum": [
+                  "launch"
+                ],
+                "description": "Only launch sessions are supported in Slice 1."
+              },
+              "name": {
+                "type": "string",
+                "description": "Display name for this debug configuration."
+              },
+              "program": {
+                "type": "string",
+                "description": "Absolute or workspace-relative path to an exactly 65,536-byte raw CODE image."
+              },
+              "entryAddress": {
+                "type": "string",
+                "default": "0x0000",
+                "pattern": "^0x[0-9A-Fa-f]{4}$",
+                "patternErrorMessage": "entryAddress must be a four-digit hexadecimal CODE address such as 0x0000."
+              },
+              "resetSeed": {
+                "type": "integer",
+                "default": 525109,
+                "minimum": 0,
+                "maximum": 4294967295,
+                "description": "Unsigned 32-bit deterministic reset seed."
+              },
+              "emulatorPath": {
+                "type": "string",
+                "description": "Optional path to a compatible emuSA80535-N headless executable. Takes precedence over the workspace setting and PATH."
+              },
+              "stopOnEntry": {
+                "type": "boolean",
+                "default": true,
+                "enum": [
+                  true
+                ],
+                "description": "Slice 1 always stops at the configured entry address."
+              },
+              "trace": {
+                "type": "string",
+                "default": "off",
+                "enum": [
+                  "off"
+                ],
+                "description": "Protocol tracing is disabled in Slice 1."
+              }
+            }
+          }
+        },
+        "initialConfigurations": [
+          {
+            "type": "emuSA80535",
+            "request": "launch",
+            "name": "Launch SAB80535 firmware",
+            "program": "${workspaceFolder}/firmware.bin",
+            "entryAddress": "0x0000",
+            "resetSeed": 525109,
+            "stopOnEntry": true,
+            "trace": "off"
+          }
+        ],
+        "configurationSnippets": [
+          {
+            "label": "emuSA80535: Launch raw firmware",
+            "description": "Launch an exactly 64-KiB raw CODE image in a compatible offline emulator.",
+            "body": {
+              "type": "emuSA80535",
+              "request": "launch",
+              "name": "Launch SAB80535 firmware",
+              "program": "${workspaceFolder}/firmware.bin",
+              "entryAddress": "0x0000",
+              "resetSeed": 525109,
+              "stopOnEntry": true,
+              "trace": "off"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "tsc -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "npm run build && node --test out/test/*.test.js",
+    "package": "npm run package:vsix",
+    "package:vsix": "npm run build && node scripts/prepare-package.mjs && vsce package --out dist/emuSA80535-dap-0.1.0.vsix",
+    "package:contents": "vsce ls"
+  },
+  "dependencies": {
+    "@vscode/debugadapter": "1.68.0",
+    "@vscode/debugprotocol": "1.68.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "@types/node": "22.20.1",
+    "@types/vscode": "1.95.0",
+    "@typescript-eslint/eslint-plugin": "8.69.0",
+    "@typescript-eslint/parser": "8.69.0",
+    "@vscode/vsce": "3.9.2",
+    "eslint": "10.9.1",
+    "typescript": "6.0.3"
+  }
+}
