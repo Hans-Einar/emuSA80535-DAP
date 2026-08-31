@@ -96,3 +96,30 @@ relations:
   - { from: SL-001-000-001, type: prepares, to: SPR-001 }
   - { from: SL-001-000-001, type: reviewed_by, to: RVW-001-000-001 }
   - { from: SL-001-000-001, type: verified_by, to: VER-001-000-001 }
+
+  - { from: RVW-001-000-001, type: raises, to: CR-001 }
+  - { from: RVW-001-000-001, type: raises, to: CR-002 }
+  - { from: RVW-001-000-001, type: raises, to: CR-003 }
+  - { from: RVW-001-000-001, type: raises, to: CR-004 }
+  - { from: RVW-001-000-001, type: raises, to: CR-005 }
+  - { from: RVW-001-000-001, type: raises, to: CR-006 }
+  - { from: RVW-001-000-001, type: raises, to: CR-007 }
+
+  - { from: CR-001, type: blocks, to: SL-001-000-001 }
+  - { from: CR-002, type: blocks, to: SL-001-000-001 }
+  - { from: CR-003, type: blocks, to: SL-001-000-001 }
+  - { from: CR-004, type: blocks, to: SL-001-000-001 }
+  - { from: CR-005, type: blocks, to: SL-001-000-001 }
+  - { from: CR-006, type: blocks, to: SL-001-000-001 }
+  - { from: CR-007, type: blocks, to: SL-001-000-001 }
+
+  - { from: CR-001, type: concerns, to: R-005 }
+  - { from: CR-002, type: concerns, to: R-004 }
+  - { from: CR-002, type: concerns, to: R-017 }
+  - { from: CR-003, type: concerns, to: R-008 }
+  - { from: CR-004, type: concerns, to: R-017 }
+  - { from: CR-005, type: concerns, to: SPR-001 }
+  - { from: CR-006, type: concerns, to: R-003 }
+  - { from: CR-006, type: concerns, to: R-006 }
+  - { from: CR-006, type: concerns, to: R-007 }
+  - { from: CR-007, type: concerns, to: D-003 }

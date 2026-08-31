@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-08-31T19:16:39Z"
+updatedAt: "2026-08-31T19:34:52Z"
 items:
   - id: M-001
     kind: mandate
@@ -341,21 +341,64 @@ items:
   - id: SL-001-000-001
     kind: slice
     title: Architecture documentation through READY-FOR-SLICE-1
-    status: worker_complete_awaiting_review
+    status: review_changes_required
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
-    summary: Documentation worker pass complete; independent review and verification pending.
+    summary: Worker pass reviewed; blocking documentation corrections and re-review required.
 
   - id: RVW-001-000-001
     kind: review
     title: Independent review of SDP foundation
-    status: planned
-    state: target
+    status: changes_required
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+
+  - id: CR-001
+    kind: review_finding
+    title: Correct DAP instruction-breakpoint stopped reason
+    status: open_blocking
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-002
+    kind: review_finding
+    title: Separate DAP memory references from disassembly addresses
+    status: open_blocking
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-003
+    kind: review_finding
+    title: Freeze advertised stepping-granularity semantics
+    status: open_blocking
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-004
+    kind: review_finding
+    title: Define defensible backward disassembly behavior
+    status: open_blocking
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-005
+    kind: review_finding
+    title: Remove or justify accidental Slice-1 CODE read
+    status: open_blocking
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-006
+    kind: review_finding
+    title: Define child state across bounded run yields
+    status: open_blocking
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-007
+    kind: review_finding
+    title: Make handshake example fence structurally valid
+    status: open_blocking
+    state: current
     doc: SDP/CodeReview/DAP-SDP-REV-001.md
 
   - id: VER-001-000-001
     kind: verification
     title: Verification of SDP foundation and traceability
-    status: planned
+    status: blocked_by_review
     state: target
     doc: SDP/Verification/DAP-SDP-VER-001.md

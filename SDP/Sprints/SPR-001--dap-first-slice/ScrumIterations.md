@@ -63,3 +63,33 @@ prerequisites. `SPR-001` remains planned/not started.
 
 Open Steering decisions are documented in `Handoff.md`. No product
 implementation task may be inferred or started from this iteration.
+
+### Independent review `RVW-001-000-001`
+
+**Reviewed commit:** `ab231769fb78bcb44a11ecdc5791d1f69b66ea3c`
+
+**Disposition:** **changes-required**
+
+**Next iteration:** corrective documentation; product Slice 1 remains not started
+
+The fresh review confirmed the default-emulator/candidate-PR distinction,
+process boundary, private-internal exclusion, firmware neutrality, logical
+stack restraint, broad deferrals, and the credible Linux/Windows VSIX path. It
+raised these blocking findings:
+
+- `CR-001`: instruction-breakpoint hits use the wrong DAP stopped reason;
+- `CR-002`: `code:HHHH` memory references are conflated with DAP numeric
+  disassembly addresses;
+- `CR-003`: `supportsSteppingGranularity` is advertised without complete
+  request semantics;
+- `CR-004`: authoritative backward decoding is not defensible for ambiguous
+  variable-length raw CODE without a rule;
+- `CR-005`: raw CODE `readMemory` is an unused accidental Slice-1 blocker;
+- `CR-006`: child state across bounded `run` yields and adapter-local pause is
+  undefined;
+- `CR-007`: the two-record handshake fence is NDJSON, not one valid JSON value.
+
+Full evidence and required corrections are in
+`SDP/CodeReview/DAP-SDP-REV-001.md`. `VER-001-000-001` must not start until a
+fresh corrective worker resolves these findings and a separate re-review
+accepts the correction.
