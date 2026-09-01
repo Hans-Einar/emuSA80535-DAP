@@ -138,13 +138,15 @@
     "vscode:prepublish": "npm run build",
     "build": "tsc -p tsconfig.json",
     "lint": "eslint .",
-    "test": "npm run build && node --test out/test/*.test.js",
+    "test": "npm run build && node --test out/test/*.test.js test/scripts/*.test.mjs",
     "test:contract": "npm run build && node --test out/test/emulatorClient.test.js",
     "fixture:generate": "node scripts/generate-synthetic-fixture.mjs",
     "fixture:check": "node scripts/check-synthetic-fixture.mjs",
     "package": "npm run package:vsix",
     "package:vsix": "npm run build && node scripts/prepare-package.mjs && vsce package --out dist/emuSA80535-dap-0.1.0.vsix",
-    "package:contents": "vsce ls"
+    "package:contents": "vsce ls",
+    "package:policy": "node scripts/check-vsix-policy.mjs",
+    "smoke:vsix": "node scripts/smoke-packaged-extension.mjs"
   },
   "dependencies": {
     "@vscode/debugadapter": "1.68.0",
@@ -156,8 +158,10 @@
     "@types/vscode": "1.95.0",
     "@typescript-eslint/eslint-plugin": "8.69.0",
     "@typescript-eslint/parser": "8.69.0",
+    "@vscode/test-electron": "3.1.0",
     "@vscode/vsce": "3.9.2",
     "eslint": "10.9.1",
-    "typescript": "6.0.3"
+    "typescript": "6.0.3",
+    "yauzl": "3.4.0"
   }
 }

@@ -62,6 +62,7 @@ interface Decoded {
 function parseOptions(argv: readonly string[]): FakeOptions {
   const options: FakeOptions = {
     scenario: process.env.EMU_FAKE_SCENARIO ?? "compatible",
+    requestsLog: process.env.EMU_FAKE_REQUESTS_LOG,
     delayMs: 0,
   };
   for (let index = 0; index < argv.length; index += 1) {
@@ -92,6 +93,14 @@ function parseOptions(argv: readonly string[]): FakeOptions {
     process.exit(64);
   }
   return options;
+}
+
+function writeProcessMarker(): void {
+  const markerPath = process.env.EMU_FAKE_PID_FILE;
+  if (markerPath === undefined || markerPath.length === 0) {
+    return;
+  }
+  fs.writeFileSync(path.resolve(markerPath), `${process.pid}\n`, "utf8");
 }
 
 function isObject(value: unknown): value is JsonObject {
@@ -823,6 +832,7 @@ class FakeEmulator {
 }
 
 const options = parseOptions(process.argv.slice(2));
+writeProcessMarker();
 const fake = new FakeEmulator(options);
 const decoder = new TextDecoder("utf-8", { fatal: true });
 const lineParts: Buffer[] = [];

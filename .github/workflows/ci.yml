@@ -10,6 +10,7 @@ permissions:
 jobs:
   linux:
     runs-on: ubuntu-latest
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -19,13 +20,30 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm test
+      - run: npm run test:contract
+      - run: npm run fixture:check
       - run: npm run package
       - run: npm run package:contents
-      - name: Inspect packaged archive
-        shell: bash
-        run: |
-          unzip -Z1 dist/emuSA80535-dap-0.1.0.vsix | tee dist/vsix-contents.txt
-          if grep -Eiq '(^|/)(emuSA80535-N|emu80535-headless)(\.exe)?$' dist/vsix-contents.txt; then
-            echo "Emulator executable must not be bundled in the VSIX" >&2
-            exit 1
-          fi
+      - run: npm run package:policy
+      - name: Install and smoke packaged VSIX at VS Code floor
+        run: xvfb-run -a npm run smoke:vsix
+
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.20.0
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm test
+      - run: npm run test:contract
+      - run: npm run fixture:check
+      - run: npm run package
+      - run: npm run package:contents
+      - run: npm run package:policy
+      - name: Install and smoke packaged VSIX at VS Code floor
+        run: npm run smoke:vsix

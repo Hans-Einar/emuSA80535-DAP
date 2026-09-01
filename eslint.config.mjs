@@ -4,9 +4,21 @@ import tsParser from "@typescript-eslint/parser";
 
 export default [
   {
-    ignores: ["dist/**", "node_modules/**", "out/**"],
+    ignores: [".vscode-test/**", "dist/**", "node_modules/**", "out/**"],
   },
   eslint.configs.recommended,
+  {
+    files: ["test/packaged-smoke/harness/*.cjs"],
+    languageOptions: {
+      globals: {
+        module: "readonly",
+        process: "readonly",
+        require: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+      },
+    },
+  },
   {
     files: ["**/*.ts"],
     languageOptions: {
