@@ -52,11 +52,12 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh worker addresses only `CR-020`: add true Linux/Windows CI lanes that
-build/test/package/inspect, install the VSIX at the declared floor, and exercise
-the packaged extension/adapter launch path against the contract fake as far as
-possible without calling it a real-emulator F5 pass. Fresh
-`RVW-001-002-008` and `VER-001-002-002` follow. The real gate remains blocked.
+A fresh reviewer performs `RVW-001-002-008` against exact corrective commit
+`2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5`, challenging both workflow lanes,
+floor download/install, installed-artifact launch smoke, test-only launcher
+isolation, timeouts/cleanup, archive policy, and truthful real-gate wording.
+After acceptance Master pushes and requires both real Actions jobs before
+`VER-001-002-002`.
 
 ## Verification completed
 

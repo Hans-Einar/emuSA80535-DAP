@@ -157,3 +157,7 @@ AC-010/011, real UI, and real emulator remain mandatory.
 `CHANGES_REQUIRED_AND_EXTERNALLY_BLOCKED`. AC-010 has a local CI gap (`CR-020`):
 no Windows lane and no install/launch-smoke on both lanes. The real runtime gate
 also remains blocked at emulator commit `c0cd6f26…`; no READY claim is made.
+
+CR-020 corrective commit `2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5`
+adds dual-platform package/install/fake-launch smoke. Local Windows floor-smoke
+passes; fresh review and actual Linux/Windows Actions evidence remain required.

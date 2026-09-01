@@ -669,3 +669,21 @@ run or mislabeled.
 `CR-020` captures the repo-correctable AC-010 lane/install/smoke gap. A fresh
 worker, `RVW-001-002-008`, and `VER-001-002-002` re-verification follow. The
 external real-emulator blockers remain independent and mandatory.
+
+### AC-010 corrective worker result
+
+**Corrective commit:** `2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5`
+
+The fresh worker added true Ubuntu/Windows workflow jobs, a cross-platform exact
+VSIX archive policy, pinned official VS Code test-electron download support,
+isolated VSIX install at declared floor 1.95.0, and a test-only harness extension
+that launches the installed packaged adapter against the exact contract fake to
+entry stop and clean disconnect. Windows uses a test-only native wrapper to
+preserve separate stdio pipes without shell or fake-only product protocol.
+
+Local clean Windows evidence passed 99/99 full tests, 45/45 contract, fixture,
+exact 47-entry package policy, installed ID/version/path, entry-stop, exactly one
+termination, and zero orphans. Worker-stage VSIX SHA-256 is
+`594B9A09CCF6FCA6BC43E40069BEEC5E24CC28EED555D15A7DDE6EB4FF0DB8AB`.
+Linux semantics require actual Actions execution after review/push. Real
+emulator F5/disassembly remains explicitly unclaimed.
