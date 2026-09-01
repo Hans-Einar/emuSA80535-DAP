@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-01T20:37:10Z"
+updatedAt: "2026-09-01T21:26:56Z"
 items:
   - id: M-001
     kind: mandate
@@ -8,7 +8,7 @@ items:
     status: active
     state: target
     doc: SDP/01--Mandate/DAP-MND-001.md
-    summary: Safe firmware-generic debugger boundary and READY-FOR-SLICE-1 definition.
+    summary: Safe firmware-generic debugger boundary with Slice 1 verified READY; later feature scope remains target.
 
   - id: S-001
     kind: study
@@ -16,63 +16,63 @@ items:
     status: active
     state: current
     doc: SDP/02--Study/DAP-STU-001.md
-    summary: Live a20815e current-emulator evidence plus explicitly dated 5dc6812/62f4012 historical observations and target architecture decisions.
+    summary: Current d9f80eba real-runtime evidence (runtime merge 1a6aa397) plus explicitly dated a20815e and 5dc6812/62f4012 historical observations.
 
   - id: UC-001
     kind: use_case
     title: Launch and instruction-debug a synthetic SAB80535 image
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
     summary: Deterministic launch, entry/register view, disassembly, breakpoint, continue, pause, and step.
 
   - id: R-001
     kind: requirement
     title: Emulator protocol compatibility handshake
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-002
     kind: requirement
     title: Deterministic launch lifecycle and raw CODE load
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-003
     kind: requirement
     title: Coherent session state
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-004
     kind: requirement
     title: PC and canonical CODE references
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-005
     kind: requirement
     title: Instruction breakpoints
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-006
     kind: requirement
     title: Bounded continue
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-007
     kind: requirement
     title: Adapter-local bounded pause
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-008
     kind: requirement
     title: Instruction stepIn
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-009
     kind: requirement
@@ -89,20 +89,20 @@ items:
   - id: R-011
     kind: requirement
     title: One logical MCU thread
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-012
     kind: requirement
     title: Truthful current-PC frame
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-013
     kind: requirement
     title: Atomic basic-register scope
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-014
     kind: requirement
@@ -125,8 +125,8 @@ items:
   - id: R-017
     kind: requirement
     title: Minimal authoritative disassembly
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-018
     kind: requirement
@@ -155,32 +155,32 @@ items:
   - id: R-022
     kind: requirement
     title: Structured DAP errors and diagnostics
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-023
     kind: requirement
     title: Semantically versioned VSIX
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-024
     kind: requirement
     title: Linux and Windows support
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-025
     kind: requirement
     title: Hardware-free automated tests
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-026
     kind: requirement
     title: Graceful protocol and process failure
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-027
     kind: requirement
@@ -197,20 +197,20 @@ items:
   - id: R-029
     kind: requirement
     title: No physical host I/O
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-030
     kind: requirement
     title: No P1000 hard-coding
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
   - id: R-031
     kind: requirement
     title: Launch-owned disconnect and termination lifecycle
-    status: target
-    state: target
+    status: verified
+    state: current
     doc: SDP/03--Requirements/DAP-REQ-001.md
 
   - id: A-001
@@ -326,10 +326,10 @@ items:
   - id: SPR-001
     kind: sprint
     title: DAP first implementation slice
-    status: active
-    state: target
+    status: verified
+    state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
-    summary: Active Issue #3 vertical slice with fake-backed work allowed and real-emulator acceptance still gated.
+    summary: Verified READY vertical slice with all AC-001 through AC-011 passing against current emulator d9f80eba on Windows and Linux.
 
   - id: IT-001-000
     kind: iteration
@@ -462,14 +462,14 @@ items:
   - id: IT-001-002
     kind: iteration
     title: DAP first product implementation iteration
-    status: active
-    state: target
+    status: closed
+    state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
   - id: SL-001-002-001
     kind: slice
     title: DAP launch, registers, disassembly, breakpoint and step
-    status: implemented
+    status: verified
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
@@ -651,8 +651,8 @@ items:
   - id: VER-001-002-003
     kind: verification
     title: Final real-runtime Slice 1 acceptance against merged emu-debug 1.0
-    status: in_progress
-    state: target
+    status: verified
+    state: current
     doc: SDP/Verification/DAP-SLICE1-VER-001.md
 
   - id: RVW-001-002-009

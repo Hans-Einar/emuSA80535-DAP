@@ -1,8 +1,9 @@
 # DAP-DES-001 — Documentation-level design
 
 **Traceability:** `D-001`–`D-010` refine `A-001`–`A-008`.
-**State:** Target interface design only; code blocks are contracts/examples,
-not implementation files.
+**State:** Slice-1 interface implemented and verified on DAP product HEAD
+`36639b48ddb2ffbafa14c00da794fe1734f7483b`; code blocks remain normative
+contracts/examples rather than implementation-file excerpts.
 
 ## Proposed source layout (`D-001`)
 

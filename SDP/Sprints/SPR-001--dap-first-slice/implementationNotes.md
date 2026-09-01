@@ -2,10 +2,10 @@
 
 ## Product implementation status
 
-**Active under Issue #3.** Master activation and traceability are recorded;
-product implementation is delegated through Worker A/B/C and has no verified
-product result yet. Fake-backed work is authorized, but READY remains blocked
-until the real-emulator gate passes.
+**READY under Issue #3.** Product implementation, corrective reviews,
+repository-local verification, and final real-runtime verification are complete.
+DAP product HEAD `36639b48…` passes AC-001–AC-011 against current emulator
+master `d9f80eba…` (runtime merge `1a6aa397…`); PR #4 remains unmerged.
 
 ## Documentation readiness worker pass
 
@@ -205,6 +205,21 @@ The external lane is now reopened against emulator merge
 the frozen runtime complete without a DAP source change. This is Steering input,
 not yet DAP acceptance; fresh `VER-001-002-003` owns the final reproduction.
 
+`VER-001-002-003` independently reproduced the complete Windows/Linux emulator,
+DAP, package, safety, and real installed-VSIX/F5 matrix. All AC-001–AC-011 pass;
+all EMU-BLK-001–010 are satisfied; no incompatibility exists. Slice 1 is READY
+on DAP product HEAD `36639b48…` and current emulator master `d9f80eba…`;
+runtime implementation merge `1a6aa397…` remains in its ancestry with identical
+product blobs.
+
 Fresh `RVW-001-002-010` accepted the correction after 120/120 processes and
 full smoke. Only exact-head four-job Actions success remains before CR-022
 closure and restoration of the external-only NOT_READY checkpoint.
+
+## Current verified disposition
+
+The preceding worker/review/checkpoint paragraphs preserve chronological state
+at each gate. Their pending/blocked wording is superseded by final
+`VER-001-002-003`: AC-001–AC-011 PASS, EMU-BLK-001–010 SATISFIED, no
+incompatibility, and Slice 1 READY. No DAP product or frozen-contract change was
+required after HEAD `36639b48…`.

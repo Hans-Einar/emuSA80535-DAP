@@ -2,7 +2,10 @@
 
 **Traceability:** `M-001`
 **Authority:** [GitHub Issue #1](https://github.com/Hans-Einar/emuSA80535-DAP/issues/1)
-**State:** Target architecture; no debugger implementation exists
+**State:** Slice 1 implemented, reviewed, and verified READY on DAP product HEAD
+`36639b48ddb2ffbafa14c00da794fe1734f7483b` with current emulator master
+`d9f80eba172dd9d7281aaa9e5cfef461b6b9709b` (runtime merge `1a6aa397…`);
+later-slice scope remains target
 
 ## Mission
 

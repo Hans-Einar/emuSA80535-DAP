@@ -56,16 +56,14 @@ hardware.
 
 `R-001`, `R-002`, `R-004`–`R-008`, `R-013`, `R-017`, `R-022`, `R-025`,
 `R-026`, `R-029`, and `R-031` depend on the minimum emulator contract in
-`protocol/EMU_DEBUG_API_REQUIREMENTS.md`. At current emulator default
-[`a20815e`](https://github.com/Hans-Einar/emuSA80535-N/commit/a20815e24778760a308130cf1f9aa6d0f55b6af3),
-deterministic variant/reset/raw load, bounded execution, exact step, typed stops,
-one pre-execution core breakpoint, `decode()`, generic trace, and Siemens IRQ
-observation are merged lower-level seams. They do not yet constitute the
-versioned headless protocol. The protocol matrix classifies `EMU-BLK-004` as
-satisfied, `EMU-BLK-006`–`009` as partial, and `EMU-BLK-001`–`003`, `005`, and
-`010` as missing. Slice 1 must not start until every remaining protocol/process
-gap is accepted and verified, or Steering explicitly re-baselines this
-requirement set.
+`protocol/EMU_DEBUG_API_REQUIREMENTS.md`. Current accepted emulator default
+[`d9f80eba172dd9d7281aaa9e5cfef461b6b9709b`](https://github.com/Hans-Einar/emuSA80535-N/commit/d9f80eba172dd9d7281aaa9e5cfef461b6b9709b)
+contains runtime merge `1a6aa397…` and implements the frozen `emu-debug` 1.0
+headless contract. Independent
+`VER-001-002-003` reproduced all `EMU-BLK-001..010`, real DAP integration, and
+Windows/Linux installed-package F5 acceptance against the unchanged DAP product
+HEAD. The Slice-1 cross-repository gate is satisfied; no protocol re-baseline
+was required.
 
 ## Acceptance interpretation
 

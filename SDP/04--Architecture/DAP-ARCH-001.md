@@ -1,7 +1,8 @@
 # DAP-ARCH-001 — Target architecture
 
 **Traceability:** `A-001`–`A-008` realize `R-001`–`R-030`.
-**State:** Target only; diagrams do not claim implementation.
+**State:** Slice-1 boundaries implemented and verified; diagrams remain target
+authority for later-slice extensions
 
 ## System boundary (`A-001`)
 
@@ -38,18 +39,16 @@ stderr/diagnostic output after redaction.
 
 ### Current emulator dependency baseline
 
-Current `emuSA80535-N/master` at
-[`a20815e`](https://github.com/Hans-Einar/emuSA80535-N/commit/a20815e24778760a308130cf1f9aa6d0f55b6af3)
-provides lower-level C seams for deterministic variant/reset/raw loading,
-bounded run/run-until-PC, exact instruction step, typed stops, one
-pre-execution CODE breakpoint, `decode()`, immutable instruction/SFR/MOVX
-trace, and Siemens IRQ state plus request/accept/release observation. The
-architecture does not move those C APIs across the process boundary. The
-headless process, NDJSON/version handshake, atomic debugger snapshot,
-cross-process `decodeCode`, replacement breakpoint table, bounded child
-scheduler/pause integration, and process lifecycle tests remain prerequisites
-owned by the emulator control-server boundary. IRQ frames/state remain
-near-term and do not expand candidate Slice 1.
+Current accepted `emuSA80535-N/master` at
+[`d9f80eba`](https://github.com/Hans-Einar/emuSA80535-N/commit/d9f80eba172dd9d7281aaa9e5cfef461b6b9709b)
+contains runtime merge `1a6aa397…` and implements the public no-curses
+`emu-debug` 1.0 process boundary: NDJSON/version
+handshake, atomic snapshots, exact `decodeCode`, replacement breakpoints,
+bounded run/yield, exact step, and clean Windows/Linux lifecycle. Independent
+real-runtime verification confirms that the adapter still consumes only this
+versioned contract and never emulator private C layout. The earlier `a20815e`
+core-only assessment remains historical planning evidence. IRQ frames/state
+remain near-term and do not expand Slice 1.
 
 ## Launch lifecycle (`A-002`)
 
@@ -272,7 +271,9 @@ secrets are not logged.
 - Debugger state is read only while stopped and from one snapshot.
 - The one MCU instruction stream remains one DAP thread.
 - No P1000 semantic enters adapter, protocol, schema, or fixtures.
-- Current emulator claims cite permanent `a20815e` evidence; the original
-  `5dc6812`/unmerged-PR-#1 observations remain dated historical evidence only.
+- Current emulator availability claims cite `d9f80eba…` evidence with accepted
+  runtime merge `1a6aa397…`;
+  `a20815e` and the original `5dc6812`/unmerged-PR-#1 observations remain dated
+  historical planning evidence only.
 - Merged C core seams are never substituted for the versioned process contract.
 - No host hardware endpoint is opened by this architecture.

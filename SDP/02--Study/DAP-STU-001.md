@@ -5,9 +5,21 @@
 PR #1 head `62f4012` was still unmerged.
 **Live baseline refresh:** 2026-08-31, `emuSA80535-N/master` at `a20815e` after
 the Stage-0 and Stage-1 merges.
+**Accepted runtime refresh:** 2026-09-01, current `emuSA80535-N/master` at
+[`d9f80eba172dd9d7281aaa9e5cfef461b6b9709b`](https://github.com/Hans-Einar/emuSA80535-N/commit/d9f80eba172dd9d7281aaa9e5cfef461b6b9709b),
+with accepted Issue #6 / PR #9 runtime merge `1a6aa397…` in its ancestry. The
+post-merge delta is documentation-only; product/build/test blobs are identical.
+All Slice-1 emulator blockers and the unchanged DAP real-runtime acceptance
+suite are independently verified on current master.
 **State labels:** **historical evidence** preserves facts as observed at the
 original cut; **current-default** means merged `emuSA80535-N/master` at the live
 refresh; **target** means this repository's proposed design.
+
+The explicit `a20815e` capability table below is retained as the historical
+implementation-planning baseline. Its missing/partial availability statements
+are superseded for Slice 1 by current master `d9f80eba…` and its accepted
+`1a6aa397…` runtime; later-slice
+items remain target where stated.
 
 ## Executive recommendation
 
@@ -176,7 +188,7 @@ does not invent a future version number.
 
 ## Actual emulator capability inspection
 
-| Need | Current-default `a20815e` evidence | Classification/action |
+| Need | Historical planning-baseline `a20815e` evidence | Classification/action at that cut |
 |---|---|---|
 | Reset/load | Stable variant selection and seeded reset are public core calls; the raw loader accepts exactly 65,536 bytes and rejects other sizes. | **Available core seam.** The headless `load`/`reset` commands, image hash, entry-stop snapshot, and replay contract remain missing. |
 | Run/continue | `em8051_run` and `em8051_run_until_pc` are bounded by instruction count and return typed results at completed boundaries. | **Available core seam; partial Slice-1 prerequisite.** The child scheduler and wire command remain missing. |
@@ -194,9 +206,9 @@ does not invent a future version number.
 | Symbol/source map | No emulator symbol/source-map API exists. | **Adapter responsibility/input format**, as designed. |
 | Watchpoints | Immutable SFR/MOVX records provide access evidence but no configurable stop policy. | **Partial later instrumentation.** Stable negotiated data-breakpoint/watchpoint behavior remains missing. |
 | Writes | Direct storage and an SFR write gateway exist. | **Deferred.** They are not a safe, explicitly enabled debugger mutation contract. |
-| Version query/headless protocol | The only built executable remains curses-linked; no headless server, NDJSON protocol, `hello`, or lifecycle process suite exists. | **Missing Slice-1 prerequisites.** |
+| Version query/headless protocol | At `a20815e`, the only built executable was curses-linked; no headless server, NDJSON protocol, `hello`, or lifecycle process suite existed. | **Missing at that historical cut; satisfied on current `d9f80eba…` by runtime merge `1a6aa397…`.** |
 
-Permanent source evidence at current default `a20815e`:
+Permanent source evidence at historical planning default `a20815e`:
 
 - variant, reset, stop/result, run/step/breakpoint, trace, IRQ, decoder, and raw
   loader declarations in

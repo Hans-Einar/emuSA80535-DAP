@@ -1,27 +1,33 @@
 # Emulator debug-control API requirements
 
-**Contract:** `emu-debug` protocol `1.0` target baseline
+**Contract:** `emu-debug` protocol `1.0` frozen and verified baseline
 **Consumers:** `emuSA80535-DAP` adapter and `emuSA80535-N` headless runtime
-**State:** Frozen requirement for Slice-1 planning; lower-level core seams are
-partly merged, but the cross-process protocol is not implemented on the current
-emulator default branch
+**State:** Implemented and independently verified on current emulator default
+`d9f80eba172dd9d7281aaa9e5cfef461b6b9709b` (runtime merge `1a6aa397…`); no
+contract change was required
 
 ## Authority and factual baseline
 
-The current `emuSA80535-N` default is `master` at
-[`a20815e24778760a308130cf1f9aa6d0f55b6af3`](https://github.com/Hans-Einar/emuSA80535-N/tree/a20815e24778760a308130cf1f9aa6d0f55b6af3).
+The current accepted `emuSA80535-N` default is `master` at
+[`d9f80eba172dd9d7281aaa9e5cfef461b6b9709b`](https://github.com/Hans-Einar/emuSA80535-N/tree/d9f80eba172dd9d7281aaa9e5cfef461b6b9709b).
+Accepted Issue #6 / PR #9 runtime merge `1a6aa397…` is an ancestor; the delta is
+three documentation-only P1000 boundary files, with all product/build/test blobs
+identical. Current master implements the complete frozen headless contract and
+passes independent DAP real-runtime acceptance on Windows and Linux. The earlier
+`a20815e` baseline below is retained as historical pre-implementation evidence.
 [PR #1](https://github.com/Hans-Einar/emuSA80535-N/pull/1) head
 [`62f40127e1aa3b24e9d8d54c2458e847bfe86488`](https://github.com/Hans-Einar/emuSA80535-N/tree/62f40127e1aa3b24e9d8d54c2458e847bfe86488)
 merged as Stage 0
 [`0cf6792b794070bcbbb1bfdddc30eb9cdc4c3723`](https://github.com/Hans-Einar/emuSA80535-N/commit/0cf6792b794070bcbbb1bfdddc30eb9cdc4c3723),
 and [PR #3](https://github.com/Hans-Einar/emuSA80535-N/pull/3) merged Stage 1
-as current HEAD `a20815e`.
+as the historical 2026-08-31 refreshed HEAD `a20815e`.
 
-The merged core now exposes deterministic variant/reset support, exact 64-KiB
+At historical baseline `a20815e`, the merged core exposed deterministic
+variant/reset support, exact 64-KiB
 raw loading, bounded run/run-until-PC, exact instruction step, typed stop
 results, one pre-execution core breakpoint, `decode()`, immutable
 instruction/SFR/MOVX trace records, and Siemens IRQ state plus a record-only
-request/accept/release observer. It still has no buildable no-curses headless
+request/accept/release observer. It then had no buildable no-curses headless
 debug executable, NDJSON server or version handshake, stable atomic debugger
 snapshot/accessors, `decodeCode` wire contract, atomic replacement breakpoint
 table, child scheduler/pause integration, or cross-platform process lifecycle
@@ -230,25 +236,24 @@ clean termination; it must not be printed as successful output.
 Unexpected child termination and EOF are observable to the adapter. A clean
 adapter `terminate`/disconnect must not orphan the emulator.
 
-## Explicit current cross-repository blockers
+## Cross-repository blocker disposition
 
-The IDs remain stable even when a lower-level prerequisite is satisfied. Before
-DAP Slice 1 starts, every partial/missing server and process part below must be
-implemented, reviewed, merged into `emuSA80535-N` default (or supplied by an
-accepted compatible release), and verified through the frozen protocol:
+The IDs remain stable. Independent DAP verification against accepted emulator
+default `d9f80eba…` reproduced every prerequisite through the unchanged frozen
+protocol:
 
-| Blocker | Current status at `a20815e` | Required prerequisite / remaining gap |
+| Blocker | Status at current `d9f80eba…` | Accepted evidence |
 |---|---|---|
-| `EMU-BLK-001` | **Missing** | A buildable, documented headless-debug executable that does not initialize curses or host hardware I/O. The current Makefile builds only the curses-linked `emu`. |
-| `EMU-BLK-002` | **Missing** | NDJSON request/response server with stdout protocol isolation, correlation, bounds, and structured errors. |
-| `EMU-BLK-003` | **Missing** | `hello` version/capability/limits handshake for protocol 1.0. |
-| `EMU-BLK-004` | **Satisfied by current core** | Deterministic SAB80535 variant/reset and exact 64-KiB raw CODE loading are merged. The wire `load`/`reset` orchestration remains covered by `EMU-BLK-001`–`003` and `EMU-BLK-005`. |
-| `EMU-BLK-005` | **Missing** | Atomic stopped-state PC/basic-register snapshot API independent of private struct layout. A run-result PC plus public storage is not an atomic debugger snapshot/accessor contract. |
-| `EMU-BLK-006` | **Partial** | Current `decode()` supplies decoder text/length. The `decodeCode` command/capability, exact-count records, deterministic backward placeholders, and range behavior remain missing. |
-| `EMU-BLK-007` | **Partial** | One core CODE breakpoint stops before execution. An atomic `replaceCodeBreakpoints` command/table, empty-set clear, limits, and accepted/rejected result remain missing. |
-| `EMU-BLK-008` | **Partial** | Bounded `em8051_run`/`run_until_pc` are merged. The child command, negotiated bound, repeated-chunk scheduler, yield snapshot, and adapter-pause integration remain missing. |
-| `EMU-BLK-009` | **Partial** | `em8051_step_instruction` executes one instruction and typed core stop results exist. The versioned `stepInstruction` command and stable wire stop/error mapping remain missing. |
-| `EMU-BLK-010` | **Missing** | Clean terminate/EOF/crash behavior and Linux/Windows process lifecycle tests. |
+| `EMU-BLK-001` | **SATISFIED** | Portable documented `emu-debug` executable builds without curses or physical host I/O. |
+| `EMU-BLK-002` | **SATISFIED** | Bounded UTF-8 NDJSON server enforces schema, correlation, canonical keys, stdout isolation, and structured errors. |
+| `EMU-BLK-003` | **SATISFIED** | Protocol 1.0 `hello` returns the exact required capabilities and numeric limits. |
+| `EMU-BLK-004` | **SATISFIED / preserved** | Deterministic SAB80535 variant, exact 64-KiB load/hash, reset seed, entry stop, and replay pass real integration. |
+| `EMU-BLK-005` | **SATISFIED** | Stable atomic public PC/basic-register/bank-selected R0–R7 snapshot passes facade and DAP tests. |
+| `EMU-BLK-006` | **SATISFIED** | Exact-count `decodeCode`, transactional predecessor knowledge, placeholders, range, UTF-8, and no-wrap behavior pass. |
+| `EMU-BLK-007` | **SATISFIED** | Atomic replacement/clear/limit reporting and pre-execution CODE stops pass. |
+| `EMU-BLK-008` | **SATISFIED** | Bounded synchronous run/yield, idle boundary snapshots, repeated scheduling, and adapter-local pause pass. |
+| `EMU-BLK-009` | **SATISFIED** | Exact one-instruction wire step and stable stop/error mapping pass. |
+| `EMU-BLK-010` | **SATISFIED** | Windows/Linux terminate, EOF, malformed/oversize, crash, pipe cleanup, and no-orphan process tests pass. |
 
 Stage-1 IRQ state and request/accept/release observation are also merged core
 seams, but they do not reduce the Slice-1 blocker set because IRQ frames/state
@@ -303,6 +308,8 @@ symbol-map input.
 - Linux and Windows stdio process tests proving stdout contains NDJSON only;
 - a safety test proving headless debug performs no physical host I/O.
 
-The accepted emulator release/version and commit must be captured in the DAP
-integration test evidence. Until then this file is a target cross-repository
-requirements contract, not proof of availability.
+Current emulator commit `d9f80eba172dd9d7281aaa9e5cfef461b6b9709b`
+and runtime implementation merge `1a6aa397993d3f24cef8d41248ae2928d352966a`
+are captured in DAP `VER-001-002-003`. This file remains the frozen
+cross-repository requirements contract and now has independent proof of Slice-1
+availability.

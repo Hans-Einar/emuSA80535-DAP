@@ -857,3 +857,38 @@ frozen command/capability surface. No contract change is authorized or needed.
 `VER-001-002-003` is activated to independently rerun the real-runtime gates,
 close the previously blocked ACs only on reproduced evidence, and decide final
 READY versus a new verified incompatibility.
+
+### Final real-runtime verification `VER-001-002-003`
+
+**Verified DAP product HEAD:**
+`36639b48ddb2ffbafa14c00da794fe1734f7483b`
+
+**Verified emulator runtime merge:**
+`1a6aa397993d3f24cef8d41248ae2928d352966a`
+
+**Verified current emulator master:**
+`d9f80eba172dd9d7281aaa9e5cfef461b6b9709b`
+
+**Verification report commit:**
+`e04f0a70a35203d9a45ae78b3e26679a65686242`
+
+**Disposition:** **PASS — READY**
+
+Fresh independent Windows GCC/strict-Clang and Linux GCC/ASan+UBSan emulator
+regression/facade/process suites passed. The unchanged DAP passed clean
+99/99, 45/45 contract, fixture/hash, 47-file VSIX policy, and installed VS Code
+1.95 package smoke. Real Windows and Linux contract/equivalence/F5 runs passed
+entry/configuration, numeric disassembly round-trip, canonical offset
+breakpoints with pre-execution hit, one thread/frame/register scope, all allowed
+step granularities, frozen unsupported request behavior, breakpoint clear,
+bounded continue/pause, disconnect, exactly-one termination, and zero orphans.
+
+Current-master delta verification proves `1a6aa397…` is an ancestor of
+`d9f80eba…`; the delta contains only three P1000 boundary documents and every
+product/build/test blob is identical. Exact `d9f80eba…` Windows/Linux rebuild,
+process, real contract/equivalence, and F5 gates pass.
+
+AC-001 through AC-011 all PASS. `EMU-BLK-001` through `EMU-BLK-010` are all
+SATISFIED (`004` preserved). Safety/no-target/no-live checks pass. No fake/real
+incompatibility or new finding exists, and the frozen `emu-debug` 1.0 contract
+did not change. `SL-001-002-001`, `IT-001-002`, and `SPR-001` close READY.

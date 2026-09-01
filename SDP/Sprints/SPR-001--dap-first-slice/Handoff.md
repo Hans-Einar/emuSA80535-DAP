@@ -2,10 +2,10 @@
 
 ## Current objective
 
-Repository-correctable work for `IT-001-002 / SL-001-002-001` is implemented,
-independently reviewed, and verified on branch `codex/dap-first-slice`. The
-previous real-emulator blocker is reported resolved by accepted Issue #6 / merged
-PR #9; final real-runtime verification is active against `1a6aa397…`.
+`IT-001-002 / SL-001-002-001` is independently reviewed and verified READY on
+branch `codex/dap-first-slice`. Final real-runtime verification passed against
+current emulator master `d9f80eba…` (runtime merge `1a6aa397…`) without changing
+`emu-debug` 1.0.
 
 ## Authoritative source documents
 
@@ -42,22 +42,30 @@ PR #9; final real-runtime verification is active against `1a6aa397…`.
 - Recorded `READY-FOR-SLICE-1`, closed `IT-001-001`, and kept the product
   sprint/iteration/slice planned and unstarted.
 
+## Done by Slice 1
+
+- Implemented and reviewed extension, external DAP adapter, strict protocol
+  client, contract fake, fixture, debug behavior, lifecycle, VSIX, and
+  dual-platform installed-package CI smoke on DAP product HEAD `36639b48…`.
+- Resolved every implementation/review finding `CR-009`–`CR-022` through fresh
+  worker/reviewer cycles and exact-head remote verification.
+- Independently passed emulator Windows GCC/Clang and Linux GCC/sanitizer
+  regression/facade/process suites at current default `d9f80eba…`.
+- Independently passed real Windows/Linux DAP contract/equivalence and installed
+  VS Code F5/disassembly/register/breakpoint/step/continue/pause/cleanup smoke.
+- Closed AC-001–AC-011 and EMU-BLK-001–010 with `VER-001-002-003`; Slice 1 is
+  READY and the frozen protocol remains unchanged.
+
 ## Not done
 
-- Real-emulator contract integration and real VS Code F5/disassembly/safety
-  acceptance.
 - Any emulator-repository change, Issue, or PR.
-- Merge disposition for implementation PR #4; it remains draft and unmerged by
-  Issue #3 authority.
+- Merge of DAP implementation PR #4; merge remains a separate Steering action.
+- Any next-slice scope beyond Issue #3.
 
 ## Exact next step
 
-A fresh verifier runs `VER-001-002-003` against DAP HEAD `36639b48…` and
-emulator `1a6aa397…`: emulator regression/process suites, unchanged DAP
-lint/full/contract/fixture/package policy, real contract/equivalence integration,
-and real VS Code 1.95 F5/disassembly/register/breakpoint/step/continue/pause/
-disconnect smoke on Windows and Linux. Close blocked ACs only on reproduced
-evidence; do not alter `emu-debug` 1.0 without a verified incompatibility.
+Steering reviews ready PR #4 and decides merge separately; this Master must not
+merge it. Plan the next DAP slice only under a new explicit issue/slice contract.
 
 ## Verification completed
 
@@ -69,13 +77,19 @@ static Mermaid structure, P1000 neutrality, README status, and PR #2 state.
 The report records the bounded npmjs automation response and lack of a local
 Mermaid renderer as non-blocking limitations.
 
-For Issue #3, final `VER-001-002-002` revalidated `emuSA80535-N/master` at
+At the prior blocked Issue #3 checkpoint, `VER-001-002-002` revalidated
+`emuSA80535-N/master` at
 `c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`. No real Slice-1 integration
 evidence exists because that tree has no compatible server.
 
 All four exact Ubuntu/Windows push/PR jobs on `3bb4264…` passed build/test,
 contract, fixture, package policy, isolated VSIX floor install, packaged fake
 entry-stop, clean disconnect, exactly-one termination, and zero-orphan checks.
+
+Final `VER-001-002-003` passed the corresponding real-runtime contract and
+installed-package F5/disassembly/debug behavior on Windows and Linux using
+current master `d9f80eba…` (runtime merge `1a6aa397…`). AC-001–AC-011 and
+EMU-BLK-001–010 all pass.
 
 ## Traceability IDs in play
 
@@ -84,18 +98,18 @@ entry-stop, clean disconnect, exactly-one termination, and zero-orphan checks.
 `RVW-001-000-001`, `CR-001`–`CR-007`, `IT-001-001`,
 `SL-001-001-001`, `RVW-001-001-001`, `VER-001-001-001`, `CR-008`,
 `SL-001-001-002`, `RVW-001-001-002`, `VER-001-001-002`, `IT-001-002`,
-and `SL-001-002-001`, `RVW-001-002-001`–`RVW-001-002-009`,
-`CR-009`–`CR-021`, `VER-001-002-001`, and `VER-001-002-002`.
+and `SL-001-002-001`, `RVW-001-002-001`–`RVW-001-002-010`,
+`CR-009`–`CR-022`, `VER-001-002-001`, `VER-001-002-002`, and
+`VER-001-002-003`.
 
 ## Traceability update state
 
-- CurrentIndex: `SPR-001`/`IT-001-002` remain active for the external gate;
-  `SL-001-002-001` is implemented/current; reviews are closed; both final
-  verifications are blocked/current; all repo-correctable findings are resolved.
-- Relations: implementation, every review/finding, and both verification passes
+- CurrentIndex: `SPR-001` and `SL-001-002-001` verified/current;
+  `IT-001-002` closed/current; final real verification verified/current; all
+  findings resolved.
+- Relations: implementation, every review/finding, and all verification passes
   are linked to the slice and requirements.
-- Ledger: complete through corrective re-verification and the NOT_READY
-  external-blocker checkpoint.
+- Ledger: complete through real-runtime PASS, READY, and iteration closure.
 
 ## Steering decisions and remaining gate
 
@@ -103,14 +117,11 @@ Issue #3 resolved the implementation-time choices: repository-root package
 layout with `extension/` and `adapter/` boundaries, Node.js/TypeScript, version
 `0.1.0`, local identifier `emuSA80535-dap` subject to manifest normalization,
 Linux CI, and mandatory Windows acceptance. Marketplace publication remains
-out of scope. The remaining external gate is:
-
-1. Assign/accept ownership, branch/release, and versioning for every remaining
-   partial/missing part of `EMU-BLK-001`–`EMU-BLK-010` in `emuSA80535-N`;
-   `EMU-BLK-004` is already satisfied by the current core.
+out of scope. Accepted emulator Issue #6 / PR #9 and DAP
+`VER-001-002-003` close every `EMU-BLK-001`–`EMU-BLK-010`.
 
 VS Code floor 1.95.0 and Node CI 22.20.0 are pinned and proven for package
-install/fake-entry smoke. Real disassembly/F5 acceptance remains blocked.
+install/fake-entry smoke and real Windows/Linux F5/disassembly acceptance.
 
 The breakpoint minimum is not open: protocol negotiates
 `maxBreakpoints >= 1`, and Slice-1 acceptance uses exactly one. Emulator
@@ -119,21 +130,17 @@ Marketplace publication remain later scoped decisions.
 
 ## Risks and ambiguities
 
-- The current emulator default includes useful core seams but still lacks the
-  entire versioned headless process protocol and lifecycle evidence.
-- Merged one-breakpoint, decoder, run/step, trace, and IRQ primitives must not
-  be mistaken for atomic debugger snapshot, replacement-table, wire, scheduler,
-  or process contracts.
-- DAP is published at 1.71.0 while observed scoped Node packages are 1.68.0;
-  versions/schema and VS Code engine behavior must be pinned/rechecked at
-  implementation start.
-- Minimal disassembly must be exercised in real VS Code, not only a DAP client,
-  because the instruction-breakpoint UI depends on it.
+- Future emulator changes must preserve protocol 1.0 compatibility or trigger a
+  new reviewed negotiation design; no incompatibility exists at current
+  `d9f80eba…`.
+- Scoped Node DAP packages remain pinned at 1.68.0; any future upgrade requires
+  a new schema and real VS Code compatibility pass.
+- Minimal disassembly and instruction-breakpoint round trip are verified in real
+  VS Code; later richer disassembly remains separately scoped.
 
 ## Worktree/agent notes
 
 The branch is `codex/dap-first-slice`, based on PR #2 branch HEAD `ede8226`.
 PR #2 still targets `main`; the Slice-1 implementation PR must also target
 `main` so its accepted SDP ancestry is visible, and it must not be merged.
-A fresh real-runtime verifier is intentionally active; no worker/reviewer agent
-is open.
+No worker/reviewer/verifier agent remains open.

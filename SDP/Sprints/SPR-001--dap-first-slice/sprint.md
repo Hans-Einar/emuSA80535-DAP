@@ -2,17 +2,18 @@
 
 ## Status
 
-- Product implementation sprint: **active under Issue #3**
+- Product implementation sprint: **READY — verified**
 - Reviewed foundation iteration: `IT-001-000` — historical rework required
 - Corrective documentation iteration: `IT-001-001` — closed
 - Accepted DAP-semantics correction: `SL-001-001-001` — verification blocked by dependency drift
 - Factual-baseline correction: `SL-001-001-002` — verified
 - Documentation gate: **READY-FOR-SLICE-1** (`VER-001-001-002`)
 - Steering/Master authority: [GitHub Issue #3](https://github.com/Hans-Einar/emuSA80535-DAP/issues/3)
-- Active iteration/slice: `IT-001-002` / `SL-001-002-001`
-- Real-emulator gate: **reopened for final verification**; current revalidated
-  emulator default is `1a6aa397993d3f24cef8d41248ae2928d352966a` after accepted
-  Issue #6 / merged PR #9. The frozen `emu-debug` 1.0 contract is unchanged.
+- Closed iteration/slice: `IT-001-002` / `SL-001-002-001`
+- Real-emulator gate: **PASS** on current emulator default
+  `d9f80eba172dd9d7281aaa9e5cfef461b6b9709b` (runtime merge `1a6aa397…`);
+  the frozen `emu-debug` 1.0 contract is unchanged and every
+  `EMU-BLK-001..010` is satisfied.
 
 Issue #1 defines and verifies the contract only. It must stop at
 `READY-FOR-SLICE-1`; no item below is an implementation-status claim.
@@ -73,8 +74,7 @@ planned/not started.
 
 **Planned slice:** `SL-001-002-001`
 
-**State:** active; fake-backed implementation authorized, real-emulator final
-acceptance blocked until every required `EMU-BLK-001`–`EMU-BLK-010` item passes
+**State:** verified READY by `VER-001-002-003`; all AC-001–AC-011 pass
 
 ### Goal
 
@@ -157,10 +157,10 @@ the accepted emulator default/release must supply the headless NDJSON server,
 protocol 1.0 hello, exact raw loader, deterministic reset, atomic snapshot,
 required exact-count `decodeCode` behavior, replacement breakpoints, bounded
 run, exact step, and clean lifecycle. Raw CODE read is near-term, not a Slice-1
-blocker. Current default `a20815e` satisfies the core beneath `EMU-BLK-004` and
-partially supplies the core beneath `EMU-BLK-006`–`009`; the missing wire,
-snapshot, scheduling, replacement-table, and process-lifecycle parts remain hard
-preconditions. Newly merged IRQ support does not expand this candidate slice.
+blocker. Accepted current default `d9f80eba…` (runtime merge `1a6aa397…`)
+satisfies every `EMU-BLK-001`–`EMU-BLK-010`; `VER-001-002-003` independently passed the frozen
+wire, snapshot, scheduling, replacement-table, exact-step, and lifecycle gates.
+IRQ support does not expand this verified slice.
 
 ## Test fixtures
 
@@ -172,8 +172,8 @@ preconditions. Newly merged IRQ support does not expand this candidate slice.
   malformed JSON, timeout, and crash.
 - No fixture contains P1000 firmware or depends on physical hardware.
 
-Fixture bytes and fake code are future Slice-1 implementation outputs, not
-artifacts created by Issue #1.
+Fixture bytes and fake code are reviewed Slice-1 test outputs; they remain
+outside the packaged VSIX and contain no firmware-specific semantics.
 
 ## Expected commands (future)
 
@@ -210,4 +210,5 @@ Before product implementation begins:
 
 Issue #3 and `SteeringActivation.md` satisfy item 5 and explicitly permit
 contract-faithful fake-backed implementation while the real emulator is
-completed. They do not satisfy the final real-emulator integration gate.
+completed. Final `VER-001-002-003` subsequently passed the unchanged contract
+against current master `d9f80eba…` on Windows and Linux.
