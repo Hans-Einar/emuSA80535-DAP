@@ -1886,3 +1886,169 @@ This review does not satisfy the accepted-real-emulator contract tests,
 real-runtime F5 launch, actual VS Code disassembly-UI gate, or remaining
 `EMU-BLK` dependencies. It makes no `READY` claim. Until those independent
 gates pass, Slice 1 remains **NOT_READY**.
+
+## Repeated-yield pause determinism correction review — `RVW-001-002-010`
+
+**Review date:** 2026-09-01
+
+**Reviewer role:** fresh independent corrective reviewer; not the author of
+the CR-022 finding, corrective test commit, or Master handoff
+
+**Reviewed corrective commit:**
+`b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`
+
+**Reviewed parent:**
+`e6171d37f8b270898f566ab055085f08c51d70fe`
+
+**Remote failure checkpoint HEAD:**
+`15822ef188111995d39c1584a844669b389aed78`
+
+**Authority:** GitHub Issue #3, accepted PR #2 SDP baseline, active
+`IT-001-002 / SL-001-002-001`, `AC-006`, `CR-022`, and the accepted
+`RVW-001-002-007` through `RVW-001-002-009` review chain
+
+**Disposition:** **accepted for exact-HEAD remote re-verification; no new
+finding; CR-022 implementation correction accepted but CR-022 remains open
+until all four Ubuntu/Windows push/PR jobs pass**
+
+### Scope and independence
+
+The corrective commit has the exact stated parent and merge base. Its diff is
+limited to `test/dapBehavior.test.ts`: 160 insertions and 6 deletions. No
+adapter, extension, emulator client, contract fake, fixture, workflow,
+manifest, lockfile, package script, or product-default path changed. The test
+harness records received DAP messages, adds one controlled in-memory run
+backend and deterministic yield-snapshot helper, and replaces only the
+wall-clock/real-child repeated-yield target.
+
+Review execution used a detached clean worktree at exact `b4a48dd...`, not the
+later Master SDP-only handoff commit on the branch. This reviewer changed only
+this review section and did not repair or alter test/product behavior.
+
+### Deterministic scheduler assessment
+
+The replacement target no longer launches the fake server, sleeps for an
+assumed number of milliseconds, or depends on process response timing. Its
+injected backend asserts every `run` uses the negotiated maximum chunk size and
+exposes each call through a distinct deferred promise with a monotonic ordinal.
+The test then proves the repeated scheduler and pause boundary explicitly:
+
+- it observes run #1 before resolving yield #1 at `code:0010`;
+- it observes run #2, thereby proving that yield #1 scheduled another bounded
+  chunk, then resolves yield #2 at `code:0020`;
+- it observes run #3, proving the second repeated scheduling transition, and
+  leaves exactly that one run unresolved;
+- it sends pause while run #3 is pending, receives the successful pause
+  response, and proves no stopped event is queued before a boundary exists;
+- it resolves the unique run #3 promise with yield #3 at `code:0030`, then
+  observes the pause stopped event;
+- it proves exactly one pause stop across the complete received-message
+  history, no `continued` event, exactly three run calls, no queued or
+  unresolved backend run, and the exact final snapshot as the last resolved
+  boundary;
+- a stopped `stackTrace` succeeds and reports `code:0030`, while a second pause
+  fails with `EMU_STATE_NOT_RUNNING`; and
+- disconnect completes, the harness consumes termination, and the idempotent
+  backend cleanup count is exactly one.
+
+There is no path for run #4 to be hidden behind host timing: the exact run-call
+counter remains three after the final stop, and both the queued and unresolved
+run sets are empty. The target retains only Node's 10-second test-runner safety
+bound; no elapsed-time value controls its ordering or expected outcome. The
+backend uses deferred promises and microtasks only. The changed diff adds no
+`setTimeout`, delay, command-timeout override, process spawn, clock read, or
+filesystem request log.
+
+### Unchanged real-client and regression coverage
+
+The correction does not replace concrete transport or fake-server evidence.
+The unchanged full and contract suites still cover:
+
+- the real `EmulatorClient` bounded-run command and exact contract fake;
+- active-chunk pause response-before-stop and no post-intent chunk;
+- a deterministic run timeout after pause intent with no unproven stopped
+  promotion;
+- concrete hello timeout, process kill, and reap;
+- hung terminate with bounded forced cleanup and reap;
+- disconnect during a pending real-client handshake;
+- disconnect during an active delayed fake-server run, exact run/terminate
+  ordering, repeated disconnect idempotence, one termination, and child reap;
+- malformed, oversized, crash/EOF, response-schema, protocol-isolation, and
+  fake record-bound families.
+
+An exact path comparison proved all product, contract-client, fake, fixture,
+workflow, and packaging paths byte-identical to the parent. The complete
+99-test suite and 45-test contract suite passed, so the isolated state-machine
+target is additive evidence rather than a substitute for the real-client and
+process tests.
+
+No new finding was raised. CR-022 is corrected at implementation/test level,
+but a local Windows review cannot close a defect that originated in the hosted
+Ubuntu/Windows push/pull-request matrix.
+
+### Independent executable evidence
+
+- reviewer host: Windows 11 x64 `10.0.26200`, Node `v24.11.0`, npm `11.6.1`;
+- exact reviewed parent/merge base and correction:
+  `e6171d37f8b270898f566ab055085f08c51d70fe`, the same parent, and
+  `b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`;
+- exact diff inspection and `git diff --check`: pass; only
+  `test/dapBehavior.test.ts` changed, with no product or workflow path;
+- independent target stress: **120/120** sequential invocations passed, each
+  invocation launching a separate Windows Node process with Node's exact
+  test-name filter; zero failures, 12.645 seconds total;
+- clean exact-tree `npm ci`: pass, 405 packages installed, zero reported
+  vulnerabilities; two transitive deprecation notices only;
+- `npm run lint` and `npm run build`: pass;
+- `npm test`: 99/99 pass, including all AC-006/AC-009 and process-policy
+  targets;
+- `npm run test:contract`: 45/45 pass, including the concrete client
+  timeout/kill/reap and pending-handshake cleanup tests;
+- `npm run fixture:check`: pass; 65,536 bytes, SHA-256
+  `1550101BC337EBA836F6FC6A3012B80677B9DFE6A0C658FCF615194BE54E5B88`;
+- `npm run package`, `npm run package:contents`, and
+  `npm run package:policy`: pass; exact 47-entry allowlist, 119.65-KB VSIX;
+- reviewer-built VSIX SHA-256:
+  `AFAC22C8B8B883FFD9F83B62F433FD80CB061333B586370A6FDBEBAABFFAD5BB`;
+- `npm run smoke:vsix`: pass against an isolated installed VS Code `1.95.0`,
+  commit `912bb683695358a54ae0c670461738984cbb5b95`, as
+  `undefined_publisher.emusa80535-dap@0.1.0`; exact fake command order was
+  `hello`, `load`, `reset`, empty `replaceCodeBreakpoints`, `terminate`, with
+  entry stop, clean disconnect, exactly one DAP termination, and zero reported
+  orphan processes;
+- post-smoke Windows process scan: zero matching adapter, fake-server, or
+  packaged-smoke processes; temporary-root scan: zero
+  `emusa80535-packaged-smoke-*` residue;
+- package/product/test safety scan: zero P1000, physical-endpoint,
+  emulator-private-structure, bundling, or auto-download matches; and
+- detached exact worktree remained tracked-clean after execution; both the
+  corrective diff and final worktree diff whitespace checks passed.
+
+The installed-floor smoke returned exit code zero and complete structured
+evidence. As in the earlier corrective reviews, the test utility/Electron
+emitted non-fatal DEP0190, mutex, and N-API diagnostics. The exact fake log,
+DAP evidence, child exit check, process scan, and temporary-root cleanup all
+passed, so no product or correction finding is raised from those host
+diagnostics.
+
+### Result and remote rerun requirement
+
+`RVW-001-002-010` **accepts** exact corrective commit `b4a48dd...` for Master
+integration, push, and exact-HEAD remote re-verification. The deterministic
+test now proves repeated scheduling through two yielded boundaries, pause
+response ordering while the third run is pending, unique final-boundary
+promotion, one pause stop, final PC, no `continued`, no fourth run, valid
+stopped reads, and exactly-once cleanup without relying on wall-clock or child
+process timing.
+
+Master must push the review-integrated HEAD and require all four jobs — Ubuntu
+push, Windows push, Ubuntu pull request, and Windows pull request — to complete
+successfully on the exact pushed product-equivalent tree. A rerun of only the
+previously failed Windows-push job, or a lucky green run on old checkpoint
+`15822ef...`, is not closure. Only after the new four-job evidence is recorded
+may CR-022 be resolved and final verification return to the external gate.
+
+This review does not satisfy the accepted-real-emulator contract tests,
+real-runtime F5 launch, actual VS Code disassembly-UI gate, or remaining
+`EMU-BLK` dependencies. It makes no `READY` claim. Until those independent
+gates pass, Slice 1 remains **NOT_READY**.
