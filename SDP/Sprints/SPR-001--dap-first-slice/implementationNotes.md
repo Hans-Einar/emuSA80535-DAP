@@ -165,3 +165,8 @@ passes; fresh review and actual Linux/Windows Actions evidence remain required.
 Fresh `RVW-001-002-008` accepted the CR-020 implementation for remote
 verification with no new finding. `CR-020` remains open until both Actions jobs
 pass exact integrated HEAD; the real runtime gate is unchanged.
+
+On remote HEAD `3b0e482…`, both Ubuntu jobs and Windows push passed, but Windows
+PR failed because an AC-006 test reused a 50 ms global command timeout intended
+for `run` during launch. `CR-021` requires deterministic timing separation;
+rerunning for a lucky green result is not accepted.

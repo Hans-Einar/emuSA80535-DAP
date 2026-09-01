@@ -52,11 +52,11 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-Master pushes the review-integrated HEAD, waits for both Ubuntu and Windows
-Actions jobs, and records exact run/job evidence. If both pass, a fresh verifier
-performs `VER-001-002-002`, closes `CR-020`/AC-010 as appropriate, revalidates
-the emulator default and final AC table, and preserves `NOT_READY` unless the
-real runtime gate has independently changed.
+A fresh worker fixes only `CR-021`: make the AC-006 run-timeout test bound the
+delayed run without applying an unrealistically small launch timeout, retain a
+deterministic timeout assertion, and add/adjust regression coverage without
+weakening product behavior. Fresh `RVW-001-002-009`, push, both-platform jobs,
+then `VER-001-002-002` follow.
 
 ## Verification completed
 

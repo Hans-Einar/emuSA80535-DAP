@@ -703,3 +703,19 @@ exactly one termination, no orphan or temp residue. Workflow/launcher/archive
 semantics were accepted with no new finding. `CR-020` remains open until both
 Ubuntu and Windows Actions jobs pass on the pushed integrated HEAD. Real F5/UI
 and emulator blockers remain external and unclaimed.
+
+### AC-010 exact-HEAD remote run result
+
+**Pushed HEAD:** `3b0e48270a1fae70030cbb84fa4f4709c062f33e`
+
+Ubuntu push and PR jobs passed, and the Windows push job passed. The Windows PR
+job failed one AC-006 timeout test before package smoke. Exact log evidence shows
+the test configured a global 50 ms child-command timeout to force a delayed
+`run` timeout; on one slower runner the same bound expired during launch, so
+`launchToConfiguration` received a failed response instead of `initialized`.
+The duplicate Windows push job passing the same HEAD confirms nondeterministic
+timing, not acceptance.
+
+`CR-021` captures this platform-speed-dependent harness defect. `CR-020` stays
+open. A fresh narrow worker/reviewer pass is required before rerunning both
+platform jobs and `VER-001-002-002`.
