@@ -281,6 +281,10 @@ class FakeEmulator {
     }
     const major = this.options.scenario === "major-mismatch" ? 2 : 1;
     const minor = this.options.scenario === "minor-compatible" ? 7 : 0;
+    const maxBreakpoints =
+      this.options.scenario === "large-breakpoint-limit"
+        ? 5_000
+        : MAX_BREAKPOINTS;
     const capabilities =
       this.options.scenario === "missing-capability"
         ? CAPABILITIES.filter((capability) => capability !== "boundedRun")
@@ -293,7 +297,7 @@ class FakeEmulator {
       variants: ["sab80535"],
       capabilities,
       limits: {
-        maxBreakpoints: MAX_BREAKPOINTS,
+        maxBreakpoints,
         maxRunChunkInstructions: MAX_RUN_CHUNK,
         maxDisassembleInstructions: MAX_DISASSEMBLE,
         maxRecordBytes: MAX_RECORD_BYTES,
@@ -459,6 +463,36 @@ class FakeEmulator {
       });
       return;
     }
+    if (this.options.scenario === "hostile-decode-negative-early-anchor") {
+      this.success(request, {
+        instructions: [
+          { address: base - 10, size: 10, valid: true, text: "HOSTILE" },
+          { address: base, size: 1, valid: true, text: "HOSTILE" },
+        ].slice(0, args.instructionCount),
+      });
+      return;
+    }
+    if (this.options.scenario === "hostile-decode-placeholder-at-base") {
+      this.success(request, {
+        instructions: [
+          {
+            address: base - 1,
+            size: 1,
+            valid: false,
+            reason: "unknown-predecessor",
+            text: "<invalid>",
+          },
+          {
+            address: base,
+            size: 1,
+            valid: false,
+            reason: "unknown-predecessor",
+            text: "<invalid>",
+          },
+        ].slice(0, args.instructionCount),
+      });
+      return;
+    }
     const records: Decoded[] = [];
     if (args.instructionOffset < 0) {
       let cursor = base;
@@ -523,6 +557,10 @@ class FakeEmulator {
 
   private replaceCodeBreakpoints(request: RequestRecord): void {
     const addresses = request.arguments?.addresses;
+    const maxBreakpoints =
+      this.options.scenario === "large-breakpoint-limit"
+        ? 5_000
+        : MAX_BREAKPOINTS;
     if (
       !Array.isArray(addresses) ||
       addresses.some((address) => !integer(address, 0, 0xffff)) ||
@@ -535,11 +573,11 @@ class FakeEmulator {
       );
       return;
     }
-    if (addresses.length > MAX_BREAKPOINTS) {
+    if (addresses.length > maxBreakpoints) {
       this.error(
         request,
         "BREAKPOINT_LIMIT",
-        `at most ${MAX_BREAKPOINTS} CODE breakpoint is supported`,
+        `at most ${maxBreakpoints} CODE breakpoint is supported`,
       );
       return;
     }
@@ -547,7 +585,7 @@ class FakeEmulator {
       this.success(request, {
         accepted: [addresses[0], addresses[0]],
         rejected: [{ address: 0xffff, reason: "not requested" }],
-        limit: MAX_BREAKPOINTS + 1,
+        limit: maxBreakpoints + 1,
       });
       return;
     }
@@ -555,7 +593,7 @@ class FakeEmulator {
     this.success(request, {
       accepted: [...this.breakpoints],
       rejected: [],
-      limit: MAX_BREAKPOINTS,
+      limit: maxBreakpoints,
     });
   }
 

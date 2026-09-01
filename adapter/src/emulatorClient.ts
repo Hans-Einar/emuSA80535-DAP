@@ -517,7 +517,11 @@ function validateDecodeCode(
       }
     }
     if (!instruction.valid) {
-      if (instructionOffset >= 0 || sawValid) {
+      if (
+        instructionOffset >= 0 ||
+        index >= -instructionOffset ||
+        sawValid
+      ) {
         throw schemaError(
           "unknown-predecessor placeholders are valid only as a negative-offset prefix",
         );
@@ -540,15 +544,41 @@ function validateDecodeCode(
     );
   }
   if (instructionOffset < 0) {
+    const predecessorCount = -instructionOffset;
     if (
       instructions[0] === undefined ||
-      instructions[0].address > base + instructionOffset
+      instructions[0].address > base - predecessorCount
     ) {
       throw schemaError(
         "decodeCode predecessor window cannot follow its instruction offset",
       );
     }
-    const anchorIndex = -instructionOffset;
+
+    const returnedPredecessors = Math.min(
+      predecessorCount,
+      instructions.length,
+    );
+    for (let index = 0; index < returnedPredecessors; index += 1) {
+      const instruction = instructions[index];
+      if (instruction === undefined) {
+        throw schemaError("decodeCode predecessor window is incomplete");
+      }
+      const remainingPredecessors = predecessorCount - index - 1;
+      const end = instruction.address + instruction.size;
+      if (remainingPredecessors === 0) {
+        if (end !== base) {
+          throw schemaError(
+            "decodeCode predecessor window does not end at its byte base",
+          );
+        }
+      } else if (end > base - remainingPredecessors) {
+        throw schemaError(
+          "decodeCode predecessor window reaches its byte base too early",
+        );
+      }
+    }
+
+    const anchorIndex = predecessorCount;
     if (
       anchorIndex < instructions.length &&
       instructions[anchorIndex]?.address !== base
@@ -557,14 +587,6 @@ function validateDecodeCode(
         "decodeCode negative-offset window does not reach its byte base",
       );
     }
-    if (anchorIndex === instructions.length) {
-      const final = instructions.at(-1);
-      if (final === undefined || final.address + final.size !== base) {
-        throw schemaError(
-          "decodeCode predecessor window does not end at its byte base",
-        );
-      }
-    }
   }
   return { instructions };
 }
@@ -572,7 +594,8 @@ function validateDecodeCode(
 function validateReplaceBreakpoints(
   body: JsonObject,
   requested: ReadonlySet<number>,
-  negotiatedLimit: number,
+  advertisedLimit: number,
+  clientWorkLimit: number,
 ): ReplaceCodeBreakpointsResult {
   if (!Array.isArray(body.accepted) || !Array.isArray(body.rejected)) {
     throw schemaError(
@@ -595,13 +618,15 @@ function validateReplaceBreakpoints(
     };
   });
   const limit = requireInteger(body.limit, "limit", 1, Number.MAX_SAFE_INTEGER);
-  if (limit !== negotiatedLimit) {
+  if (limit !== advertisedLimit) {
     throw schemaError(
       "replaceCodeBreakpoints.limit must match the hello-negotiated limit",
     );
   }
-  if (accepted.length > negotiatedLimit) {
-    throw schemaError("replaceCodeBreakpoints accepted more than the negotiated limit");
+  if (requested.size > clientWorkLimit || accepted.length > clientWorkLimit) {
+    throw schemaError(
+      "replaceCodeBreakpoints exceeded the client breakpoint work limit",
+    );
   }
   const returned = new Set<number>();
   for (const address of accepted) {
@@ -645,6 +670,7 @@ export class EmulatorClient {
   private pending: PendingResponse | undefined;
   private helloAttempted = false;
   private helloResult: EmulatorHello | undefined;
+  private advertisedMaxBreakpoints: number | undefined;
   private fatalError: EmulatorControlError | undefined;
   private cleanupPromise: Promise<void> | undefined;
   private expectedExit = false;
@@ -729,8 +755,10 @@ export class EmulatorClient {
       requiredCapabilities: [...REQUIRED_EMULATOR_CAPABILITIES],
     });
     let hello: EmulatorHello;
+    let advertisedMaxBreakpoints: number;
     try {
       const serverHello = validateHello(body);
+      advertisedMaxBreakpoints = serverHello.limits.maxBreakpoints;
       hello = {
         ...serverHello,
         limits: {
@@ -761,6 +789,7 @@ export class EmulatorClient {
       throw stable;
     }
     this.helloResult = hello;
+    this.advertisedMaxBreakpoints = advertisedMaxBreakpoints;
     this.activeMaxRecordBytes = hello.limits.maxRecordBytes;
     return hello;
   }
@@ -874,6 +903,13 @@ export class EmulatorClient {
     addresses: readonly number[],
   ): Promise<ReplaceCodeBreakpointsResult> {
     const hello = this.requireHello();
+    const advertisedMaxBreakpoints = this.advertisedMaxBreakpoints;
+    if (advertisedMaxBreakpoints === undefined) {
+      throw new EmulatorControlError(
+        "EMU_STATE_HELLO_REQUIRED",
+        "hello must complete before this emulator command",
+      );
+    }
     if (addresses.length > hello.limits.maxBreakpoints) {
       throw new EmulatorControlError(
         "EMU_BREAKPOINT_LIMIT",
@@ -895,7 +931,12 @@ export class EmulatorClient {
       addresses: [...addresses],
     });
     return this.validateReceived(() =>
-      validateReplaceBreakpoints(body, unique, hello.limits.maxBreakpoints),
+      validateReplaceBreakpoints(
+        body,
+        unique,
+        advertisedMaxBreakpoints,
+        hello.limits.maxBreakpoints,
+      ),
     );
   }
 

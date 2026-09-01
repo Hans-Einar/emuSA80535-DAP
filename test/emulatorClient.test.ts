@@ -231,6 +231,24 @@ void test("compatible fake implements the exact serialized Slice-1 command contr
         { address: 3, valid: true },
       ],
     );
+    assert.deepEqual(
+      (await client.decodeCode(3, 0, -2, 2)).instructions.map(
+        ({ address, valid }) => ({ address, valid }),
+      ),
+      [
+        { address: 0, valid: true },
+        { address: 2, valid: true },
+      ],
+    );
+    assert.deepEqual(
+      (await client.decodeCode(5, 0, -3, 2)).instructions.map(
+        ({ address, valid }) => ({ address, valid }),
+      ),
+      [
+        { address: 0, valid: true },
+        { address: 2, valid: true },
+      ],
+    );
     assert.deepEqual(await client.decodeCode(0x0010, 0, -2, 2), {
       instructions: [
         {
@@ -249,6 +267,25 @@ void test("compatible fake implements the exact serialized Slice-1 command contr
         },
       ],
     });
+    assert.deepEqual(
+      (await client.decodeCode(0x0010, 0, -2, 3)).instructions.map(
+        ({ address, valid }) => ({ address, valid }),
+      ),
+      [
+        { address: 0x000e, valid: false },
+        { address: 0x000f, valid: false },
+        { address: 0x0010, valid: true },
+      ],
+    );
+    assert.deepEqual(
+      (await client.decodeCode(0x000b, 5, -5, 2)).instructions.map(
+        ({ address, valid }) => ({ address, valid }),
+      ),
+      [
+        { address: 0x000b, valid: false },
+        { address: 0x000c, valid: false },
+      ],
+    );
     await assert.rejects(
       client.decodeCode(0, -1, 0, 1),
       (error: unknown) => assertControlError(error, "RANGE"),
@@ -284,6 +321,10 @@ void test("compatible fake implements the exact serialized Slice-1 command contr
       "decodeCode",
       "decodeCode",
       "decodeCode",
+      "decodeCode",
+      "decodeCode",
+      "decodeCode",
+      "decodeCode",
       "replaceCodeBreakpoints",
       "run",
       "stepInstruction",
@@ -291,6 +332,45 @@ void test("compatible fake implements the exact serialized Slice-1 command contr
     ]);
   } finally {
     await client.forceClose();
+    fs.rmSync(temporary, { recursive: true, force: true });
+  }
+});
+
+void test("raw breakpoint limit is validated separately from the local request cap", { timeout: 10_000 }, async () => {
+  const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "emu-limit-split-"));
+  const requestsLog = path.join(temporary, "requests.ndjson");
+  const client = await startFake("large-breakpoint-limit", {
+    additionalArguments: ["--requests-log", requestsLog],
+  });
+  try {
+    const hello = await client.handshake();
+    assert.equal(hello.limits.maxBreakpoints, 1_024);
+    await client.loadImage(await inspectRawCodeImage(fixture));
+    await client.reset(1, 0);
+
+    assert.deepEqual(await client.replaceCodeBreakpoints([2]), {
+      accepted: [2],
+      rejected: [],
+      limit: 5_000,
+    });
+    await assert.rejects(
+      client.replaceCodeBreakpoints(
+        Array.from({ length: 1_025 }, (_value, index) => index),
+      ),
+      (error: unknown) => assertControlError(error, "EMU_BREAKPOINT_LIMIT"),
+    );
+
+    const commands = fs
+      .readFileSync(requestsLog, "utf8")
+      .trim()
+      .split("\n")
+      .map((line) => (JSON.parse(line) as { command: string }).command);
+    assert.equal(
+      commands.filter((command) => command === "replaceCodeBreakpoints").length,
+      1,
+    );
+  } finally {
+    await client.terminate();
     fs.rmSync(temporary, { recursive: true, force: true });
   }
 });
@@ -460,6 +540,24 @@ void test("hostile command responses are fatal and reap the child", async (conte
       invoke: async (client: EmulatorClient) => {
         await establishEntry(client);
         await client.decodeCode(0, 0, 0, 2);
+      },
+    },
+    {
+      name: "negative decode reaches the base before all predecessor steps",
+      scenario: "hostile-decode-negative-early-anchor",
+      expectedCode: "EMU_TRANSPORT_SCHEMA",
+      invoke: async (client: EmulatorClient) => {
+        await establishEntry(client);
+        await client.decodeCode(100, 0, -5, 2);
+      },
+    },
+    {
+      name: "negative decode uses a predecessor placeholder at the byte base",
+      scenario: "hostile-decode-placeholder-at-base",
+      expectedCode: "EMU_TRANSPORT_SCHEMA",
+      invoke: async (client: EmulatorClient) => {
+        await establishEntry(client);
+        await client.decodeCode(100, 0, -1, 2);
       },
     },
     {
