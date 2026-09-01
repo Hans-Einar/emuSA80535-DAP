@@ -1071,3 +1071,265 @@ outside this review-only commit. This review accepts no Worker C behavior,
 `AC-001`–`AC-011`, real-emulator commit, final verification, or Slice-1 READY
 result. The mandatory real-emulator `EMU-BLK` gate remains untested and Slice 1
 remains **NOT_READY**.
+
+## Worker C debug-behavior review — `RVW-001-002-003`
+
+**Review date:** 2026-09-01
+
+**Reviewer role:** fresh independent Worker C reviewer; not the Worker C author
+or either Worker B reviewer
+
+**Reviewed product commit:**
+`574dd8d0b44c2970656fe7e9c0c41dc5164896cb`
+
+**Reviewed parent:**
+`0d1ce33d91758254efa65658e4af9b9b72a04360`
+
+**Authority:** GitHub Issue #3, accepted PR #2 SDP baseline, active
+`IT-001-002 / SL-001-002-001`, and the frozen `emu-debug` 1.0 contract
+
+**Disposition:** **changes-required; `CR-017`, `CR-018`, and `CR-019` open**
+
+### Scope and independence
+
+The reviewed commit has the exact stated parent. Its diff changes ten intended
+Worker C paths with 2,276 insertions and 75 deletions: the DAP session, stop
+state, CODE-reference, disassembly, breakpoint, fake-support, behavior-test,
+foundation-test, and README surfaces. The later Master handoff commit
+`5c329cc28e421e9a388e4bcf756851416d6902d6` is SDP-only; every product, test,
+fixture, package, and CI path at the working HEAD was byte-identical to exact
+`574dd8d...`.
+
+The review did not rely on the new tests alone. Source inspection challenged
+every request handler and transition, and transient independently authored DAP
+drivers exercised launch ordering, duplicate initialize, stopped-only reads,
+handle epochs, active-chunk pause, address conversion, breakpoint replacement,
+structured step rejection, malformed raw pagination, and the fake's branch
+predecessor behavior. The probes created no tracked artifact and changed no
+product or test file. This addendum is the only durable reviewer change; Master
+owns finding, sprint, traceability, and rework integration.
+
+### Findings
+
+#### `CR-017` — Blocking/high: a rejected step silently creates a new stop epoch
+
+**Evidence:** `stepInstruction` in `adapter/src/session.ts` lines 777-797 saves
+only the prior snapshot, calls `resumeFromStop()` (which invalidates the active
+handles), and on a non-transport command rejection restores logical stopped
+state with `this.stops.activate(priorSnapshot)`. `activate` increments the stop
+epoch and allocates fresh handles. No corresponding `stopped` event is emitted.
+
+An independent in-memory DAP backend returned the frozen structured command
+error `EMU_STEP_REJECTED` without changing its idle child boundary. Exact
+`574dd8d...` produced all of the following in one session:
+
+- `stepIn` failed with `EMU_STEP_REJECTED` as expected;
+- the previously valid frame and register-variable handles both immediately
+  failed `EMU_HANDLE_STALE`;
+- a new `stackTrace` silently returned frame handle 3 instead of handle 1;
+- no new `stopped` event explained that new epoch to the DAP client.
+
+The protocol states that a failed child request leaves state unchanged, and
+`D-004` freezes the adapter rule that request failures do not mutate state
+unless cleanup is the documented result. This behavior instead gives VS Code
+a failed action, an apparently still-stopped session, and an unexplained
+replacement identity for the same old snapshot. It also violates the stop-
+epoch contract used to justify `R-003`, `R-007`, `R-008`, and `R-013`.
+
+**Required correction:** suspend the old stop epoch while the step command is
+active so reads remain unavailable, but restore that exact epoch and its exact
+frame/scope/variable handles when a structured non-fatal rejection proves the
+child stayed at the old boundary. Do not call `activate` and do not emit a new
+stop for that failure. A successful step must continue to create one fresh
+epoch; transport/schema/timeout/EOF failure must still terminate and must never
+restore or promote a boundary. Add DAP coverage for the failed step response,
+unchanged handles/snapshot, no child follow-up, no stopped event, and a later
+successful step that does create fresh handles.
+
+#### `CR-018` — Blocking/high: the contract fake records taken branches as CODE predecessors
+
+**Evidence:** `executeOne` in `test-fixtures/fake-emulator/server.ts` lines
+692-703 computes the architectural next PC, changes the synthetic `SJMP` at
+`0x0003` to target `0x0002`, and then unconditionally executes
+`knownPredecessor.set(next, from)`. It therefore records `0x0003` as the CODE
+predecessor of `0x0002`, even though the decoded instruction occupies bytes
+`0x0003`-`0x0004` and is a taken branch, not a completed sequential
+instruction. This code predates Worker C, but Issue #3 explicitly requires this
+integrated review to challenge fake-versus-frozen-contract equivalence.
+
+The frozen negative-disassembly rule permits execution evidence only for an
+observed completed **sequential** instruction. An independently driven exact-
+commit session launched at `0x0002`, continued one negotiated four-instruction
+chunk through the `0x0003 -> 0x0002` loop, paused at the yielded `0x0002`
+boundary, and requested two instructions at offset -1. The fake returned its
+corrupt `0x0003` predecessor followed by `0x0002`. The correctly strict client
+rejected the resulting reverse/overlapping records as
+`EMU_TRANSPORT_SCHEMA: decodeCode records must be ordered and contiguous`, so
+a valid DAP continue/pause/disassemble sequence became a fatal transport
+failure instead of returning an unknown one-byte predecessor placeholder.
+
+This violates `R-017`, `D-005`, `D-010`, `AC-003`, and Issue #3's requirement
+that the fake implement the exact public contract rather than a convenience
+model. It does not invalidate the framing/bounds/ID evidence that resolved
+`CR-013`, but Worker B's fake responsibility cannot remain fully accepted
+until this newly exposed semantic hole is corrected.
+
+**Required correction:** add execution-derived predecessor knowledge only when
+the completed instruction falls through sequentially to
+`from + decoded.size` without wrap. A taken branch must neither create nor
+overwrite a contiguous predecessor entry for its target. Add an integrated
+test that starts at `0x0002`, executes the loop, pauses at `0x0002`, and proves
+negative disassembly returns the exact-count invalid predecessor placeholder
+plus the valid base record without a fatal event. Retain separate known-
+sequential coverage and the strict hostile-window client checks.
+
+#### `CR-019` — Medium: raw `stackTrace` pagination types/ranges are accepted as success
+
+**Evidence:** `stackTraceRequest` in `adapter/src/session.ts` lines 305-307
+uses `args.startFrame` and `args.levels` directly in JavaScript comparisons
+without runtime integer/range checks. The public TypeScript types do not
+validate raw DAP JSON at runtime.
+
+An independent raw-framed probe sent string values
+`{startFrame:"0",levels:"1"}` and then `{startFrame:-1,levels:1}`. Both
+requests succeeded with an empty stack while reporting `totalFrames: 1`.
+Neither changed child state, but accepting malformed pagination as a truthful
+response is inconsistent with the strict raw-argument handling elsewhere and
+can make a one-frame stopped session appear to have no frame.
+
+**Required correction:** when present, require `startFrame` and `levels` to be
+safe integers with `startFrame >= 0` and `levels >= 0`; reject malformed values
+with a stable failed DAP response and no child command/state/handle change.
+Preserve omitted/zero-level behavior and valid one-frame pagination. Add raw
+JSON tests for strings, fractions, negative values, and valid 0/1/beyond-end
+requests.
+
+### Accepted behavior and adversarial assessment
+
+Outside the findings above, the exact diff materially implements the frozen
+Worker C responsibilities:
+
+- initialize is accepted once; capability claims are limited to completed
+  configurationDone, instruction-breakpoint, disassemble, and stepping-
+  granularity surfaces;
+- launch waits for hello/load/reset, sends `initialized`, accepts configuration
+  breakpoints, and orders configurationDone response, launch response, then
+  entry stop;
+- reads require a stopped snapshot; one thread, one required-field current
+  frame, and PC/A/B/PSW/SP/DPTR/R0-R7 use one width-validated atomic snapshot;
+- valid resume paths invalidate old frame/register handles, and each real new
+  stop creates fresh handles;
+- opaque CODE references require exact `code:HHHH`; instruction breakpoints
+  additionally accept one-to-four-digit `0x`/`0X` or unsigned decimal forms;
+  whitespace, signs, other spaces, width/range errors, and fractional offsets
+  fail; byte offsets are applied once;
+- disassembly delegates to strict `decodeCode`, preserves exact count and
+  ordered numeric `0xHHHH` addresses, maps exact decoder text, marks unknown
+  predecessors invalid, and rejects whole-range/partial/wrap violations;
+- instruction breakpoints are a global replacement, de-duplicate only the
+  child request, retain DAP-order results, enforce the local/negotiated unique
+  limit, clear on an empty request, and report verified/rejected canonical
+  targets; the fake checks a breakpoint before execution and the adapter maps
+  it to exact DAP reason `instruction breakpoint`;
+- continue responds before scheduling, emits no unsolicited `continued`,
+  repeatedly yields through the event loop, and keeps child commands
+  serialized; pause responds before exactly one stop, handles active and idle
+  yield boundaries, schedules no run after intent, rejects repeated pause, and
+  never promotes a timeout/disconnect boundary;
+- omitted/statement/instruction `stepIn` completes exactly one successful child
+  step; line/target/unknown granularity, `next`, and `stepOut` fail without a
+  child command or state change;
+- missing executable, incompatible hello/capability, malformed protocol,
+  timeout, crash/EOF, launch cancellation, active-run disconnect, and repeated
+  disconnect use bounded cleanup and exactly-one termination guards. No review
+  probe left a fake, hostile, or adapter process alive.
+
+The source/package diff contains no source breakpoints/maps, raw memory browser,
+evaluate, mutation, watchpoint, attach/TCP, emulator bundling/download,
+interrupt/logical-stack feature, private emulator struct dependency, P1000
+semantic/default/fixture, or physical serial/GPIO/field-bus endpoint. The fake
+fault/scenario controls remain test-only and absent from product code and the
+VSIX.
+
+### AC and scope disposition
+
+| Criterion | Review disposition at `574dd8d...` |
+|---|---|
+| `AC-001` | Fake-backed implementation evidence passes hello/load/reset ordering, capability truthfulness, initialized/configuration/launch ordering, and entry stop. No real-runtime or real-VS-Code acceptance is claimed. |
+| `AC-002` | Passes for the exact atomic snapshot, one thread/frame, required frame fields, register names, widths, and bank-selected `r[8]` contract. |
+| `AC-003` | **Changes required:** forward, known/unknown, range, exact-count, and numeric mapping paths pass, but `CR-018` makes a valid branch/pause predecessor case fatal. Real UI evidence also remains final verification work. |
+| `AC-004` | Fake-backed DAP path passes numeric round trip, non-zero offset once, under/overflow rejection, global replacement/dedupe/order/limit/clear, pre-execution hit, and exact stop reason. Real UI/runtime evidence remains open. |
+| `AC-005` | Required successful omitted/statement/instruction and unsupported line/next/stepOut paths pass. Worker C remains changes-required because `CR-017` violates the adjacent failed-step state invariant. |
+| `AC-006` | Passes active/idle pause ordering, repeated bounded yields, no continued event, no post-intent chunk, repeated pause, timeout, and disconnect probes. |
+| `AC-007` | Required resume/new-stop stale/fresh-handle path passes; `CR-017` separately blocks stop-epoch coherence for a failed step that did not resume successfully. |
+| `AC-008` | Fake-backed missing executable, version/capability mismatch, malformed, timeout, crash/EOF, diagnostic, terminal cleanup, and no-orphan cases pass. |
+| `AC-009` | Active-run and repeated disconnect probes pass response/cleanup ordering and exactly-one terminated behavior. |
+| `AC-010` | Not accepted here: the local Windows build/package/install passed, but no exact-commit Linux run, supported-floor install, real-runtime F5 smoke, or dual-platform final lane was available. |
+| `AC-011` | Local source/fixture/archive/process inspection passes firmware neutrality and no-hardware scope. Final cross-platform verification remains open. |
+
+No deferred Slice-1 scope was accepted. `CR-017`-`CR-019` require correction
+and fresh independent re-review before final verification may treat
+`AC-001`-`AC-009` as an accepted set.
+
+### Independent executable evidence
+
+All executable product checks ran in a clean detached worktree at exact
+`574dd8d0b44c2970656fe7e9c0c41dc5164896cb`:
+
+- reviewer host: Windows x64, Node `v24.11.0`, npm `11.6.1`, VS Code
+  `1.134.0` commit `110a328ea54b42367b803ec53ee0bf52ef26b419`;
+- `git rev-parse 574dd8d...^` and
+  `git merge-base 0d1ce33... 574dd8d...` both returned exact parent
+  `0d1ce33d91758254efa65658e4af9b9b72a04360`;
+- `git diff --check 0d1ce33... 574dd8d...`: pass; ten intended paths,
+  2,276 insertions and 75 deletions;
+- complete diff plus the integrated session/client/fake/state/address/package
+  sources inspected rather than trusting test names;
+- clean `npm ci`: pass, 376 packages, zero reported vulnerabilities; two
+  transitive deprecation warnings were non-blocking;
+- `npm run lint` and `npm run build`: pass;
+- full compiled suite: 86/86 pass;
+- contract-only suite: 45/45 pass;
+- Worker C focused behavior/unit suite: 23/23 pass;
+- `npm run fixture:check`: pass; 65,536 bytes and SHA-256
+  `1550101bc337eba836f6fc6a3012b80677b9dfe6a0c658fcf615194be54e5b88`;
+- independent DAP lifecycle/pause probe: duplicate initialize failed, order was
+  initialized/configurationDone/launch/entry, running reads failed, pause
+  response preceded one pause stop, old handles were stale after that real
+  resume, repeated pause failed, exactly one chunk ran, and no continued event
+  appeared;
+- independent DAP address/breakpoint probe: decode arguments were exact
+  `[16,2,-1,2]`; returned addresses were `0x0011`/`0x0012`; `0x0010 + 2` and
+  decimal 18 de-duplicated to child address 18 while retaining two verified
+  DAP entries; overflow and limit entries were rejected; empty input cleared;
+- independent structured-step, raw-pagination, and branch-predecessor probes
+  reproduced `CR-017`-`CR-019` exactly as recorded above;
+- `npm run package` and `npm run package:contents`: pass; 47-file, 119.15-KB
+  VSIX; reviewer-built SHA-256
+  `8B7F585953EAC69F09CCD2E6F142CFD67F1A3EA34872849A4058E12B260EFDFA`;
+- `code --install-extension ... --force`: pass as local identifier
+  `undefined_publisher.emusa80535-dap@0.1.0`; no Marketplace credential was
+  required;
+- archive allowlist/safety/deferred-feature/private-struct/fake-only scans and
+  final Windows process scan: pass; the archive contains no emulator, fake,
+  firmware, test, SDP/protocol source, owned TypeScript/source-map, or build
+  toolchain.
+
+No GitHub Actions run existed for exact `574dd8d...` at review time, and the
+implementation PR still pointed remotely to earlier `0d1ce33...`. Therefore
+this review makes no exact-commit Linux claim. It also makes no supported-floor
+VS Code, real disassembly UI, real `emuSA80535-N`, or `EMU-BLK-001`-`010`
+acceptance claim.
+
+### Result and next gate
+
+`RVW-001-002-003` returns **changes-required**. A corrective worker must repair
+`CR-017`-`CR-019`, add the exact adversarial regressions above, and preserve all
+accepted behavior. A fresh reviewer must then rerun the full build/test/
+contract/fixture/package/install/process/safety matrix plus the three original
+reproductions.
+
+Master owns durable finding/traceability/rework integration outside this
+review-only commit. Final verification, Linux/Windows dual-lane acceptance,
+supported-floor and real-VS-Code UI smoke, and the exact accepted real emulator
+commit remain later gates. Slice 1 remains **NOT_READY**.
