@@ -106,3 +106,9 @@ Commit `33a83a5a62b3be827fac6ea052517cb588d899e2` implements the frozen
 client/process/fake/fixture boundary and entry launch orchestration. Worker
 checks pass 41/41 plus 23/23 contract tests. This is not yet accepted review
 evidence and does not satisfy the real-emulator gate.
+
+Independent `RVW-001-002-002` returned changes-required. `CR-012` requires
+strict command-specific response semantics, `CR-013` requires a truly
+contract-faithful bounded fake, and `CR-014` fixes an impossible Windows
+shell-free batch launch path. Worker C cannot safely start on the current
+client contract.

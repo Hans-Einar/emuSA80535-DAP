@@ -52,10 +52,11 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh reviewer performs `RVW-001-002-002` against exact Worker B commit
-`33a83a5a62b3be827fac6ea052517cb588d899e2`, challenging protocol fidelity,
-fault/lifecycle cleanup, fake equivalence, fixture neutrality, package boundary,
-and the absence of Worker C capability claims. Worker C waits for disposition.
+A fresh corrective worker addresses only `CR-012`–`CR-014`: strict
+command-specific response validation, bounded/strict fake hello and request IDs,
+and shell-free executable resolution that never selects unspawnable Windows
+batch wrappers. It adds adversarial regressions and produces one commit for
+fresh `RVW-001-002-005`. Worker C remains paused.
 
 ## Verification completed
 

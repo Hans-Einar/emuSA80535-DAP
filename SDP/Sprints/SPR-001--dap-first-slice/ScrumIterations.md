@@ -475,3 +475,27 @@ worker-stage VSIX SHA-256 is
 `536fe3e8acce8d8e7fbbf0bbcc2121a9707d873a2b84aad350ff44dc20aed5b7`.
 The real-emulator gate remains unproven. `RVW-001-002-002` now reviews this
 exact commit before Worker C begins.
+
+### Worker B review `RVW-001-002-002`
+
+**Reviewed commit:** `33a83a5a62b3be827fac6ea052517cb588d899e2`
+
+**Review commit:** `34f30b6401db17265ddede1f9e3adf9d6edb6bb1`
+
+**Disposition:** **changes-required**
+
+The fresh reviewer reproduced three material gaps despite the green worker
+suite:
+
+- `CR-012` (blocking/high): the client accepts invalid command-specific
+  semantics, including unordered/incorrect `decodeCode`, forbidden
+  `run.reason=entry`, unadvertised snapshot variants, and insufficiently bound
+  breakpoint replacement results.
+- `CR-013` (blocking/high): the fake accepts unknown required capabilities and
+  reused request IDs, and can emit a response larger than its advertised
+  `maxRecordBytes`.
+- `CR-014` (medium): Windows resolution selects `.CMD`/`.BAT`, but mandatory
+  `shell:false` spawn fails them with `EINVAL`.
+
+Worker C remains paused. A fresh corrective worker addresses only these
+findings, followed by independent `RVW-001-002-005`.
