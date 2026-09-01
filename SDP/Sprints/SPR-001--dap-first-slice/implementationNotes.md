@@ -138,3 +138,8 @@ DAP surface and maps AC-001–AC-009 in tests. Worker evidence passes 86/86,
 45/45 contract, and 23/23 focused AC tests plus package/install/safety checks.
 Fresh `RVW-001-002-003` is required; AC-010/011, real UI, and real-emulator
 verification remain open.
+
+Independent `RVW-001-002-003` returned changes-required: `CR-017` forbids
+silent epoch mutation after rejected step, `CR-018` fixes false sequential
+predecessor evidence in the contract fake, and `CR-019` adds strict raw
+`stackTrace` pagination validation. AC-003 is blocked until correction.

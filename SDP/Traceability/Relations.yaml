@@ -201,6 +201,19 @@ relations:
   - { from: RVW-001-002-006, type: resolves, to: CR-012 }
   - { from: RVW-001-002-006, type: resolves, to: CR-015 }
   - { from: RVW-001-002-006, type: resolves, to: CR-016 }
+  - { from: RVW-001-002-003, type: raises, to: CR-017 }
+  - { from: RVW-001-002-003, type: raises, to: CR-018 }
+  - { from: RVW-001-002-003, type: raises, to: CR-019 }
+  - { from: CR-017, type: blocks, to: SL-001-002-001 }
+  - { from: CR-018, type: blocks, to: SL-001-002-001 }
+  - { from: CR-019, type: concerns, to: SL-001-002-001 }
+  - { from: CR-017, type: concerns, to: R-008 }
+  - { from: CR-018, type: concerns, to: R-017 }
+  - { from: CR-019, type: concerns, to: R-012 }
+  - { from: SL-001-002-001, type: addresses, to: CR-017 }
+  - { from: SL-001-002-001, type: addresses, to: CR-018 }
+  - { from: SL-001-002-001, type: addresses, to: CR-019 }
+  - { from: SL-001-002-001, type: reviewed_by, to: RVW-001-002-007 }
 
   - { from: VER-001-001-001, type: raises, to: CR-008 }
   - { from: CR-008, type: concerns, to: S-001 }

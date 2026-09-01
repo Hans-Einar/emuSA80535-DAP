@@ -584,3 +584,27 @@ Worker-stage VSIX SHA-256 is
 `8B957E26FE52AC195D52024C1C50B1EE90E292D9605C162D95CD3A1EC1B4639C`.
 This is not accepted until fresh `RVW-001-002-003`; Linux/final/UI/real-emulator
 gates remain open.
+
+### Worker C review `RVW-001-002-003`
+
+**Reviewed commit:** `574dd8d0b44c2970656fe7e9c0c41dc5164896cb`
+
+**Review commit:** `e5abe7c0d1fb91be0daa15ee2d1595d48d896760`
+
+**Disposition:** **changes-required**
+
+The fresh reviewer passed the standard matrix and most fake-backed AC paths,
+then raised three findings:
+
+- `CR-017` (high/blocking): a structured rejected `stepInstruction` restores
+  the old snapshot through a new stop epoch, invalidating handles without a
+  new `stopped` event.
+- `CR-018` (high/blocking): the fake records a taken `SJMP` as a sequential
+  predecessor, causing a valid later negative-disassembly request to fail
+  schema validation.
+- `CR-019` (medium): raw string or negative `stackTrace` pagination values can
+  succeed instead of returning a stable failure.
+
+AC-003 is changes-required. AC-001/002/004–009 have passing required paths but
+the set remains unaccepted pending correction. A fresh worker and
+`RVW-001-002-007` are required before final verification.
