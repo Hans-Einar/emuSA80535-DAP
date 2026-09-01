@@ -71,10 +71,12 @@ function frame(message: object): Buffer {
 
 function dapReader(output: PassThrough): {
   queued: DapMessage[];
+  received: DapMessage[];
   next: () => Promise<DapMessage>;
 } {
   let buffer = Buffer.alloc(0);
   const queued: DapMessage[] = [];
+  const received: DapMessage[] = [];
   const waiters: Array<(message: DapMessage) => void> = [];
   output.on("data", (chunk: Buffer) => {
     buffer = Buffer.concat([buffer, chunk]);
@@ -96,6 +98,7 @@ function dapReader(output: PassThrough): {
         buffer.subarray(bodyStart, bodyStart + length).toString("utf8"),
       ) as DapMessage;
       buffer = buffer.subarray(bodyStart + length);
+      received.push(message);
       const waiter = waiters.shift();
       if (waiter === undefined) {
         queued.push(message);
@@ -106,6 +109,7 @@ function dapReader(output: PassThrough): {
   });
   return {
     queued,
+    received,
     next: async () =>
       new Promise<DapMessage>((resolve) => {
         const message = queued.shift();
@@ -339,6 +343,105 @@ class DeferredRunFailureBackend implements TestLaunchBackend {
     });
     return this.disconnectPromise;
   }
+}
+
+interface ControlledRunCall {
+  readonly ordinal: number;
+  readonly maxInstructions: number;
+  resolve(snapshot: EmulatorSnapshot): void;
+}
+
+class ControlledRunBackend implements TestLaunchBackend {
+  public launchCalls = 0;
+  public runCalls = 0;
+  public cleanupCalls = 0;
+  public lastResolvedSnapshot: EmulatorSnapshot | undefined;
+  private readonly queuedRuns: ControlledRunCall[] = [];
+  private readonly runWaiters: Array<(run: ControlledRunCall) => void> = [];
+  private readonly unresolvedRuns = new Set<number>();
+  private disconnectPromise: Promise<void> | undefined;
+
+  public get queuedRunCount(): number {
+    return this.queuedRuns.length;
+  }
+
+  public get unresolvedRunCount(): number {
+    return this.unresolvedRuns.size;
+  }
+
+  public async launch(): Promise<EmulatorLaunchResult> {
+    this.launchCalls += 1;
+    return {
+      client: {} as EmulatorClient,
+      hello: deterministicHello,
+      image: { path: fixture, sha256: "test-only" },
+      entrySnapshot: deterministicEntrySnapshot,
+    };
+  }
+
+  public run(maxInstructions: number): Promise<EmulatorSnapshot> {
+    assert.equal(
+      maxInstructions,
+      deterministicHello.limits.maxRunChunkInstructions,
+    );
+    const ordinal = ++this.runCalls;
+    this.unresolvedRuns.add(ordinal);
+    return new Promise<EmulatorSnapshot>((resolve) => {
+      let settled = false;
+      const call: ControlledRunCall = {
+        ordinal,
+        maxInstructions,
+        resolve: (snapshot) => {
+          assert.equal(settled, false, `run #${ordinal} was already resolved`);
+          settled = true;
+          this.unresolvedRuns.delete(ordinal);
+          this.lastResolvedSnapshot = snapshot;
+          resolve(snapshot);
+        },
+      };
+      const waiter = this.runWaiters.shift();
+      if (waiter === undefined) {
+        this.queuedRuns.push(call);
+      } else {
+        waiter(call);
+      }
+    });
+  }
+
+  public nextRun(): Promise<ControlledRunCall> {
+    const run = this.queuedRuns.shift();
+    if (run !== undefined) {
+      return Promise.resolve(run);
+    }
+    return new Promise<ControlledRunCall>((resolve) => {
+      this.runWaiters.push(resolve);
+    });
+  }
+
+  public disconnect(): Promise<void> {
+    this.disconnectPromise ??= Promise.resolve().then(() => {
+      this.cleanupCalls += 1;
+    });
+    return this.disconnectPromise;
+  }
+}
+
+function deterministicYieldSnapshot(
+  pc: number,
+  instructionCount: number,
+): EmulatorSnapshot {
+  return {
+    ...deterministicEntrySnapshot,
+    resultKind: "yield",
+    reason: "yield",
+    pc,
+    registers: {
+      ...deterministicEntrySnapshot.registers,
+      a: instructionCount,
+    },
+    instructionCount,
+    machineCycleCount: instructionCount * 2,
+  };
 }
 
 function asRecord(value: unknown): Record<string, unknown> {
@@ -1105,25 +1208,76 @@ void test("AC-006 run timeout after pause intent terminates and never promotes a
 });
 
 void test("bounded continue remains logically running across repeated yields until pause", { timeout: 10_000 }, async () => {
-  const harness = new DapHarness({ logRequests: true });
+  const backend = new ControlledRunBackend();
+  const harness = new DapHarness({ backend });
   try {
     await harness.initialize();
     await harness.launchToConfiguration();
     await harness.configure();
+    assert.equal(backend.launchCalls, 1);
+
     harness.send("continue", { threadId: 1 });
     assertSuccess(await harness.dap.next(), "continue");
-    await new Promise<void>((resolve) => setTimeout(resolve, 30));
+
+    const run1 = await backend.nextRun();
+    assert.equal(run1.ordinal, 1);
+    run1.resolve(deterministicYieldSnapshot(0x0010, 1));
+
+    const run2 = await backend.nextRun();
+    assert.equal(run2.ordinal, 2);
+    assert.equal(backend.runCalls, 2);
+    run2.resolve(deterministicYieldSnapshot(0x0020, 2));
+
+    const run3 = await backend.nextRun();
+    assert.equal(run3.ordinal, 3);
+    assert.equal(backend.runCalls, 3);
+    assert.equal(backend.unresolvedRunCount, 1);
+
     harness.send("pause", { threadId: 1 });
     assertSuccess(await harness.dap.next(), "pause");
-    assert.deepEqual((await harness.dap.next()).body, {
+    assert.equal(
+      harness.dap.queued.some((message) => message.event === "stopped"),
+      false,
+    );
+
+    const finalYield = deterministicYieldSnapshot(0x0030, 3);
+    run3.resolve(finalYield);
+    const stopped = await harness.dap.next();
+    assert.equal(stopped.event, "stopped");
+    assert.deepEqual(stopped.body, {
       reason: "pause",
       threadId: 1,
     });
-    assert.ok(
-      harness.readRequests().filter((request) => request.command === "run")
-        .length > 1,
+    assert.equal(
+      harness.dap.received.filter(
+        (message) =>
+          message.event === "stopped" &&
+          asRecord(message.body).reason === "pause",
+      ).length,
+      1,
     );
+    assert.equal(
+      harness.dap.received.some((message) => message.event === "continued"),
+      false,
+    );
+    assert.equal(backend.runCalls, 3);
+    assert.equal(backend.queuedRunCount, 0);
+    assert.equal(backend.unresolvedRunCount, 0);
+    assert.deepEqual(backend.lastResolvedSnapshot, finalYield);
+
+    harness.send("stackTrace", { threadId: 1 });
+    const stack = await harness.dap.next();
+    assertSuccess(stack, "stackTrace");
+    assert.equal(
+      asRecords(asRecord(stack.body).stackFrames)[0]
+        ?.instructionPointerReference,
+      "code:0030",
+    );
+    harness.send("pause", { threadId: 1 });
+    assertFailure(await harness.dap.next(), "pause", "EMU_STATE_NOT_RUNNING");
+
     await harness.disconnect();
+    assert.equal(backend.cleanupCalls, 1);
   } finally {
     await harness.close();
   }
