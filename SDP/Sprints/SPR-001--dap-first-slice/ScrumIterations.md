@@ -439,3 +439,19 @@ and diff whitespace checks. The worker-stage VSIX SHA-256 was
 `8F0B006416483CABFFEB5E4BBB284D9BA952D6D6E509E58A18EE78094B17FEA7`.
 `CR-009`–`CR-011` remain in progress until independent
 `RVW-001-002-004` accepts the exact corrective commit.
+
+### Corrective re-review `RVW-001-002-004`
+
+**Reviewed commit:** `a01c48c917186a98152d849565660081ff11746e`
+
+**Review commit:** `6d4d09f89539d21f955e0b81445fe0132906960d`
+
+**Disposition:** **accepted; no blocking Worker A finding remains**
+
+The second fresh reviewer independently reproduced the original late-resolve
+and late-reject defect on `a30129b`, then proved monotonic termination,
+exactly-one launch settlement/termination, duplicate and post-terminal request
+rejection, cleanup-failure disposition, strict raw JSON types with an untouched
+backend, and truthful README on `a01c48c`. Lint/build, 18/18 tests, package,
+contents, isolated VSIX install, and safety/scope scans passed. `CR-009`–
+`CR-011` are resolved. Worker B may begin; complete Slice 1 remains in progress.

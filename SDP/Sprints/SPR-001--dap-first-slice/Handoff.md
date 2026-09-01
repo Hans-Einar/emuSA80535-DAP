@@ -52,10 +52,11 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh reviewer performs `RVW-001-002-004` against exact corrective commit
-`a01c48c917186a98152d849565660081ff11746e`, reproduces the original race and
-invalid-type probes, and decides `CR-009`–`CR-011`. Worker B must not start
-before acceptance.
+Worker B implements only the strict serialized `emu-debug` 1.0 client,
+launch-owned child lifecycle/timeouts/cleanup, contract-faithful fake server,
+synthetic exact-64-KiB firmware fixture, and fault/contract tests. It must build
+on accepted foundation commit `a01c48c917186a98152d849565660081ff11746e`
+without adding Worker C DAP behavior. Fresh `RVW-001-002-002` follows.
 
 ## Verification completed
 

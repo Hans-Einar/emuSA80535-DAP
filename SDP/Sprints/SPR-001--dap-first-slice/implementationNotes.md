@@ -95,3 +95,7 @@ truthfulness. These findings are not resolved by passing build/package checks.
 Corrective commit `a01c48c917186a98152d849565660081ff11746e` addresses the
 three findings and adds adversarial lifecycle/type tests; worker checks pass
 18/18. The correction remains in review and is not yet accepted evidence.
+
+Fresh `RVW-001-002-004` accepted that exact commit and resolved `CR-009`–
+`CR-011` with no new finding. Worker A foundation is accepted for forward
+integration; this does not accept Worker B/C behavior or the full slice.

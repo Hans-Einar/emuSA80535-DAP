@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-08-31T23:54:22Z"
+updatedAt: "2026-09-01T00:04:54Z"
 items:
   - id: M-001
     kind: mandate
@@ -504,27 +504,27 @@ items:
   - id: CR-009
     kind: review_finding
     title: In-flight launch can reopen terminated session
-    status: open
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
 
   - id: CR-010
     kind: review_finding
     title: Raw DAP launch types are not validated strictly
-    status: open
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
 
   - id: CR-011
     kind: review_finding
     title: README overstates Worker B and C integration
-    status: open
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
 
   - id: RVW-001-002-004
     kind: review
     title: Corrective re-review of Worker A foundation
-    status: in_progress
-    state: target
+    status: closed
+    state: current
     doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
