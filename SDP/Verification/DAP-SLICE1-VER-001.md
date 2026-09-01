@@ -347,3 +347,212 @@ Because AC-010 fails, AC-001/003/004/011 are blocked, no accepted real
 `VER-001-002-001` concludes:
 
 **NOT_READY**
+
+## `VER-001-002-002` addendum — exact-HEAD corrective re-verification
+
+**Verification time:** 2026-09-01T03:55:58Z
+
+**Verified pushed integrated HEAD:**
+`3bb4264e2dd9166e38c1140216501b6e1eae5238`
+
+**Branch:** `codex/dap-first-slice`
+
+**Pull request:**
+[#4](https://github.com/Hans-Einar/emuSA80535-DAP/pull/4)
+
+**Review disposition:** **ACCEPTED** — `RVW-001-002-008` and
+`RVW-001-002-009` independently accepted the corrective implementations, and
+this pass found no new repository-local product, test, workflow, package, or
+process finding.
+
+**Verification disposition:** **CORRECTIONS VERIFIED; EXTERNALLY BLOCKED**
+
+**Final disposition:** **NOT_READY**
+
+### Scope and independence
+
+This is the fresh `VER-001-002-002` pass required after `CR-020` and `CR-021`.
+The verifier read Issue #3 and the prior report/review chain, inspected the four
+specified GitHub Actions jobs and their actual logs, reran exact-HEAD local
+package and traceability spot checks, and revalidated the live
+`Hans-Einar/emuSA80535-N` default. The verifier did not author or repair
+product, test, workflow, package, sprint, review, or traceability content. This
+addendum is the only verifier-authored path.
+
+Issue #3 permits fake-backed adapter development but forbids using that fake as
+real-runtime acceptance. Accordingly, successful fake-backed Actions close
+the repository-local findings but do not satisfy the accepted-real-emulator,
+real F5, or actual disassembly-UI gates.
+
+### Exact four-job GitHub Actions evidence
+
+Both workflow runs report exact branch head `3bb4264e...`. The push jobs
+checked out that commit directly. The pull-request jobs checked out generated
+merge commit `81a0f9dcdd969f1efe38c5c0a5e4ec44efcb1997`, whose parents are base
+`31ac8facdb1310fc858f3545ece052c671db42c6` and exact head `3bb4264e...`.
+GitHub's commit API reports the same tree
+`14900a8dc0d7f40bd1e963a033f5100046fac6f7` for the merge commit and exact
+head, so the PR jobs exercised the exact requested repository content rather
+than a divergent merge tree.
+
+| Event / run | Exact job | Hosted platform | Actual result |
+|---|---|---|---|
+| pull request `33467616744` | Linux `99730638857` | Ubuntu 24.04.4, Node 22.20.0 | **PASS** — clean install, lint, full, contract, fixture, package, contents, exact policy, and floor smoke |
+| pull request `33467616744` | Windows `99730638636` | Windows Server 2025 `10.0.26100`, Node 22.20.0 | **PASS** — clean install, lint, full, contract, fixture, package, contents, exact policy, and floor smoke |
+| push `33467614290` | Linux `99730630653` | Ubuntu 24.04.4, Node 22.20.0 | **PASS** — clean install, lint, full, contract, fixture, package, contents, exact policy, and floor smoke |
+| push `33467614290` | Windows `99730630555` | Windows Server 2025 `10.0.26100`, Node 22.20.0 | **PASS** — clean install, lint, full, contract, fixture, package, contents, exact policy, and floor smoke |
+
+The jobs are not superficial green passes:
+
+- every log shows `npm ci` actually adding 397 packages and auditing 398 with
+  zero reported vulnerabilities, followed by a real `eslint .` execution;
+- both Windows jobs execute all 99 full tests and all 45 focused contract
+  tests with zero failures/skips; both Linux jobs execute the same 99/45
+  enumerated tests with zero failures, with only the two full-suite and one
+  contract-suite Windows-specific launcher/PATHEXT cases explicitly skipped;
+- the corrected AC-006 target, `run timeout after pause intent terminates and
+  never promotes an unproven boundary`, passes in every full-suite log;
+- every fixture step verifies exactly 65,536 bytes and SHA-256
+  `1550101bc337eba836f6fc6a3012b80677b9dfe6a0c658fcf615194be54e5b88`;
+- every package step creates the VSIX, every contents step runs `vsce ls` and
+  prints the product/runtime contents, and every independent policy step
+  reports exactly 47 allowlisted archive entries;
+- every smoke step installs and activates
+  `undefined_publisher.emusa80535-dap@0.1.0` from the just-built VSIX in an
+  isolated extension root under actual VS Code 1.95.0 commit
+  `912bb683695358a54ae0c670461738984cbb5b95`;
+- the installed product, not the development harness, contributes the debug
+  type and packaged adapter entry. The extension-host harness checks entry
+  reason/thread, sends disconnect, and requires exactly one `terminated`
+  event;
+- all four structured `PACKAGED_SMOKE_PASS` records show the exact fake command
+  sequence `hello`, `load`, `reset`, `replaceCodeBreakpoints`, `terminate`, DAP
+  events `initialized`, `stopped`, `terminated`, and `orphanProcesses: 0`; and
+- each extension-host runner exits zero after the structured evidence is
+  written. Non-fatal Electron D-Bus/GPU diagnostics on hosted Linux do not
+  replace or invalidate the independently checked DAP, fake PID, process-scan,
+  and cleanup evidence.
+
+The four job-local VSIX hashes are respectively
+`89b6ec1ee82706eb1b0b735f0d3f5f25002d93390c1c8317e830e7eef3d577c9`,
+`b94b6d082b1e298bbffc4d841971b7b8c51eb72f642aab6ef7b1ae0f418585ee`,
+`dda761fa9dd36cef0bcb974b1986bc5855c68ba13a05362801478479f1d95e46`,
+and `01936649a8e54907fabe5b8cdcd5ef040a000e0f182d125733931780a7dd5397`.
+Platform/run-specific ZIP metadata accounts for different archive hashes; the
+same exact 47-entry policy and installed identity pass in every job.
+
+### Exact-HEAD local spot checks
+
+The local branch and remote branch both resolved to exact `3bb4264e...` before
+this report edit. A fresh local Windows `npm ci` installed 405 packages and
+reported zero vulnerabilities. `npm run lint`, the 99/99 full suite, the 45/45
+contract suite, fixture verification, package creation, `package:contents`,
+and the 47-entry exact package policy all passed. The local VSIX SHA-256 was
+`CD1FE7C4EDA53521C3CD80C762FF1E4DCFE68B9F55AC0280B511AB56452015E1`.
+
+Exact manifest hashes remain:
+
+- `package.json`:
+  `573D09C779DACF5E194DD5F0DA211CB3B972C3154AE5B7CCD659AA603CCCEB82`;
+- `package-lock.json`:
+  `C8FAA1219F927B8D37C9B16ECF5F75109D9BBE1FB22C76DFC8AE6E5A8666B9C5`.
+
+All 67 existing `Ledger.ndjson` records parsed independently as JSON and
+`git diff --check` passed. `CurrentIndex.yaml` intentionally still records
+`CR-020`/`CR-021` open and `VER-001-002-002` in progress at this verifier
+boundary; updating that Master-owned traceability state is outside this
+report-only pass.
+
+### `CR-020` and `CR-021` disposition
+
+| Finding | Corrective review | Exact rerun evidence | Disposition |
+|---|---|---|---|
+| `CR-020` — missing cross-platform install/launch smoke | `RVW-001-002-008` accepts `2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5` | all four exact-tree Ubuntu/Windows push/PR jobs execute package contents/policy and installed floor extension-host launch/entry/disconnect/no-orphan smoke | **RESOLVED** |
+| `CR-021` — platform-speed-dependent AC-006 timeout test | `RVW-001-002-009` accepts `1e104a18a365b5ad7666e86faad4b8fa00f14715` | corrected deterministic target and unchanged concrete transport timeout/kill/reap suite pass in all four exact-tree jobs; Windows full/contract jobs are 99/99 and 45/45 | **RESOLVED** |
+
+No rerun of the previously failing old job is used as closure. The evidence is
+four fresh jobs on the post-correction integrated tree. Closing `CR-020` removes
+the repository-local CI defect; it does not convert the still-unrunnable real
+F5 requirement into a pass.
+
+### Live real-emulator revalidation
+
+GitHub and `git ls-remote` still resolve the default `master` of
+`Hans-Einar/emuSA80535-N` to exact commit:
+
+`c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`
+
+The local repository contains that exact object, although its working branch is
+the unrelated UART branch and was not treated as default-runtime evidence.
+Direct inspection of the exact master tree confirms the previous source map:
+the root Makefile still defines only curses-linked `emu`; the tree contains no
+headless server source/target and no `emu-debug`, NDJSON, protocol `hello`,
+`decodeCode`, `replaceCodeBreakpoints`, or `stepInstruction` wire command.
+Core `init/load/reset`, one-record `decode`, one breakpoint, bounded run, and
+one-instruction step seams remain present.
+
+There are no releases and no tags. The only open emulator PR is #5 at
+`6df64847a11b173eef77c55a6a56a839e6aa5fb3`, for deterministic mode-3 UART;
+its file list contains UART core/test/SDP work and no debug-server process.
+There is therefore still no accepted real executable that can be substituted
+into the adapter contract or VS Code suite. This pass did not relabel the fake
+as real.
+
+| Blocker | Status at exact `c0cd6f26...` | Exact remaining gap |
+|---|---|---|
+| `EMU-BLK-001` | **MISSING** | No no-curses `emu-debug` build target or executable source exists. |
+| `EMU-BLK-002` | **MISSING** | No bounded/correlated NDJSON server or stdout protocol-isolation/error boundary exists. |
+| `EMU-BLK-003` | **MISSING** | No protocol 1.0 hello/version/capability/product/variant/limit handshake exists. |
+| `EMU-BLK-004` | **SATISFIED_CORE_ONLY** | Deterministic init/reset and exact 64-KiB load core seams exist; wire orchestration is unavailable. |
+| `EMU-BLK-005` | **MISSING** | No layout-independent atomic architectural register snapshot accessor/wire result exists. |
+| `EMU-BLK-006` | **PARTIAL** | One-record core `decode()` exists; exact-count/range/predecessor/placeholder `decodeCode` wire contract does not. |
+| `EMU-BLK-007` | **PARTIAL** | One core breakpoint with pre-execution stop exists; atomic replace-all table/clear/limit/wire result does not. |
+| `EMU-BLK-008` | **PARTIAL** | Bounded core run/results exist; negotiated wire run/yield snapshot/repeated adapter scheduler integration does not. |
+| `EMU-BLK-009` | **PARTIAL** | One-instruction core step exists; versioned command and stable wire stop/error mapping do not. |
+| `EMU-BLK-010` | **MISSING** | No server terminate/EOF/crash, Linux/Windows stdio lifecycle, no-orphan, stdout-isolation, or no-physical-I/O process suite exists. |
+
+Remaining real-integration blockers are `EMU-BLK-001`–`003` and
+`EMU-BLK-005`–`010`. `EMU-BLK-004` remains only a lower-level core seam.
+
+### Strict `AC-001` through `AC-011` disposition
+
+These are final-criterion statuses, not just fake-suite statuses. In
+particular, AC-010 is not marked PASS merely because its corrected fake-backed
+dual-platform lane passes: Issue #3 also requires the F5 launch path with the
+accepted real runtime before Slice-1 completion.
+
+| AC | Status | Fake-backed / available evidence and mandatory remaining gate |
+|---|---|---|
+| `AC-001` | **BLOCKED** | Fake-backed launch, truthful capabilities, load/reset, configuration ordering, and entry stop pass, including all four packaged smokes. Accepted-real-emulator F5 entry remains blocked by `EMU-BLK-001`–`003`/`005`. |
+| `AC-002` | **PASS** | One thread, truthful current-PC frame, read-only scope, and exact register snapshot pass. The separate real-integration gate remains blocked by `EMU-BLK-005`. |
+| `AC-003` | **BLOCKED** | Exact-count mapping, numeric addresses, predecessor behavior, and range failures pass against the fake. Actual VS Code disassembly UI and real `decodeCode` remain blocked by `EMU-BLK-001`–`003`/`006`. |
+| `AC-004` | **BLOCKED** | Canonical references, offset-once, under/overflow, replace-all/clear/limit, and pre-execution hit pass against the fake. UI-originated request plus real replacement server remain blocked by `EMU-BLK-001`–`003`/`007`. |
+| `AC-005` | **PASS** | Exact fake-backed `stepIn` and non-resuming rejection of unsupported/malformed stepping pass. The separate real suite remains blocked by `EMU-BLK-009`. |
+| `AC-006` | **PASS** | Active/idle/repeated-yield pause, response-before-stop, no-next-run, deterministic timeout/no-unproven-boundary, termination, and concrete transport cleanup all pass locally and in the four jobs. The separate real suite remains blocked by `EMU-BLK-008`. |
+| `AC-007` | **PASS** | Resume/new stop invalidates old frame/scope/variable handles; rejected non-resuming step preserves the epoch. |
+| `AC-008` | **PASS** | Required fake/client executable, handshake, schema, timeout, crash/EOF diagnostics and bounded cleanup pass on Linux and Windows. |
+| `AC-009` | **PASS** | Active and repeated disconnect paths reap the launch-owned fake child and emit exactly one termination; all packaged smokes report zero orphans. |
+| `AC-010` | **BLOCKED** | **Fake-backed portion passes:** both Linux and Windows build/test/package/list/exact-policy/install and VS Code-floor launch/entry/disconnect/no-orphan smokes pass, with no emulator in the 47-entry archive. **Mandatory remaining portion:** accepted-real-runtime F5 on Linux and Windows is unavailable under `EMU-BLK-001`–`003`/`010`. |
+| `AC-011` | **BLOCKED** | Adapter/fake/package scans and dual-platform fake process evidence remain safe and in scope. Real headless no-physical-I/O/process-isolation evidence is unavailable under `EMU-BLK-001`/`002`/`010`. |
+
+The resulting count is six PASS (`AC-002`, `AC-005`–`AC-009`) and five
+BLOCKED (`AC-001`, `AC-003`, `AC-004`, `AC-010`, `AC-011`). There is no
+remaining repository-local FAIL from `CR-020` or `CR-021`.
+
+### Pull request, review, verification, and final gate
+
+After all checks and before this report-only commit, PR #4 remained open,
+draft, unmerged, based on `main`, exact remote head `3bb4264e...`, and merge
+state `CLEAN`. This verifier did not push, merge, undraft, or otherwise mutate
+the PR.
+
+The complete Worker A/B/C and corrective review chain is accepted. The
+repository-local fake-backed adapter, package, cross-platform, and corrective
+verification passes. Final Slice-1 verification is nevertheless externally
+blocked because there is no accepted real `emu-debug` 1.0 runtime, the same
+contract/end-to-end suites have not run against a real executable, real F5 has
+not run on Linux/Windows, and the actual disassembly-UI gate has not passed.
+
+`VER-001-002-002` therefore concludes:
+
+**NOT_READY**
