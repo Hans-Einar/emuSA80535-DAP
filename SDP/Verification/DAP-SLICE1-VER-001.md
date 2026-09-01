@@ -727,3 +727,296 @@ and safety gates pass on Linux and Windows.
 `VER-001-002-002` therefore remains:
 
 **NOT_READY**
+
+## `VER-001-002-003` — merged real-runtime final acceptance
+
+**Verification date:** 2026-09-01
+**Verifier:** fresh independent real-runtime verifier
+**Verified Slice:** `IT-001-002 / SL-001-002-001`
+**DAP product HEAD:** `36639b48ddb2ffbafa14c00da794fe1734f7483b`
+**DAP report/activation base:** `8b5e2c2323eda042751dd6a0eb4d1e2e869f4eda`
+**Emulator merged `master`:**
+`1a6aa397993d3f24cef8d41248ae2928d352966a`
+**Accepted emulator product/test ancestor:**
+`7a547d12deac2d533a29c36a79df48210d099967`
+**Frozen contract SHA-256:**
+`1de8a7b1915f35a0e79d4e742261b0471e1fced938d928508bf9beb679f726d4`
+
+### Scope, independence, and exact revisions
+
+This pass supersedes only the former external-blocker and final-disposition
+parts of `VER-001-002-001/002`. Their repository-local review and correction
+evidence remains valid.
+
+GitHub, the fetched remotes, and detached worktrees independently established:
+
+- emulator Issue #6 is closed and PR #9 is merged;
+- current emulator `origin/master` is exact merge
+  `1a6aa397993d3f24cef8d41248ae2928d352966a`;
+- accepted corrective product/test commit `7a547d12…` is its ancestor;
+- the diff from `7a547d12…` to the merge contains ten SDP files and **zero**
+  non-SDP changes, so the reviewed product/test blobs are preserved;
+- DAP PR #4 remains **OPEN**, **draft**, **CLEAN**, and unmerged at exact remote
+  head `36639b48ddb2ffbafa14c00da794fe1734f7483b`;
+- the report branch changes after the DAP product HEAD are SDP-only; the
+  non-SDP diff is empty;
+- both exact detached product worktrees were clean after verification.
+
+No DAP product, emulator product, or frozen `emu-debug` 1.0 contract file was
+changed. Temporary verifier-only VS Code harness and WSL Git-bridge files were
+removed before this report; they are not product or delivery artifacts.
+
+### Exact environments
+
+| Lane | Environment and toolchain |
+|---|---|
+| Windows | Windows 11 Pro `10.0.26200` build 26200; PowerShell 7.6.4; Git 2.43.0.windows.1; GNU Make 4.4; GCC 12.2.0; Clang 18.1.8; Python 3.14.0; Node 24.11.0; npm 11.6.1. |
+| Linux | WSL2 openSUSE Leap 15.5, kernel `6.18.33.2-microsoft-standard-WSL2`; GNU Make 4.2.1; GCC 7.5.0; Clang 17.0.6 available; Python 3.13.9; isolated official Node 24.11.0/npm 11.6.1; isolated Xvfb. |
+| DAP tools | TypeScript 6.0.3; ESLint 10.9.1; VSCE 3.9.2; VS Code floor 1.95.0, commit `912bb683695358a54ae0c670461738984cbb5b95`. |
+
+`package-lock.json` SHA-256 was
+`97c4dc167fe533d65427ef5eb7f3cf055362a28dbede4a366b379fb9471f7fff`.
+`npm ci` reported 405 installed packages and zero vulnerabilities in both
+lanes.
+
+### Emulator commands and results
+
+The exact merged emulator worktree was built and exercised on Windows with:
+
+```text
+make clean
+make core-test
+make emu-debug
+make debug-test
+
+make clean
+make CC=clang CFLAGS="-O1 -g -std=c99 -D_CRT_SECURE_NO_WARNINGS -Wall -Wextra -Wno-unused-parameter -Wshadow -Wpedantic -Werror" core-test
+make CC=clang CFLAGS="...same strict flags..." emu-debug
+make CC=clang CFLAGS="...same strict flags..." debug-test
+```
+
+Both GCC and strict Clang passed Stage-0, Stage-1 IRQ, SLC-006 Timer,
+SLC-007 UART, SLC-010 port/MOVX, debug-facade, and child-process/protocol
+suites. The final Windows GCC runtime reported the exact merge commit and had:
+
+- size: 631,825 bytes;
+- SHA-256:
+  `2e01ea9b191618b56db248c35800bf4616d19b80088328f61397a7f92a11a02f`;
+- imports: only `KERNEL32.dll` and `msvcrt.dll`.
+
+The strict Clang runtime also reported the exact merge and had SHA-256
+`9f2e1f408c6089256fa17ef6a0d5f80f06a94c4e412071c7a92e425292fde262`.
+
+Linux ran the same GCC regression/facade/process matrix, followed by the full
+strict sanitizer matrix:
+
+```text
+make clean
+make core-test
+make DEBUG_COMMIT=1a6aa397993d3f24cef8d41248ae2928d352966a emu-debug
+make debug-test
+
+make clean
+make CC=gcc CFLAGS="-O1 -g -std=c99 -Wall -Wextra -Wno-unused-parameter -Wshadow -Wpedantic -Werror -fsanitize=address,undefined -fno-omit-frame-pointer" LDFLAGS="-fsanitize=address,undefined" DEBUG_COMMIT=1a6aa397993d3f24cef8d41248ae2928d352966a core-test
+make CC=gcc CFLAGS="...same strict sanitizer flags..." LDFLAGS="-fsanitize=address,undefined" DEBUG_COMMIT=1a6aa397993d3f24cef8d41248ae2928d352966a emu-debug
+make CC=gcc CFLAGS="...same strict sanitizer flags..." LDFLAGS="-fsanitize=address,undefined" DEBUG_COMMIT=1a6aa397993d3f24cef8d41248ae2928d352966a debug-test
+```
+
+`ASAN_OPTIONS=detect_leaks=1:halt_on_error=1:abort_on_error=1` and
+`UBSAN_OPTIONS=halt_on_error=1:print_stacktrace=1` produced no report. The
+explicit `DEBUG_COMMIT` is necessary only because Linux Git cannot dereference
+the Windows-formatted metadata pointer of a Windows-created detached worktree;
+Windows Git independently proved that worktree was exact and clean before the
+build. The final Linux ELF reported the exact merge, had SHA-256
+`cdd28940e990262b367a06fb55edc3c641d47d66b89481524a8165d0257e9057`,
+and linked only libc plus its loader.
+
+The facade/process suites reproduced all required protocol evidence:
+
+- protocol-only stdout and separate bounded stderr diagnostics;
+- first/once-only `hello`, protocol 1.0, seven exact capabilities, variants,
+  and negotiated limits;
+- exact 65,536-byte image, absolute/Unicode path, expected/actual SHA-256,
+  short/long rejection, deterministic seeded reset/replay;
+- atomic PC/A/B/PSW/SP/DPTR/bank-selected-R0-R7 and 64-bit counter snapshots;
+- forward, known predecessor, unknown placeholder, exact count, no-wrap range,
+  rejected-window transactionality, and no taken-branch predecessor claim;
+- atomic replacement, duplicate/limit/clear, and pre-execution CODE
+  breakpoint behavior;
+- bounded yield, repeated run boundary, exact one-instruction step, stable
+  exception/halt/stop mappings;
+- exact, malformed, oversized, invalid UTF-8, escaped canonical keys,
+  semantic duplicates, NUL/surrogate cases, EOF, terminate, and no-orphan
+  lifecycle behavior.
+
+### DAP, package, and exact CI evidence
+
+The exact DAP detached worktree ran:
+
+```text
+npm ci
+npm run lint
+npm test
+npm run test:contract
+npm run fixture:check
+npm run package
+npm run package:contents
+npm run package:policy
+npm run smoke:vsix
+```
+
+Windows passed all 99/99 full tests and 45/45 contract tests. Linux reported
+the same 99 and 45 tests with respectively two and one intentional
+Windows-only skips, and zero failure. The exact fixture remained 65,536 bytes
+with SHA-256
+`1550101bc337eba836f6fc6a3012b80677b9dfe6a0c658fcf615194be54e5b88`.
+
+Both platforms produced the exact 47-entry allowlisted archive. No emulator,
+fake, firmware fixture, development test, executable, or private source was in
+the VSIX. The freshly produced package identities were:
+
+| Lane | Bytes | SHA-256 |
+|---|---:|---|
+| Windows | 122,519 | `245049f1d90c9e38131fceb99565e4fc1f272fe0047f374208068ade05522544` |
+| Linux | 122,519 | `5fd78b368d332a1c3f9204edb435346d849b99961e46484018039b20211ff2f4` |
+
+The differing ZIP digests are per-run/package metadata; both independently
+passed the exact 47-entry policy and installed as version 0.1.0 at the VS Code
+1.95.0 floor. The normal fake-backed installed smokes passed launch, entry,
+disconnect, exactly-one termination, and zero-orphan on both platforms.
+
+The hosted exact-HEAD evidence was also re-read. DAP commit `36639b48…` has
+four successful jobs:
+
+| Run/event | Linux job | Windows job | Result |
+|---|---:|---:|---|
+| `33470152069` / push | `99738084030` | `99738084174` | PASS / PASS |
+| `33470159991` / pull request | `99738107220` | `99738107059` | PASS / PASS |
+
+### Real DAP and installed VS Code F5 evidence
+
+The unchanged DAP client/session first ran from the emulator test target on
+both platforms:
+
+```text
+make dap-integration-test DAP_ROOT=<exact-DAP-worktree>
+```
+
+The Linux invocation used Linux Node 24, the Linux ELF runtime, and a
+read-only verifier Git bridge for only the test's `rev-parse` and clean-status
+preconditions because of the Windows worktree metadata pointer. Both lanes
+reported:
+
+`DAP exact HEAD 36639b48... real-contract/equivalence/F5 smoke passed`
+
+This proves real `hello/load/reset`, decoder, replacement breakpoint, bounded
+run/yield, exact step, state, terminate, adapter-visible fake/real control
+equivalence, real parity/timing assertions, and no DAP source mutation.
+
+A second verifier-only gate installed the produced VSIX into isolated VS Code
+1.95.0 profiles and drove VS Code's real `DebugSession` against the platform's
+real executable. Windows ran natively. Linux ran Node 24 and the downloaded
+Linux VS Code archive under isolated Xvfb; `DONT_PROMPT_WSL_INSTALL=1` disabled
+only the Linux wrapper's interactive WSL-install prompt. Both platforms
+reproduced:
+
+1. real F5-equivalent `startDebugging`, initialize/launch/configuration, and
+   entry stop;
+2. one thread and one truthful `code:0000` frame;
+3. four real decoder records at `0x0000`, `0x0002`, `0x0003`, `0x0005`;
+4. numeric `0x0000` returned by disassembly sent back with offset 2, accepted
+   and canonicalized once to `code:0002`;
+5. breakpoint stop at PC `0002` with A still `01`, proving pre-execution stop;
+6. one read-only scope with exact PC/A/B/PSW/SP/DPTR/R0-R7 names/values;
+7. omitted, `statement`, and `instruction` `stepIn`, each one instruction and
+   one `step` stop;
+8. `line`, `next`, and `stepOut` rejection without PC/resume change;
+9. empty replacement breakpoint clear, bounded continue/pause, and one pause
+   stop;
+10. VS Code disconnect, exactly one adapter `terminated`, one session
+    termination, and zero matching runtime process after cleanup.
+
+The VS Code workbench also issued its own disassembly request around the
+near-zero frame; the contract-correct range-crossing request returned stable
+`RANGE` without wrap or partial data, while the valid numeric request above
+returned the displayed adapter records. No fake-only command or behavior was
+used in either real gate.
+
+### Safety and scope evidence
+
+- The no-curses debug link graph is exactly `emu_debug_server.c`,
+  `emu_debug.c`, `core.c`, `opcodes.c`, `disasm.c`, and `binary_loader.c`.
+  Although the legacy TUI target retains global `-lcurses`, the forced dry-run
+  debug link contains no curses library and the binary import checks above
+  prove no dependency.
+- Runtime-source scans found no P1000/Ponsse/D71055/hydraulic/valve identity,
+  physical-I/O identity, serial/GPIO/CAN/fieldbus endpoint, socket/TCP, Winsock,
+  termios, `/dev/`, or device API in `emu_debug_server.c`, `emu_debug.c`, or
+  `emu_debug.h`.
+- DAP adapter, extension, fixture, and manifest scans found no prohibited
+  target or physical semantics. The only hits in the frozen protocol are
+  explicit prohibitions.
+- The real child-process suites, minimal imports, real packaged no-orphan
+  checks, and source/API scans establish the no-hardware/no-physical-I/O gate.
+- No emulator bundling, source-line breakpoint, readMemory, evaluate, write,
+  watchpoint, attach/TCP, source-map, logical-stack, interrupt-scope, P1000, or
+  Marketplace scope entered the candidate or this verification.
+- `git diff --check` passed. Both YAML files parsed; all 78 ledger records
+  parsed as JSON and all 78 event IDs were unique.
+
+### `EMU-BLK-001` through `EMU-BLK-010`
+
+| Blocker | Status | Exact merged evidence |
+|---|---|---|
+| `EMU-BLK-001` | **SATISFIED** | `Makefile:19,44-50`, `README.md:210-255`, dual-platform `emu-debug` builds, forced link/import checks: standalone documented no-curses/no-hardware executable. |
+| `EMU-BLK-002` | **SATISFIED** | `emu_debug_server.c:30,715-808,1290-1428` and the complete process/adversarial suite: bounded UTF-8 NDJSON, correlation/schema, canonical keys/duplicates, structured errors, protocol-only stdout. |
+| `EMU-BLK-003` | **SATISFIED** | `emu_debug_server.c:969-1033,1298-1321`: first/once-only 1.0 hello with exact product/commit/variant/capabilities/limits; compatible/minor/major/capability cases pass. |
+| `EMU-BLK-004` | **SATISFIED/PRESERVED** | Accepted deterministic SAB core plus `emu_debug.c:318-395` and server `1037-1116`: absolute exact-64-KiB load/hash and deterministic reset/entry orchestration pass. |
+| `EMU-BLK-005` | **SATISFIED** | Stable value-only public API `emu_debug.h:45-92`, implementation `emu_debug.c:262-286`, and facade/process/real VS Code register snapshots. |
+| `EMU-BLK-006` | **SATISFIED** | Transactional decoder `emu_debug.c:437-547`, server `1136-1182`, exact facade/process cases, real direct and installed-VS Code disassembly. No rejected-window predecessor mutation remains. |
+| `EMU-BLK-007` | **SATISFIED** | Atomic bitset replacement and pre-execution check `emu_debug.c:551-646`, server `1184-1242`, limit/duplicate/clear tests, and real numeric-offset breakpoint stop. |
+| `EMU-BLK-008` | **SATISFIED** | Bounded synchronous run/yield `emu_debug.c:620-653`, wire `1244-1269`, repeated real run and adapter continue/pause boundary evidence. |
+| `EMU-BLK-009` | **SATISFIED** | Exact facade step `emu_debug.c:655-671`, wire `1271-1285`, real direct and all three accepted DAP `stepIn` granularities. |
+| `EMU-BLK-010` | **SATISFIED** | Server terminate/EOF/error loop `emu_debug_server.c:1337-1428`, Windows/Linux process tests, packaged disconnect, exactly-one termination, and zero-orphan checks. |
+
+There is no remaining `EMU-BLK` dependency and no newly verified
+fake-versus-real incompatibility. The frozen protocol remains unchanged.
+
+### `AC-001` through `AC-011`
+
+| AC | Status | Final evidence disposition |
+|---|---|---|
+| `AC-001` | **PASS** | Packaged extension plus real Windows/Linux runtime performs hello before load/reset and reaches one configured `entry` stop through VS Code 1.95. |
+| `AC-002` | **PASS** | Real VS Code returns one thread/frame/scope and exact atomic PC/A/B/PSW/SP/DPTR/R0-R7 values. |
+| `AC-003` | **PASS** | Exact forward/known/unknown/range/count semantics pass; real numeric records and real decoder text pass through the installed VS Code engine on both platforms. |
+| `AC-004` | **PASS** | Returned numeric address plus non-zero offset is applied once/canonicalized; overflow/replacement/clear/limit tests pass; real stop is pre-execution with reason `instruction breakpoint`. |
+| `AC-005` | **PASS** | Real omitted/statement/instruction `stepIn` advances exactly one instruction; real `line`/`next`/`stepOut` reject without resume. |
+| `AC-006` | **PASS** | Deterministic unit/transport gates and real installed runs prove response-before-stop, bounded final boundary, no next post-intent chunk, pause stop, and no unproven timeout snapshot. |
+| `AC-007` | **PASS** | Exact DAP full suite proves stale handles fail after resume/new stop and non-resuming rejection preserves the epoch. |
+| `AC-008` | **PASS** | All required missing/version/capability/malformed/timeout/crash families produce stable failure/diagnostics and bounded cleanup; real runtime adversarial process suite passes. |
+| `AC-009` | **PASS** | Fake and real Windows/Linux disconnects close/reap the owned child and emit `terminated` exactly once with zero orphan. |
+| `AC-010` | **PASS** | Windows and Linux build/test/package/list/policy/install/floor smokes pass; real packaged F5 passes in both lanes; all archives have 47 entries and no emulator. |
+| `AC-011` | **PASS** | Dual-platform process/import/API/source/package scans prove no hardware endpoint, physical I/O, P1000 semantic, or forbidden fixture/default. |
+
+### Review, verification, PR, and final disposition
+
+All independent reviews `RVW-001-002-001` through `RVW-001-002-010` remain
+accepted/closed. Every repository-local finding `CR-009` through `CR-022`
+remains resolved. Emulator `REV-SLC-012` is approved with no finding and
+`VER-SLC-012` is passed. This verifier found no new incompatibility or review
+finding.
+
+`VER-001-002-003` disposition: **PASSED**.
+`AC-001..AC-011`: **11 PASS / 0 BLOCKED / 0 FAIL**.
+`EMU-BLK-001..010`: **all SATISFIED** (`004` preserved).
+Review/verification disposition: **ACCEPTED / PASSED**.
+
+PR #4 remains open, draft, cleanly mergeable, exact head `36639b48…`, and
+intentionally unmerged. This verifier did not push, merge, undraft, or mutate
+the PR.
+
+The former external blocker is closed and every Issue #3 final gate is now
+reproduced against merged emulator commit `1a6aa397…` without changing the
+frozen contract.
+
+**READY**
