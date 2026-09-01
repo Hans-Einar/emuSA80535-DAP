@@ -820,3 +820,20 @@ remaining wall-clock/real-child dependence. The target passed 120/120 separate
 Windows processes, clean 99/99 and 45/45, package/policy, installed floor smoke,
 and process/safety/diff checks. No new finding exists. `CR-022` remains open
 until fresh Ubuntu/Windows push/PR jobs all pass the same integrated HEAD.
+
+### CR-022 remote closure
+
+**Verified remote HEAD:** `e1411df03026557c216f680406ea9ebc2a1601d0`
+
+**Verification report commit:** `fd04969fddba6a74b54dadbffbb2006763954f2c`
+
+Fresh PR/push runs `33469530399` / `33469527082` passed all four jobs: Linux
+`99736266837` / `99736257099` and Windows `99736267045` / `99736257308`.
+Actual logs confirm full tests, contract, fixture, exact VSIX policy, installed
+VS Code 1.95.0 fake-entry smoke, and zero orphans. The repeated-yield target also
+passed 100/100 fresh local stress runs. `CR-022` is resolved.
+
+All repository-local corrections are now reviewed and verified. Final AC and
+READY disposition remain unchanged: PASS AC-002/005–009; BLOCKED
+AC-001/003/004/010/011 on the accepted real-emulator/F5/disassembly/safety gate;
+`NOT_READY` on emulator default `c0cd6f26…`.

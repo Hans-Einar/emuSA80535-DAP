@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-01T04:20:33Z"
+updatedAt: "2026-09-01T04:29:52Z"
 items:
   - id: M-001
     kind: mandate
@@ -637,7 +637,7 @@ items:
   - id: CR-022
     kind: review_finding
     title: Repeated-yield pause test depends on wall-clock child timing
-    status: open
+    status: resolved
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 

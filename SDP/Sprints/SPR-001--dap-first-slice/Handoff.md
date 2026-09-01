@@ -52,9 +52,11 @@ VS Code F5/disassembly/safety gates cannot run on current emulator default.
 
 ## Exact next step
 
-Master pushes the review-integrated HEAD and requires fresh Ubuntu/Windows
-push/PR success on all four jobs. If green, close `CR-022`, record the exact
-jobs in the final checkpoint, and restore the real-emulator monitoring handoff.
+Monitor `Hans-Einar/emuSA80535-N` for an accepted real headless `emu-debug` 1.0
+runtime satisfying every Slice-1 `EMU-BLK`. When one exists, record its exact
+commit/release, rerun the same contract suite plus real VS Code F5/disassembly
+smoke on Linux and Windows, and re-open final verification. Do not change the
+protocol or mark READY while default remains `c0cd6f26…`.
 
 ## Verification completed
 
@@ -132,4 +134,4 @@ Marketplace publication remain later scoped decisions.
 The branch is `codex/dap-first-slice`, based on PR #2 branch HEAD `ede8226`.
 PR #2 still targets `main`; the Slice-1 implementation PR must also target
 `main` so its accepted SDP ancestry is visible, and it must not be merged.
-No worker/reviewer agent remains open; Master is running the CR-022 remote gate.
+No worker/reviewer/verifier agent remains open.
