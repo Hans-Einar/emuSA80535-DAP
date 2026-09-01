@@ -52,11 +52,9 @@ VS Code F5/disassembly/safety gates cannot run on current emulator default.
 
 ## Exact next step
 
-A fresh reviewer performs `RVW-001-002-010` against exact corrective commit
-`b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`, verifies explicit run #1–#3
-control, pause/event ordering, unique final-boundary promotion, no run #4,
-100-run stability, and unchanged real-client/contract coverage. Then Master
-pushes and requires all four exact-head Actions jobs.
+Master pushes the review-integrated HEAD and requires fresh Ubuntu/Windows
+push/PR success on all four jobs. If green, close `CR-022`, record the exact
+jobs in the final checkpoint, and restore the real-emulator monitoring handoff.
 
 ## Verification completed
 
@@ -134,5 +132,4 @@ Marketplace publication remain later scoped decisions.
 The branch is `codex/dap-first-slice`, based on PR #2 branch HEAD `ede8226`.
 PR #2 still targets `main`; the Slice-1 implementation PR must also target
 `main` so its accepted SDP ancestry is visible, and it must not be merged.
-A CR-022 worker/reviewer cycle is intentionally active; no other agent remains
-open.
+No worker/reviewer agent remains open; Master is running the CR-022 remote gate.

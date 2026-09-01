@@ -806,3 +806,17 @@ The target passed 100/100 separate Windows processes; clean 99/99, 45/45,
 fixture/package/policy, installed floor smoke, process/safety, and diff checks
 also passed. `CR-022` remains open pending fresh `RVW-001-002-010` and exact
 Actions rerun.
+
+### Repeated-yield determinism corrective review `RVW-001-002-010`
+
+**Reviewed commit:** `b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`
+
+**Review commit:** `3b97f814ad988244af0e032f771ee4d317ed48a4`
+
+**Disposition:** **accepted for exact-HEAD remote re-verification**
+
+The fresh reviewer confirmed the complete three-run controlled schedule and no
+remaining wall-clock/real-child dependence. The target passed 120/120 separate
+Windows processes, clean 99/99 and 45/45, package/policy, installed floor smoke,
+and process/safety/diff checks. No new finding exists. `CR-022` remains open
+until fresh Ubuntu/Windows push/PR jobs all pass the same integrated HEAD.
