@@ -214,6 +214,9 @@ relations:
   - { from: SL-001-002-001, type: addresses, to: CR-018 }
   - { from: SL-001-002-001, type: addresses, to: CR-019 }
   - { from: SL-001-002-001, type: reviewed_by, to: RVW-001-002-007 }
+  - { from: RVW-001-002-007, type: resolves, to: CR-017 }
+  - { from: RVW-001-002-007, type: resolves, to: CR-018 }
+  - { from: RVW-001-002-007, type: resolves, to: CR-019 }
 
   - { from: VER-001-001-001, type: raises, to: CR-008 }
   - { from: CR-008, type: concerns, to: S-001 }

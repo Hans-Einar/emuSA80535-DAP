@@ -147,3 +147,8 @@ predecessor evidence in the contract fake, and `CR-019` adds strict raw
 Corrective commit `8728a965cd04bc43816cd8401638869b2615f861` addresses
 `CR-017`–`CR-019` with 89/89, 45/45, and 26/26 worker tests. The correction
 remains unaccepted until fresh `RVW-001-002-007`.
+
+Fresh `RVW-001-002-007` accepted exact commit `8728a965…`, resolved
+`CR-017`–`CR-019`, and raised no new finding. Fake-backed implementation and
+AC-001–AC-009 are accepted for final verification. The final evidence pass,
+AC-010/011, real UI, and real emulator remain mandatory.
