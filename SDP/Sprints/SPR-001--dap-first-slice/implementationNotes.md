@@ -152,3 +152,8 @@ Fresh `RVW-001-002-007` accepted exact commit `8728a965…`, resolved
 `CR-017`–`CR-019`, and raised no new finding. Fake-backed implementation and
 AC-001–AC-009 are accepted for final verification. The final evidence pass,
 AC-010/011, real UI, and real emulator remain mandatory.
+
+`VER-001-002-001` verified exact integrated HEAD `fdb1ccd…` and returned
+`CHANGES_REQUIRED_AND_EXTERNALLY_BLOCKED`. AC-010 has a local CI gap (`CR-020`):
+no Windows lane and no install/launch-smoke on both lanes. The real runtime gate
+also remains blocked at emulator commit `c0cd6f26…`; no READY claim is made.

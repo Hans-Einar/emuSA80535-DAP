@@ -644,3 +644,28 @@ no new finding exists.
 Fake-backed AC-001 through AC-009 are accepted for final verification. AC-010,
 final AC-011 cross-platform evidence, real VS Code/F5, and the real emulator
 gate remain open. The implementation is ready for `VER-001-002-001`, not READY.
+
+### Final verification `VER-001-002-001`
+
+**Verified HEAD:** `fdb1ccd231e18bdb864fb43936538f54f1f1dfaa`
+
+**Verification commit:** `bce88f0c9d5a23a8ef3d261d15905ee38e424a82`
+
+**Disposition:** **CHANGES_REQUIRED_AND_EXTERNALLY_BLOCKED — NOT_READY**
+
+Exact Windows evidence, VS Code 1.95.0/current installs, all 89/45/26 tests,
+package/contents, safety/process checks, PR state, and traceability passed.
+Strict AC status was: AC-002 and AC-005–009 PASS; AC-001/003/004/011 BLOCKED by
+the real runtime/UI gate; AC-010 FAIL because CI has only a Linux
+build/test/package/content job with neither a Windows lane nor VSIX install/F5
+launch smoke on both platforms.
+
+The exact real emulator default remains
+`c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`: `EMU-BLK-001/002/003/005/010`
+are missing, `EMU-BLK-006/007/008/009` partial, and `EMU-BLK-004` core-only.
+No compatible real server exists, so real contract/F5/disassembly smoke was not
+run or mislabeled.
+
+`CR-020` captures the repo-correctable AC-010 lane/install/smoke gap. A fresh
+worker, `RVW-001-002-008`, and `VER-001-002-002` re-verification follow. The
+external real-emulator blockers remain independent and mandatory.

@@ -52,13 +52,11 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh verifier performs `VER-001-002-001` against exact integrated HEAD. It
-reruns all fake-backed acceptance, proves exact Linux/Windows package/install
-and AC-010/011 evidence, inspects PR #4 and traceability, revalidates the exact
-`emuSA80535-N` default and every `EMU-BLK-001`–`010`, and attempts real VS Code
-F5/disassembly integration only if a compatible real runtime exists. Without
-that runtime, it records precise blockers and `NOT_READY` without weakening the
-contract.
+A fresh worker addresses only `CR-020`: add true Linux/Windows CI lanes that
+build/test/package/inspect, install the VSIX at the declared floor, and exercise
+the packaged extension/adapter launch path against the contract fake as far as
+possible without calling it a real-emulator F5 pass. Fresh
+`RVW-001-002-008` and `VER-001-002-002` follow. The real gate remains blocked.
 
 ## Verification completed
 
