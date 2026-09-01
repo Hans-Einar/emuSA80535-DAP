@@ -556,3 +556,174 @@ not run on Linux/Windows, and the actual disassembly-UI gate has not passed.
 `VER-001-002-002` therefore concludes:
 
 **NOT_READY**
+
+## `VER-001-002-002` final addendum — `CR-022` closure
+
+**Verification time:** 2026-09-01T04:26:31Z
+
+**Verified pushed integrated HEAD:**
+`e1411df03026557c216f680406ea9ebc2a1601d0`
+
+**Corrective implementation:**
+`b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`
+
+**Independent corrective review:**
+`3b97f814ad988244af0e032f771ee4d317ed48a4`
+
+**Branch:** `codex/dap-first-slice`
+
+**Pull request:**
+[#4](https://github.com/Hans-Einar/emuSA80535-DAP/pull/4)
+
+**Review disposition:** **ACCEPTED** — `RVW-001-002-010` accepted the narrow
+test-only correction, and this closure pass found no new product, test,
+workflow, package, or process finding.
+
+**Verification disposition:** **ALL REPOSITORY-LOCAL CORRECTIONS VERIFIED;
+EXTERNALLY BLOCKED**
+
+**Final disposition:** **NOT_READY**
+
+### Scope and exact content identity
+
+This is the narrow final closure pass for `CR-022` under existing verification
+`VER-001-002-002`. The verifier inspected the corrective diff and review,
+read the actual logs for all four fresh requested jobs, independently stressed
+the corrected target, checked the live PR, and revalidated the accepted
+emulator default. This report addendum is the only verifier-authored path; no
+product, test, workflow, sprint, review, handoff, implementation-note, or
+traceability file was changed by this pass.
+
+Both the correction and its review are ancestors of exact pushed HEAD
+`e1411df...`. Commit `b4a48dd...` changes only
+`test/dapBehavior.test.ts`; commit `3b97f81...` changes only
+`SDP/CodeReview/DAP-SLICE1-REV-001.md`. The pushed integration commit changes
+only Master-owned sprint/handoff/traceability content after the accepted
+review.
+
+Both Actions runs report exact `headSha` `e1411df...`. The push jobs exercised
+that commit directly. The pull-request jobs checked out generated merge commit
+`7041230e31a7bfc9d5351a75c408641c42c4873e`, whose parents are base
+`31ac8facdb1310fc858f3545ece052c671db42c6` and exact head `e1411df...`.
+GitHub reports the identical tree
+`bfe25278fa5e92dbb349724320fdac7724da1dd0` for the merge commit and exact
+head, so the PR jobs exercised the exact requested content.
+
+### Four fresh exact-tree jobs
+
+| Event / run | Exact job | Hosted platform | Actual log result |
+|---|---|---|---|
+| pull request [33469530399](https://github.com/Hans-Einar/emuSA80535-DAP/actions/runs/33469530399) | Linux `99736266837` | Ubuntu, Node `22.20.0` | **PASS** — 397-package clean install, lint, full/contract suites, fixture, package/list/policy, and installed VS Code-floor fake smoke |
+| pull request [33469530399](https://github.com/Hans-Einar/emuSA80535-DAP/actions/runs/33469530399) | Windows `99736267045` | Windows, Node `22.20.0` | **PASS** — 397-package clean install, lint, full/contract suites, fixture, package/list/policy, and installed VS Code-floor fake smoke |
+| push [33469527082](https://github.com/Hans-Einar/emuSA80535-DAP/actions/runs/33469527082) | Linux `99736257099` | Ubuntu, Node `22.20.0` | **PASS** — 397-package clean install, lint, full/contract suites, fixture, package/list/policy, and installed VS Code-floor fake smoke |
+| push [33469527082](https://github.com/Hans-Einar/emuSA80535-DAP/actions/runs/33469527082) | Windows `99736257308` | Windows, Node `22.20.0` | **PASS** — 397-package clean install, lint, full/contract suites, fixture, package/list/policy, and installed VS Code-floor fake smoke |
+
+The log inspection confirms real execution rather than superficial successful
+step labels:
+
+- both Windows jobs pass 99/99 full tests and 45/45 contract tests with zero
+  failures or skips; both Linux jobs pass 97/99 full tests and 44/45 contract
+  tests, with only the expected Windows-specific cases skipped and zero
+  failures;
+- `bounded continue remains logically running across repeated yields until
+  pause` passes in every full-suite log;
+- every fixture check reports exactly 65,536 bytes and SHA-256
+  `1550101bc337eba836f6fc6a3012b80677b9dfe6a0c658fcf615194be54e5b88`;
+- every package log creates a 47-file VSIX, lists its contents, and reports
+  `VSIX policy PASS: 47 exact allowlisted entries`;
+- every smoke downloads/uses real VS Code `1.95.0` at commit
+  `912bb683695358a54ae0c670461738984cbb5b95`, runs the extension-host test
+  runner to exit code zero, and identifies the installed extension as
+  `undefined_publisher.emusa80535-dap@0.1.0`; and
+- all four `PACKAGED_SMOKE_PASS` records prove the fake command sequence
+  `hello`, `load`, `reset`, `replaceCodeBreakpoints`, `terminate`, the DAP
+  events `initialized`, `stopped`, `terminated`, and `orphanProcesses: 0`.
+
+The four job-local VSIX SHA-256 values are respectively
+`1db8b2dbbb80af42046aca5ccaed41a3ceca7f847c4a2c60d87b07446abbb`,
+`0abd2711a0f1f58047de2d6a38e21497817ef1178bee5305a354789b9e2acd0d`,
+`f1f14f54e014a538d21a1f91eefd419e560913e08cd293c6e50e3525cb10d2a4`,
+and `c775fb416a0ddd0c2ec19e217be7508b8c832cdc2fa07d67cd4c41ea9247a0ff`.
+Platform/run ZIP metadata accounts for hash differences; exact 47-entry policy
+and installed identity pass in every job.
+
+### `CR-022` disposition
+
+The correction removes the former wall-clock and real-child scheduling race
+from only the repeated-yield target. Its controlled backend exposes each run
+promise explicitly. The test resolves yields one and two, leaves run three
+pending, receives the pause response before any stop, resolves the final
+boundary at `code:0030`, proves exactly one pause stop, proves no fourth run,
+proves the stopped snapshot and invalid idle pause behavior, and proves one
+cleanup. Product code and the separate concrete transport timeout/kill/reap
+coverage are unchanged.
+
+In addition to the four successful hosted executions, this verifier rebuilt
+exact HEAD and ran that exact named target in 100 fresh Windows processes:
+
+`REPEATED_YIELD_STRESS runs=100 failures=0`
+
+The correction is deterministic at the intended boundary and no failure was
+observed. With accepted review `RVW-001-002-010` and four fresh exact-tree
+Ubuntu/Windows push/PR passes, `CR-022` is **RESOLVED**. This is the verifier's
+closure disposition; `CurrentIndex.yaml`, relations, ledger, sprint, and
+handoff remain Master-owned and intentionally unchanged by this report-only
+commit.
+
+There is now no remaining repository-local corrective failure from `CR-020`,
+`CR-021`, or `CR-022`.
+
+### Unchanged real-emulator blocker
+
+GitHub and `git ls-remote` still resolve the default `master` of
+`Hans-Einar/emuSA80535-N` to exact commit:
+
+`c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`
+
+There are still no releases. The only open emulator PR remains unrelated UART
+PR #5 at `6df64847a11b173eef77c55a6a56a839e6aa5fb3`; it does not provide the
+debug-server process. Because the accepted default commit is unchanged, its
+verified source/runtime gaps are unchanged: `EMU-BLK-001`–`003` and
+`EMU-BLK-005`–`010` remain the real-integration blockers.
+`EMU-BLK-004` remains **SATISFIED_CORE_ONLY**. There is still no accepted real
+`emu-debug` 1.0 executable for the adapter contract suite, real Linux/Windows
+F5, actual disassembly-UI, lifecycle, or no-physical-I/O gates. This pass did
+not relabel the fake as real.
+
+### Unchanged `AC-001` through `AC-011` disposition
+
+Closing `CR-022` changes no acceptance-criterion status from the preceding
+`VER-001-002-002` addendum:
+
+| AC | Status | Unchanged disposition |
+|---|---|---|
+| `AC-001` | **BLOCKED** | Fake-backed launch and packaged entry smokes pass; accepted-real-emulator F5 entry remains blocked by `EMU-BLK-001`–`003`/`005`. |
+| `AC-002` | **PASS** | One thread, current-PC frame, read-only scope, and exact register snapshot pass; the separate real gate remains blocked by `EMU-BLK-005`. |
+| `AC-003` | **BLOCKED** | Fake exact-count/numeric/predecessor/range behavior passes; actual VS Code disassembly UI and real `decodeCode` remain blocked by `EMU-BLK-001`–`003`/`006`. |
+| `AC-004` | **BLOCKED** | Fake canonical/offset/replacement/clear/limit/pre-execution behavior passes; UI-originated and real replacement paths remain blocked by `EMU-BLK-001`–`003`/`007`. |
+| `AC-005` | **PASS** | Exact fake-backed step and non-resuming rejection behavior pass; the separate real suite remains blocked by `EMU-BLK-009`. |
+| `AC-006` | **PASS** | Active/idle/repeated-yield pause, response ordering, no post-intent run, timeout/no-unproven-boundary, termination, and cleanup pass; the separate real suite remains blocked by `EMU-BLK-008`. |
+| `AC-007` | **PASS** | Stop-epoch handle invalidation and preservation behavior pass. |
+| `AC-008` | **PASS** | Required fake/client failure diagnostics and bounded cleanup pass on Linux and Windows. |
+| `AC-009` | **PASS** | Active/repeated disconnect reaps the child, emits one termination, and packaged smokes report zero orphans. |
+| `AC-010` | **BLOCKED** | Fake-backed Linux/Windows build/test/package/list/policy/install/floor-smoke portion passes; accepted-real-runtime F5 remains unavailable under `EMU-BLK-001`–`003`/`010`. |
+| `AC-011` | **BLOCKED** | Adapter/fake/package/process evidence remains safe and in scope; real headless no-physical-I/O/process-isolation evidence remains blocked by `EMU-BLK-001`/`002`/`010`. |
+
+The status remains six PASS (`AC-002`, `AC-005`–`AC-009`) and five BLOCKED
+(`AC-001`, `AC-003`, `AC-004`, `AC-010`, `AC-011`), with no repository-local
+FAIL.
+
+### Pull request and final gate
+
+At this closure boundary PR #4 remains open, draft, unmerged, based on `main`,
+exact remote head `e1411df03026557c216f680406ea9ebc2a1601d0`, and merge state `CLEAN`.
+This verifier did not push, merge, undraft, or otherwise mutate the PR.
+
+Review and all repository-local corrective verification are accepted. Slice 1
+cannot be declared READY until an accepted real `emu-debug` 1.0 runtime exists
+and Issue #3's same-contract, real VS Code F5, actual disassembly-UI, lifecycle,
+and safety gates pass on Linux and Windows.
+
+`VER-001-002-002` therefore remains:
+
+**NOT_READY**
