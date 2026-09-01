@@ -499,3 +499,19 @@ suite:
 
 Worker C remains paused. A fresh corrective worker addresses only these
 findings, followed by independent `RVW-001-002-005`.
+
+### Worker B corrective result
+
+**Corrective commit:** `6000ec8235ee8f568db80c4d6fe02f84d1982045`
+
+The fresh corrective worker tightened command-specific client validation,
+strict fake required-capability/request-ID/outbound-record behavior, and
+shell-free directly spawnable Windows resolution. It changed only the client,
+fake server, and contract tests and added adversarial coverage for every
+`CR-012`–`CR-014` reproduction.
+
+Worker evidence passed clean install, lint/build, 60/60 full tests, 42/42
+contract tests, fixture check, package/content/safety policy, process cleanup,
+and diff whitespace. Worker-stage VSIX SHA-256 is
+`58F3679C554D7457485B75BBFA33647BDD657B46C84FF17184C66359FC0983B0`.
+The findings remain in progress pending fresh `RVW-001-002-005`.

@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-01T00:39:40Z"
+updatedAt: "2026-09-01T00:59:36Z"
 items:
   - id: M-001
     kind: mandate
@@ -553,6 +553,6 @@ items:
   - id: RVW-001-002-005
     kind: review
     title: Corrective re-review of Worker B protocol and fake
-    status: planned
+    status: in_progress
     state: target
     doc: SDP/CodeReview/DAP-SLICE1-REV-001.md

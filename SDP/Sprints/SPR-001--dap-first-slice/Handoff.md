@@ -52,11 +52,10 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh corrective worker addresses only `CR-012`–`CR-014`: strict
-command-specific response validation, bounded/strict fake hello and request IDs,
-and shell-free executable resolution that never selects unspawnable Windows
-batch wrappers. It adds adversarial regressions and produces one commit for
-fresh `RVW-001-002-005`. Worker C remains paused.
+A fresh reviewer performs `RVW-001-002-005` against exact corrective commit
+`6000ec8235ee8f568db80c4d6fe02f84d1982045`, independently reruns all original
+invalid-response/fake-bound/Windows-resolver probes, and decides
+`CR-012`–`CR-014`. Worker C remains paused until acceptance.
 
 ## Verification completed
 
