@@ -455,3 +455,23 @@ rejection, cleanup-failure disposition, strict raw JSON types with an untouched
 backend, and truthful README on `a01c48c`. Lint/build, 18/18 tests, package,
 contents, isolated VSIX install, and safety/scope scans passed. `CR-009`–
 `CR-011` are resolved. Worker B may begin; complete Slice 1 remains in progress.
+
+### Worker B result
+
+**Implementation commit:** `33a83a5a62b3be827fac6ea052517cb588d899e2`
+
+Worker B added the strict serialized bounded UTF-8 NDJSON client, hello-first
+version/capability/limit validation, request correlation, timeout/fatal
+cleanup, no-shell executable/PATH resolution, exact image/hash launch
+orchestration, entry-stop session backend, typed command surface for Worker C,
+contract-faithful fake server, and reproducible generic 65,536-byte fixture.
+Fault scripting remains outside the product protocol, and no Worker C DAP
+capability/handler was added.
+
+Worker evidence passed lint/build, 41/41 full tests, 23/23 contract tests,
+fixture check, package/content policy, and diff whitespace. Fixture SHA-256 is
+`1550101bc337eba836f6fc6a3012b80677b9dfe6a0c658fcf615194be54e5b88`;
+worker-stage VSIX SHA-256 is
+`536fe3e8acce8d8e7fbbf0bbcc2121a9707d873a2b84aad350ff44dc20aed5b7`.
+The real-emulator gate remains unproven. `RVW-001-002-002` now reviews this
+exact commit before Worker C begins.

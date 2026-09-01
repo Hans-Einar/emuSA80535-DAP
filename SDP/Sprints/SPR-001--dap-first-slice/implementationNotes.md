@@ -99,3 +99,10 @@ three findings and adds adversarial lifecycle/type tests; worker checks pass
 Fresh `RVW-001-002-004` accepted that exact commit and resolved `CR-009`–
 `CR-011` with no new finding. Worker A foundation is accepted for forward
 integration; this does not accept Worker B/C behavior or the full slice.
+
+## Worker B — protocol client and fake (awaiting independent review)
+
+Commit `33a83a5a62b3be827fac6ea052517cb588d899e2` implements the frozen
+client/process/fake/fixture boundary and entry launch orchestration. Worker
+checks pass 41/41 plus 23/23 contract tests. This is not yet accepted review
+evidence and does not satisfy the real-emulator gate.

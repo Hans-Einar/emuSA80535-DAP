@@ -52,11 +52,10 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-Worker B implements only the strict serialized `emu-debug` 1.0 client,
-launch-owned child lifecycle/timeouts/cleanup, contract-faithful fake server,
-synthetic exact-64-KiB firmware fixture, and fault/contract tests. It must build
-on accepted foundation commit `a01c48c917186a98152d849565660081ff11746e`
-without adding Worker C DAP behavior. Fresh `RVW-001-002-002` follows.
+A fresh reviewer performs `RVW-001-002-002` against exact Worker B commit
+`33a83a5a62b3be827fac6ea052517cb588d899e2`, challenging protocol fidelity,
+fault/lifecycle cleanup, fake equivalence, fixture neutrality, package boundary,
+and the absence of Worker C capability claims. Worker C waits for disposition.
 
 ## Verification completed
 
