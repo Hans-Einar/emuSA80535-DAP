@@ -1710,3 +1710,179 @@ verifier must preserve the prior strict dispositions for AC-001, AC-003,
 AC-004, AC-011, and the remaining EMU-BLK dependencies. Until exact Actions
 evidence and every mandatory real-emulator gate pass, Slice 1 remains
 **NOT_READY**.
+
+## AC-006 remote determinism correction review — `RVW-001-002-009`
+
+**Review date:** 2026-09-01
+
+**Reviewer role:** fresh independent corrective reviewer; not the author of
+the CR-021 finding, corrective test commit, or Master handoff
+
+**Reviewed corrective commit:**
+`1e104a18a365b5ad7666e86faad4b8fa00f14715`
+
+**Reviewed parent:**
+`341df7d6b5b3574076b76e9bc1eea81f30ca539d`
+
+**Remote failure HEAD:**
+`3b0e48270a1fae70030cbb84fa4f4709c062f33e`
+
+**Authority:** GitHub Issue #3, accepted PR #2 SDP baseline, active
+`IT-001-002 / SL-001-002-001`, `AC-006`, `CR-021`, and the accepted
+`RVW-001-002-007` / `RVW-001-002-008` review chain
+
+**Disposition:** **accepted for exact-HEAD remote re-verification; no new
+finding; CR-021 implementation correction accepted but CR-021 remains open
+until all four Ubuntu/Windows push/PR jobs pass**
+
+### Scope and independence
+
+The corrective commit has the exact stated parent and merge base. Its diff is
+limited to `test/dapBehavior.test.ts`: 134 insertions and 16 deletions. No
+adapter, extension, emulator-client, contract-fake, fixture, workflow, package,
+or product-default path changed. The correction adds a test-backend injection
+seam to the existing DAP harness and replaces one platform-speed-dependent
+AC-006 timeout scenario with a controlled in-memory backend.
+
+Review execution occurred on the branch after Master added SDP-only handoff
+commit `e43454503125a4e93239dddf696a445ede78bba4`. A path-excluded comparison
+proved the complete non-SDP tree at that HEAD byte-identical to exact
+`1e104a18...`; therefore the executable evidence below applies to the exact
+corrective test and unchanged product tree. This reviewer changed only this
+review section and did not repair or alter test/product behavior.
+
+### Remote-failure reproduction and correction assessment
+
+The reviewer independently inspected the two prior exact-HEAD Actions runs.
+Push run `33466541832` passed both Ubuntu and Windows on exact `3b0e482...`.
+Pull-request run `33466544680` passed Ubuntu but failed Windows job
+`99727478517` in `npm test`. Its log shows the affected test returning a DAP
+`response` where `launchToConfiguration` expected the `initialized` event.
+The failure occurred before continue/pause, after the old test had applied its
+50 ms command timeout to the entire real client while intending to time out
+only a 200 ms delayed `run`. The same remote HEAD passing in the duplicate
+Windows push job confirms the recorded timing race and does not constitute an
+accepted rerun.
+
+The correction removes both the delayed fake-server run and the 50 ms global
+client timeout from this target. `DeferredRunFailureBackend.launch` completes
+normally with a contract-shaped protocol 1.0 hello, negotiated limits, image
+record, and architectural entry snapshot. The test still drives the normal DAP
+initialize, launch, configurationDone, entry stop, and continue sequence, and
+asserts exactly one backend launch.
+
+The controlled `run` then:
+
+- asserts the adapter used the negotiated maximum chunk size;
+- increments the run count exactly once and exposes an explicit started
+  barrier;
+- remains pending while the test sends pause and receives a successful pause
+  response; and
+- rejects only after that response, when the test explicitly injects
+  `EMU_TRANSPORT_TIMEOUT`.
+
+This ordering is independent of host scheduling speed and retains the actual
+AC-006 failure semantics. The test observes the timeout diagnostic first and
+one `terminated` event second, waits another event-loop turn, proves no
+`stopped` promotion, proves no second queued termination, and asserts one run
+and one runtime cleanup. The controlled backend coalesces every disconnect on
+one cached promise; the session's fatal path performs the asserted cleanup and
+the harness's final close safely reuses it. The unchanged AC-009 test also
+performs a second real DAP disconnect after active-run cleanup and proves no
+additional event or child command. Thus the correction neither substitutes a
+pause stop for an unproven boundary nor weakens exactly-once/idempotent cleanup.
+
+### Real-client and regression disposition
+
+No product implementation was replaced or weakened. The target intentionally
+isolates the DAP state-machine reaction to a transport timeout, while the
+unchanged contract suite continues to exercise the concrete
+`EmulatorClient`/`EmulatorLaunchBackend` process behavior:
+
+- `hello timeout kills and reaps without proving a boundary` drives the real
+  client timer and verifies `EMU_TRANSPORT_TIMEOUT` plus process reap;
+- `hung terminate is forcibly cleaned up and reaped` covers bounded terminate,
+  kill, and reap through the launch backend;
+- `disconnect during a pending handshake cancels and reaps the launch-owned
+  child` covers cancellation during a live real-client command; and
+- AC-009 drives disconnect during an active delayed fake-server run, verifies
+  `run -> terminate`, child reap, exactly one `terminated`, and repeated
+  disconnect idempotence.
+
+All of these tests remain present, unchanged by the corrective diff, and
+passed in the clean full/contract reruns. The complete 99-test suite also
+retains compatible/malformed/crash/EOF/schema families and the other AC-006
+active, idle, repeated-yield, response-before-stop, and no-post-intent-chunk
+paths. No new protocol, fake-only product command, capability, launch field,
+deferred DAP feature, hardware endpoint, P1000 semantic, or package content is
+introduced.
+
+No new finding was raised. `CR-021` is corrected at implementation/test level,
+but a local Windows review cannot close a finding that originated from the
+four-job hosted matrix.
+
+### Independent executable evidence
+
+- reviewer host: Windows 11 x64 `10.0.26200`, Node `v24.11.0`, npm `11.6.1`;
+- exact parent, merge base, and correction:
+  `341df7d6b5b3574076b76e9bc1eea81f30ca539d`, the same parent, and
+  `1e104a18a365b5ad7666e86faad4b8fa00f14715`;
+- exact diff inspection and `git diff --check`: pass; only
+  `test/dapBehavior.test.ts` changed, with no product or workflow path;
+- independent target stress: **100/100** sequential invocations passed, each
+  invocation launching a separate Windows Node process with Node's test-name
+  filter; zero failed iterations, 10.237 seconds total;
+- clean `npm ci`: pass, 405 packages installed, zero reported
+  vulnerabilities; two transitive deprecation notices only;
+- `npm run lint` and `npm run build`: pass;
+- `npm test`: 99/99 pass, including the corrected target and unchanged AC-009
+  repeated-disconnect process test;
+- `npm run test:contract`: 45/45 pass, including concrete client timeout,
+  terminate/kill/reap, and pending-handshake cleanup tests;
+- `npm run fixture:check`: pass; 65,536 bytes, SHA-256
+  `1550101BC337EBA836F6FC6A3012B80677B9DFE6A0C658FCF615194BE54E5B88`;
+- `npm run package`, `npm run package:contents`, and
+  `npm run package:policy`: pass; exact 47-entry allowlist, 119.61-KB VSIX;
+- reviewer-built VSIX SHA-256:
+  `CD1FE7C4EDA53521C3CD80C762FF1E4DCFE68B9F55AC0280B511AB56452015E1`;
+- `npm run smoke:vsix`: pass against an isolated installed VS Code `1.95.0`,
+  commit `912bb683695358a54ae0c670461738984cbb5b95`, as
+  `undefined_publisher.emusa80535-dap@0.1.0`; exact fake command order was
+  `hello`, `load`, `reset`, empty `replaceCodeBreakpoints`, `terminate`, with
+  entry stop, disconnect, exactly one DAP termination, and zero reported
+  orphan processes;
+- independent package/product safety scans: zero P1000/physical-endpoint or
+  emulator-private-structure matches; exact archive policy excludes the fake,
+  fixture, harness, emulator, executable, tests, SDP/protocol sources, owned
+  TypeScript/source maps, and build tools;
+- final Windows process and temporary-root scans: zero matching adapter,
+  fake-server, wrapper, or packaged-smoke processes and zero
+  `emusa80535-packaged-smoke-*` residue; and
+- tracked worktree clean before this review edit; current non-SDP tree exactly
+  matches the corrective commit and final diff whitespace checks passed.
+
+The VS Code smoke returned exit code zero and complete structured pass evidence.
+As in `RVW-001-002-008`, the test utility/Electron emitted non-fatal DEP0190,
+mutex, utility-process, and N-API diagnostics; the exact fake log, DAP evidence,
+child exit check, process scan, and temporary-root cleanup all passed, so no
+new product or correction finding is raised from those host diagnostics.
+
+### Result and remote rerun requirement
+
+`RVW-001-002-009` **accepts** exact corrective commit `1e104a18...` for Master
+integration, push, and exact-HEAD remote re-verification. The deterministic
+test preserves AC-006's pause-response ordering, timeout diagnostic, no
+unproven stopped promotion, single run, exactly-one termination, and cleanup
+requirements while the concrete timeout/kill/reap coverage remains green.
+
+Master must push the review-integrated HEAD and require all four jobs — Ubuntu
+push, Windows push, Ubuntu pull request, and Windows pull request — to complete
+successfully on the exact pushed product-equivalent tree. A rerun of only the
+previously failed job or a lucky run on old `3b0e482...` is not closure.
+`CR-021` and `CR-020` remain open until that evidence is recorded; only then
+may fresh `VER-001-002-002` reassess AC-010.
+
+This review does not satisfy the accepted-real-emulator contract tests,
+real-runtime F5 launch, actual VS Code disassembly-UI gate, or remaining
+`EMU-BLK` dependencies. It makes no `READY` claim. Until those independent
+gates pass, Slice 1 remains **NOT_READY**.
