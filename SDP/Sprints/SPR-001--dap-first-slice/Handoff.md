@@ -52,11 +52,11 @@ VS Code F5/disassembly/safety gates cannot run on current emulator default.
 
 ## Exact next step
 
-Monitor `Hans-Einar/emuSA80535-N` for an accepted real headless `emu-debug` 1.0
-runtime satisfying every Slice-1 `EMU-BLK`. When one exists, record its exact
-commit/release, rerun the same contract suite plus real VS Code F5/disassembly
-smoke on Linux and Windows, and re-open final verification. Do not change the
-protocol or mark READY while default remains `c0cd6f26…`.
+A fresh worker addresses only `CR-022`: replace the repeated-yield/pause
+wall-clock/real-child timing with a deterministic controllable backend that
+proves multiple yields, pause response ordering, final yielded-boundary
+promotion, and no next run. Fresh `RVW-001-002-010`, exact-head Actions rerun,
+then restore the real-emulator monitoring handoff.
 
 ## Verification completed
 
@@ -134,4 +134,5 @@ Marketplace publication remain later scoped decisions.
 The branch is `codex/dap-first-slice`, based on PR #2 branch HEAD `ede8226`.
 PR #2 still targets `main`; the Slice-1 implementation PR must also target
 `main` so its accepted SDP ancestry is visible, and it must not be merged.
-No worker/reviewer/verifier agent is intentionally left open.
+A CR-022 worker/reviewer cycle is intentionally active; no other agent remains
+open.

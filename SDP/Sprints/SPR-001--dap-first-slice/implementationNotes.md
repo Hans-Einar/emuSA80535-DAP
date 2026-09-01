@@ -185,3 +185,8 @@ Slice-1 work is implemented, independently reviewed, and verified. Final
 acceptance remains externally blocked: emulator default `c0cd6f26…` has no
 compatible real `emu-debug` 1.0 runtime, so real F5/disassembly/safety gates and
 AC-001/003/004/010/011 remain BLOCKED. Disposition is NOT_READY.
+
+The later documentation-only checkpoint rerun exposed `CR-022`: the repeated
+yield/pause test still depended on a 30 ms sleep and real-child scheduling. It
+will be made deterministic before final handoff; product behavior and the
+already verified four-job `3bb4264…` evidence are unchanged.

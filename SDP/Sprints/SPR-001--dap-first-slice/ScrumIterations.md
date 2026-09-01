@@ -775,3 +775,19 @@ remains `c0cd6f26bd8984c9fed10eb81716619cb1bb96e6` with
 `EMU-BLK-001/002/003/005/010` missing, `006/007/008/009` partial, and `004`
 core-only. No compatible real runtime exists; Slice 1 stays implemented and
 reviewed but not accepted READY.
+
+### Final checkpoint exact-HEAD rerun finding
+
+**Checkpoint HEAD:** `15822ef188111995d39c1584a844669b389aed78`
+
+Linux push/PR and Windows PR passed. Windows push failed the test
+`bounded continue remains logically running across repeated yields until pause`:
+the test used a real child, a 30 ms wall-clock sleep, and the client's global
+1,000 ms command timeout. Under heavy Windows runner scheduling, the fake
+response arrived after that bound and the test observed a transport diagnostic
+instead of the expected pause stop. The identical Windows PR job passed.
+
+`CR-022` records this separate test-determinism issue. It does not reopen
+resolved CR-020/021 or change the external emulator blocker, but the branch
+will not be handed off with a flaky exact-head job. A fresh narrow worker and
+`RVW-001-002-010` must replace wall-clock yield timing with controlled promises.
