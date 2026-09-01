@@ -837,3 +837,23 @@ All repository-local corrections are now reviewed and verified. Final AC and
 READY disposition remain unchanged: PASS AC-002/005–009; BLOCKED
 AC-001/003/004/010/011 on the accepted real-emulator/F5/disassembly/safety gate;
 `NOT_READY` on emulator default `c0cd6f26…`.
+
+### Real-runtime final gate reactivation
+
+**Steering evidence received:** 2026-09-01
+
+**DAP candidate HEAD:** `36639b48ddb2ffbafa14c00da794fe1734f7483b`
+
+**Emulator candidate default:**
+`1a6aa397993d3f24cef8d41248ae2928d352966a`
+
+Emulator Issue #6 is closed/accepted and PR #9 merged as `1a6aa397…`.
+Steering evidence states every `EMU-BLK-001..010` is satisfied and the unchanged
+DAP candidate passed real contract/equivalence/F5/disassembly/register/
+breakpoint/step/continue/pause/package smoke on Windows and Linux.
+
+Master revalidated the remote and local `origin/master` commit and the exact
+frozen command/capability surface. No contract change is authorized or needed.
+`VER-001-002-003` is activated to independently rerun the real-runtime gates,
+close the previously blocked ACs only on reproduced evidence, and decide final
+READY versus a new verified incompatibility.

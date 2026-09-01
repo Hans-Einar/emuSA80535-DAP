@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-01T04:29:52Z"
+updatedAt: "2026-09-01T20:37:10Z"
 items:
   - id: M-001
     kind: mandate
@@ -647,6 +647,13 @@ items:
     status: closed
     state: current
     doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: VER-001-002-003
+    kind: verification
+    title: Final real-runtime Slice 1 acceptance against merged emu-debug 1.0
+    status: in_progress
+    state: target
+    doc: SDP/Verification/DAP-SLICE1-VER-001.md
 
   - id: RVW-001-002-009
     kind: review

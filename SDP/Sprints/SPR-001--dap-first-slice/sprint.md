@@ -10,9 +10,9 @@
 - Documentation gate: **READY-FOR-SLICE-1** (`VER-001-001-002`)
 - Steering/Master authority: [GitHub Issue #3](https://github.com/Hans-Einar/emuSA80535-DAP/issues/3)
 - Active iteration/slice: `IT-001-002` / `SL-001-002-001`
-- Real-emulator gate: **required before READY**; current revalidated emulator
-  default is `c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`, which does not yet expose
-  the frozen headless `emu-debug` 1.0 process contract.
+- Real-emulator gate: **reopened for final verification**; current revalidated
+  emulator default is `1a6aa397993d3f24cef8d41248ae2928d352966a` after accepted
+  Issue #6 / merged PR #9. The frozen `emu-debug` 1.0 contract is unchanged.
 
 Issue #1 defines and verifies the contract only. It must stop at
 `READY-FOR-SLICE-1`; no item below is an implementation-status claim.

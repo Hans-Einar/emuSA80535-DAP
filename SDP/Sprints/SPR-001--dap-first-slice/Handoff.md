@@ -3,9 +3,9 @@
 ## Current objective
 
 Repository-correctable work for `IT-001-002 / SL-001-002-001` is implemented,
-independently reviewed, and verified on branch `codex/dap-first-slice`. Final
-disposition is `NOT_READY` only because the accepted real-emulator contract and
-VS Code F5/disassembly/safety gates cannot run on current emulator default.
+independently reviewed, and verified on branch `codex/dap-first-slice`. The
+previous real-emulator blocker is reported resolved by accepted Issue #6 / merged
+PR #9; final real-runtime verification is active against `1a6aa397…`.
 
 ## Authoritative source documents
 
@@ -52,11 +52,12 @@ VS Code F5/disassembly/safety gates cannot run on current emulator default.
 
 ## Exact next step
 
-Monitor `Hans-Einar/emuSA80535-N` for an accepted real headless `emu-debug` 1.0
-runtime satisfying every Slice-1 `EMU-BLK`. When one exists, record its exact
-commit/release, rerun the same contract suite plus real VS Code F5/disassembly
-smoke on Linux and Windows, and re-open final verification. Do not change the
-protocol or mark READY while default remains `c0cd6f26…`.
+A fresh verifier runs `VER-001-002-003` against DAP HEAD `36639b48…` and
+emulator `1a6aa397…`: emulator regression/process suites, unchanged DAP
+lint/full/contract/fixture/package policy, real contract/equivalence integration,
+and real VS Code 1.95 F5/disassembly/register/breakpoint/step/continue/pause/
+disconnect smoke on Windows and Linux. Close blocked ACs only on reproduced
+evidence; do not alter `emu-debug` 1.0 without a verified incompatibility.
 
 ## Verification completed
 
@@ -134,4 +135,5 @@ Marketplace publication remain later scoped decisions.
 The branch is `codex/dap-first-slice`, based on PR #2 branch HEAD `ede8226`.
 PR #2 still targets `main`; the Slice-1 implementation PR must also target
 `main` so its accepted SDP ancestry is visible, and it must not be merged.
-No worker/reviewer/verifier agent remains open.
+A fresh real-runtime verifier is intentionally active; no worker/reviewer agent
+is open.

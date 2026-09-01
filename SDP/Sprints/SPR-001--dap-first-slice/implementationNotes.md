@@ -200,6 +200,11 @@ Final CR-022 verification passed all four exact remote jobs on `e1411df…` plus
 resolved. Only the real-emulator integration/final acceptance lane remains
 blocked; disposition stays NOT_READY.
 
+The external lane is now reopened against emulator merge
+`1a6aa397993d3f24cef8d41248ae2928d352966a`. Issue #6/PR #9 evidence reports
+the frozen runtime complete without a DAP source change. This is Steering input,
+not yet DAP acceptance; fresh `VER-001-002-003` owns the final reproduction.
+
 Fresh `RVW-001-002-010` accepted the correction after 120/120 processes and
 full smoke. Only exact-head four-job Actions success remains before CR-022
 closure and restoration of the external-only NOT_READY checkpoint.
