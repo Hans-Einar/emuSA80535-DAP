@@ -854,3 +854,220 @@ Master owns persistent finding/traceability/rework integration outside this
 review-only commit. This review accepts no `AC-001`–`AC-011`, real-emulator
 commit, or Slice-1 READY result. The real-emulator `EMU-BLK` gate remains
 untested and Slice 1 remains **NOT_READY**.
+
+## Worker B second corrective re-review — `RVW-001-002-006`
+
+**Review date:** 2026-09-01
+
+**Reviewer role:** fresh independent second corrective reviewer; not the Worker
+B author and not either earlier Worker B reviewer
+
+**Reviewed corrective product commit:**
+`cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`
+
+**Reviewed parent:**
+`e0760bd52d991cbc0f2890caeaf806dcee3a54a7`
+
+**Earlier corrective comparison commit:**
+`6000ec8235ee8f568db80c4d6fe02f84d1982045`
+
+**Authority:** GitHub Issue #3, accepted PR #2 SDP baseline, active
+`IT-001-002 / SL-001-002-001`, the complete frozen
+`protocol/EMU_DEBUG_API_REQUIREMENTS.md` contract, and the `CR-012`, `CR-015`,
+and `CR-016` records above
+
+**Disposition:** **accepted; `CR-012`, `CR-015`, and `CR-016` resolved;
+`CR-013` and `CR-014` remain resolved; no new finding**
+
+### Scope and independence
+
+This pass reviewed the exact three-path corrective product commit. Its parent
+is exactly `e0760bd…`; the diff changes only
+`adapter/src/emulatorClient.ts`, `test-fixtures/fake-emulator/server.ts`, and
+`test/emulatorClient.test.ts`, with 198 insertions and 21 deletions. The later
+Master handoff commit `59428b33a4e942e449ed606601b6c560e7ba6d35` is SDP-only;
+the reviewed product paths at the working HEAD were byte-identical to exact
+`cd98df7…`.
+
+The reviewer did not use the three new committed tests as sole evidence. A
+separately authored hostile NDJSON server/client harness exercised 31 valid,
+hostile, raw-fake, and Windows resolver cases. It was transient, was removed
+before the final lint/build/package passes, and left no tracked or untracked
+artifact. The reviewer changed no product, test, fixture, sprint,
+traceability, or verification file. This addendum is the only durable review
+change; Master retains finding and traceability integration.
+
+### Finding-by-finding disposition
+
+#### `CR-012` — resolved
+
+The complete known command-response validation correction is now accepted.
+The earlier exact-digest, snapshot-variant/result-kind, register-width,
+decode-order/placeholder, breakpoint-partition, run-reason, step-result, and
+terminate-acknowledgment cases all reran in the 45-test contract suite and
+remained fatal with child cleanup. Independent breakpoint probes additionally
+proved that an echoed wire limit must match the raw hello advertisement and
+that accepted/rejected results remain a unique, requested, complete, disjoint
+partition. The negative decode residual is resolved by the `CR-015` evidence
+below.
+
+Every independently injected response-schema violation raised
+`EMU_TRANSPORT_SCHEMA`, invoked the fatal callback exactly once, closed the
+transport, and left its child PID reaped. Compatible exact responses remained
+accepted. This preserves major-1 unknown-field tolerance while enforcing the
+known fields and semantics consumed by Worker C.
+
+#### `CR-013` — remains resolved; no regression
+
+Direct raw-NDJSON probes against the corrected fake reconfirmed the accepted
+fake-server boundary:
+
+- the frozen seven required capabilities plus an unknown required capability
+  failed `UNSUPPORTED_CAPABILITY`; a fresh-ID `getState` then failed
+  `INVALID_STATE`, and EOF exited 0;
+- reusing successful hello ID 1 failed `INVALID_REQUEST`; a fresh ID left the
+  session in the expected clean pre-load state and EOF exited 0;
+- exact 65,535-byte and 65,536-byte hello records were accepted and each
+  produced a 481-byte response;
+- the generated oversized hello response became a 170-byte bounded
+  `RESPONSE_TOO_LARGE` error;
+- a 65,537-byte input and a within-input-bound command whose echoed error could
+  not fit each exited 65 and emitted no stdout record.
+
+All observed output records stayed at or below 65,536 bytes. Fault/scenario
+selection remains test-infrastructure CLI/environment state and does not enter
+the product protocol or package.
+
+#### `CR-014` — remains resolved; no regression
+
+An independent Windows probe placed `emu-debug.CMD` and `emu-debug.BAT` in
+earlier PATH directories and a copied `emu-debug.EXE` later, using
+`PATHEXT=.CMD;.BAT;.EXE;.COM`. Resolution skipped both wrappers, returned the
+later EXE, and the selected executable exited 0 under `shell:false`. Explicit
+CMD, explicit BAT, wrapper-only PATH, and empty-PATH cases all failed
+`CONFIG_EMULATOR_NOT_FOUND`. No shell fallback was introduced.
+
+#### `CR-015` — resolved
+
+The client now validates the full negative-window geometry for every
+relationship between negative instruction-offset magnitude `k` and returned
+record count `n`. For each returned predecessor it reserves at least one byte
+for every remaining predecessor slot; the `k`th record must end exactly at the
+byte base, and any record after those `k` predecessors must begin exactly at
+the base. Placeholder records remain an exact one-byte
+`unknown-predecessor`/`<invalid>` prefix and cannot occupy the base or follow a
+valid record.
+
+Independent acceptance probes used base 100 and established:
+
+- `k > n`: `k=5,n=2` accepted a known prefix at addresses 90/93 with sizes
+  3/2, and separately accepted unknown one-byte placeholders at 95/96;
+- `k = n`: `k=2,n=2` accepted known records 95+2 and 97+3 ending exactly at
+  base 100, and separately accepted placeholders at 98/99;
+- `k < n`: `k=2,n=4` accepted known predecessors 95+2 and 97+3 followed by
+  the exact base record at 100 and a forward record at 102; `k=3,n=4`
+  separately accepted a placeholder prefix followed by known predecessors and
+  the exact base record.
+
+A positive byte offset (`reference=95, byteOffset=5`) produced the same exact
+base-100 geometry, and the valid final CODE byte at 65,535 was accepted.
+Hostile early-base, crossing-base, too-late-start, equal-count-shortfall,
+non-contiguous, reverse-order, placeholder-after-valid,
+placeholder-at-anchor, invalid placeholder-size, success-on-byte-underflow,
+record-range-crossing, and non-negative-placeholder responses were all
+rejected fatally and reaped. The original `k=5,n=2` record sequence
+90+10/100+1 that reproduced `CR-015` is among the rejected cases.
+
+This covers known and unknown predecessor chains without guessing opcode
+boundaries, preserves byte-offset-first behavior, rejects wrap/partial/range
+successes, and accepts valid exact windows rather than over-restricting them.
+
+#### `CR-016` — resolved
+
+The raw hello breakpoint limit is retained separately from the effective
+client work cap. An independent server advertised
+`hello.limits.maxBreakpoints=5000`; the public client result remained safely
+clamped to 1024. A small request `[2]` succeeded with the truthful raw response
+`{accepted:[2],rejected:[],limit:5000}`. A 1,025-unique-address request failed
+locally with `EMU_BREAKPOINT_LIMIT`; the still-live client then successfully
+sent `[3]`. A server-side counter reported exactly two replacement requests,
+proving the rejected large request was never written.
+
+Two hostile response probes remained fatal and reaped: echoing the undisclosed
+client clamp 1024 instead of raw limit 5000, and returning a duplicate/
+unrequested breakpoint partition. Thus wire truthfulness, local allocation/
+work safety, and the previously accepted response semantics coexist.
+
+### Scope, package, process, and safety disposition
+
+- The three-path correction adds no Worker C DAP handler or capability. The
+  initialize response still advertises only configurationDone; no register,
+  scope/variable, disassemble-DAP, instruction-breakpoint-DAP, continue,
+  pause, step, or stopped-handle behavior enters the product diff.
+- No fake scenario, fault switch, fake-only command, or hostile-response
+  behavior appears in product adapter/extension source. The fake, synthetic
+  firmware, tests, and SDP/protocol material are absent from the VSIX.
+- Product/default/fixture/package inspection found no private emulator struct
+  dependency, P1000 semantic, physical endpoint, serial/GPIO/field-bus
+  integration, source mapping, memory mutation/browser, attach/TCP,
+  watchpoint, emulator bundling, or download behavior.
+- UTF-8/framing/correlation/serialization, timeout/EOF/crash, stderr
+  separation, exact image/hash, hello/load/reset order, and terminate/kill/
+  reap behavior remain intact. The independent hostile and raw-fake passes
+  and the final process scan left no review, hostile, or fake server alive.
+- The 43-file, 112.58-KB VSIX contains only manifest/readme/license, compiled
+  extension and adapter JavaScript, and the two pinned runtime `@vscode`
+  dependencies. It contains no emulator executable, fake, firmware,
+  test/reviewer source, TypeScript, source map, protocol/SDP source, or build
+  toolchain.
+
+No Worker C capability, fake-only product protocol, deferred feature, or new
+review finding was found.
+
+### Independent executable evidence
+
+All product checks exercised product paths byte-identical to exact
+`cd98df7…`:
+
+- reviewer host: Windows x64, Node `v24.11.0`, npm `11.6.1`, VS Code
+  `1.134.0`;
+- `git rev-parse cd98df7…^` and
+  `git merge-base e0760bd… cd98df7…` both returned exact parent `e0760bd…`;
+- `git diff --check e0760bd… cd98df7…`: pass; exactly three intended Worker B
+  paths, 198 insertions and 21 deletions;
+- complete corrective diff and relevant client/fake/test source inspection;
+- clean `npm ci`: pass, 376 packages, zero reported vulnerabilities; two
+  transitive deprecation warnings were non-blocking;
+- clean final `npm run lint` and `npm run build`: pass;
+- `npm test`: pass, 63/63;
+- `npm run test:contract`: pass, 45/45;
+- independently authored 31-case negative-window, breakpoint-limit,
+  raw-fake-bound/ID/capability, cleanup, and Windows resolver probe: pass;
+- `npm run fixture:check`: pass; 65,536 bytes and SHA-256
+  `1550101bc337eba836f6fc6a3012b80677b9dfe6a0c658fcf615194be54e5b88`;
+- `npm run package` and `npm run package:contents`: pass; 43-file, 112.58-KB
+  VSIX;
+- reviewer-built clean VSIX SHA-256:
+  `8FF564EA757D7D2FEC0EF7EE51BF421F6AE4369C2D09B9D9F9C36E2ABE3F119E`;
+- archive/owned-path safety, private-struct, deferred-feature, fake-only,
+  Worker-C-capability, process-cleanup, and final worktree scans: pass.
+
+This Windows responsibility review does not claim an exact-commit remote Linux
+run, supported-floor VS Code installation, or real-emulator integration. Those
+remain later Worker C/final-verification gates and do not weaken this accepted
+Worker B disposition.
+
+### Result and next gate
+
+`RVW-001-002-006` accepts exact corrective product commit `cd98df7…` and
+resolves the remaining Worker B findings `CR-012`, `CR-015`, and `CR-016`.
+The already accepted `CR-013` fake-boundary and `CR-014` executable-resolution
+corrections remain resolved. Worker B's strict emulator protocol client and
+contract-faithful fake responsibility is accepted, and Worker C may now use
+the typed client under a fresh implementation/review pass.
+
+Master owns persistent finding, traceability, sprint, and handoff integration
+outside this review-only commit. This review accepts no Worker C behavior,
+`AC-001`–`AC-011`, real-emulator commit, final verification, or Slice-1 READY
+result. The mandatory real-emulator `EMU-BLK` gate remains untested and Slice 1
+remains **NOT_READY**.
