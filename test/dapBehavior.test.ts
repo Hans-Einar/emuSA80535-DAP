@@ -375,6 +375,97 @@ void test("AC-002 exposes one thread, one truthful frame, and one atomic read-on
   }
 });
 
+void test("raw stackTrace pagination rejects malformed values without changing the stopped snapshot or handles", { timeout: 10_000 }, async () => {
+  const harness = new DapHarness({ logRequests: true });
+  try {
+    await harness.initialize();
+    await harness.launchToConfiguration();
+    await harness.configure();
+
+    harness.send("stackTrace", { threadId: 1 });
+    const baselineStack = await harness.dap.next();
+    assertSuccess(baselineStack, "stackTrace");
+    const baselineFrames = asRecords(
+      asRecord(baselineStack.body).stackFrames,
+    );
+    const frameId = baselineFrames[0]?.id;
+    harness.send("scopes", { frameId });
+    const baselineScopes = await harness.dap.next();
+    assertSuccess(baselineScopes, "scopes");
+    const variablesReference = asRecords(
+      asRecord(baselineScopes.body).scopes,
+    )[0]?.variablesReference;
+    harness.send("variables", { variablesReference });
+    const baselineVariables = await harness.dap.next();
+    assertSuccess(baselineVariables, "variables");
+    const childRequestsBefore = harness.readRequests();
+
+    const malformedValues: unknown[] = [
+      "0",
+      0.5,
+      -1,
+      Number.MAX_SAFE_INTEGER + 1,
+      null,
+    ];
+    for (const field of ["startFrame", "levels"] as const) {
+      for (const value of malformedValues) {
+        harness.send("stackTrace", { threadId: 1, [field]: value });
+        assertFailure(
+          await harness.dap.next(),
+          "stackTrace",
+          "EMU_STACKTRACE_INVALID",
+        );
+      }
+    }
+
+    assert.deepEqual(harness.readRequests(), childRequestsBefore);
+    assert.equal(harness.dap.queued.length, 0);
+
+    const validPagination = [
+      { arguments: { threadId: 1 }, frameCount: 1 },
+      { arguments: { threadId: 1, startFrame: 0, levels: 0 }, frameCount: 1 },
+      { arguments: { threadId: 1, startFrame: 0, levels: 1 }, frameCount: 1 },
+      { arguments: { threadId: 1, startFrame: 1, levels: 0 }, frameCount: 0 },
+      {
+        arguments: {
+          threadId: 1,
+          startFrame: Number.MAX_SAFE_INTEGER,
+          levels: 1,
+        },
+        frameCount: 0,
+      },
+    ];
+    for (const testCase of validPagination) {
+      harness.send("stackTrace", testCase.arguments);
+      const response = await harness.dap.next();
+      assertSuccess(response, "stackTrace");
+      assert.equal(asRecord(response.body).totalFrames, 1);
+      assert.equal(
+        asRecords(asRecord(response.body).stackFrames).length,
+        testCase.frameCount,
+      );
+    }
+
+    harness.send("stackTrace", { threadId: 1 });
+    const unchangedStack = await harness.dap.next();
+    assertSuccess(unchangedStack, "stackTrace");
+    assert.deepEqual(unchangedStack.body, baselineStack.body);
+    harness.send("scopes", { frameId });
+    const unchangedScopes = await harness.dap.next();
+    assertSuccess(unchangedScopes, "scopes");
+    assert.deepEqual(unchangedScopes.body, baselineScopes.body);
+    harness.send("variables", { variablesReference });
+    const unchangedVariables = await harness.dap.next();
+    assertSuccess(unchangedVariables, "variables");
+    assert.deepEqual(unchangedVariables.body, baselineVariables.body);
+    assert.deepEqual(harness.readRequests(), childRequestsBefore);
+
+    await harness.disconnect();
+  } finally {
+    await harness.close();
+  }
+});
+
 void test("AC-003 disassembly maps exact decoder records, known predecessors, and whole-range failures", { timeout: 10_000 }, async () => {
   const harness = new DapHarness({ logRequests: true });
   try {
@@ -521,6 +612,59 @@ void test("AC-003 unknown negative predecessors are explicit one-byte invalid pl
         presentationHint: "normal",
       },
     ]);
+    await harness.disconnect();
+  } finally {
+    await harness.close();
+  }
+});
+
+void test("a taken branch never becomes sequential predecessor evidence after continue and pause", { timeout: 10_000 }, async () => {
+  const harness = new DapHarness({ entryAddress: "0x0002", logRequests: true });
+  try {
+    await harness.initialize();
+    await harness.launchToConfiguration();
+    await harness.configure();
+
+    harness.send("continue", { threadId: 1 });
+    assertSuccess(await harness.dap.next(), "continue");
+    harness.send("pause", { threadId: 1 });
+    assertSuccess(await harness.dap.next(), "pause");
+    assert.deepEqual((await harness.dap.next()).body, {
+      reason: "pause",
+      threadId: 1,
+    });
+    assert.equal(
+      harness.readRequests().filter((request) => request.command === "run")
+        .length,
+      1,
+    );
+
+    harness.send("disassemble", {
+      memoryReference: "code:0002",
+      instructionOffset: -1,
+      instructionCount: 2,
+    });
+    const response = await harness.dap.next();
+    assertSuccess(response, "disassemble");
+    assert.deepEqual(asRecords(asRecord(response.body).instructions), [
+      {
+        address: "0x0001",
+        instruction: "<invalid>",
+        presentationHint: "invalid",
+      },
+      {
+        address: "0x0002",
+        instruction: "INC A",
+        presentationHint: "normal",
+      },
+    ]);
+    assert.equal(
+      harness.dap.queued.some(
+        (message) => message.event === "terminated" || message.event === "output",
+      ),
+      false,
+    );
+
     await harness.disconnect();
   } finally {
     await harness.close();
@@ -687,6 +831,85 @@ void test("AC-005 and AC-007 exact step invalidates old handles while unsupporte
         .filter((request) => request.command === "stepInstruction").length,
       3,
     );
+    await harness.disconnect();
+  } finally {
+    await harness.close();
+  }
+});
+
+void test("a structured rejected step preserves the exact stop epoch and a later successful step advances it", { timeout: 10_000 }, async () => {
+  const harness = new DapHarness({
+    scenario: "step-rejected-once",
+    logRequests: true,
+  });
+  try {
+    await harness.initialize();
+    await harness.launchToConfiguration();
+    await harness.configure();
+
+    harness.send("stackTrace", { threadId: 1 });
+    const baselineStack = await harness.dap.next();
+    assertSuccess(baselineStack, "stackTrace");
+    const frameId = asRecords(asRecord(baselineStack.body).stackFrames)[0]?.id;
+    harness.send("scopes", { frameId });
+    const baselineScopes = await harness.dap.next();
+    assertSuccess(baselineScopes, "scopes");
+    const variablesReference = asRecords(
+      asRecord(baselineScopes.body).scopes,
+    )[0]?.variablesReference;
+    harness.send("variables", { variablesReference });
+    const baselineVariables = await harness.dap.next();
+    assertSuccess(baselineVariables, "variables");
+
+    const commandsBefore = harness.readRequests().map((request) => request.command);
+    harness.send("stepIn", { threadId: 1, granularity: "instruction" });
+    assertFailure(await harness.dap.next(), "stepIn", "EMU_STEP_REJECTED");
+    await new Promise<void>((resolve) => setImmediate(resolve));
+    assert.deepEqual(
+      harness.readRequests().map((request) => request.command),
+      [...commandsBefore, "stepInstruction"],
+    );
+    assert.equal(harness.dap.queued.length, 0);
+
+    harness.send("stackTrace", { threadId: 1 });
+    const unchangedStack = await harness.dap.next();
+    assertSuccess(unchangedStack, "stackTrace");
+    assert.deepEqual(unchangedStack.body, baselineStack.body);
+    harness.send("scopes", { frameId });
+    const unchangedScopes = await harness.dap.next();
+    assertSuccess(unchangedScopes, "scopes");
+    assert.deepEqual(unchangedScopes.body, baselineScopes.body);
+    harness.send("variables", { variablesReference });
+    const unchangedVariables = await harness.dap.next();
+    assertSuccess(unchangedVariables, "variables");
+    assert.deepEqual(unchangedVariables.body, baselineVariables.body);
+    assert.deepEqual(
+      harness.readRequests().map((request) => request.command),
+      [...commandsBefore, "stepInstruction"],
+    );
+
+    harness.send("stepIn", { threadId: 1, granularity: "instruction" });
+    assertSuccess(await harness.dap.next(), "stepIn");
+    assert.deepEqual((await harness.dap.next()).body, {
+      reason: "step",
+      threadId: 1,
+    });
+    harness.send("scopes", { frameId });
+    assertFailure(await harness.dap.next(), "scopes", "EMU_HANDLE_STALE");
+    harness.send("variables", { variablesReference });
+    assertFailure(await harness.dap.next(), "variables", "EMU_HANDLE_STALE");
+    harness.send("stackTrace", { threadId: 1 });
+    const advancedFrame = asRecords(
+      asRecord((await harness.dap.next()).body).stackFrames,
+    )[0]?.id;
+    assert.notEqual(advancedFrame, frameId);
+    assert.equal(
+      harness.readRequests().filter(
+        (request) => request.command === "stepInstruction",
+      ).length,
+      2,
+    );
+
     await harness.disconnect();
   } finally {
     await harness.close();

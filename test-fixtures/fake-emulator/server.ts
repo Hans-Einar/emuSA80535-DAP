@@ -117,8 +117,10 @@ class FakeEmulator {
   private snapshot: Snapshot | undefined;
   private breakpoints = new Set<number>();
   private readonly knownPredecessor = new Map<number, number>();
+  private rejectNextStep: boolean;
 
   public constructor(private readonly options: FakeOptions) {
+    this.rejectNextStep = options.scenario === "step-rejected-once";
     if (options.scenario === "stderr-diagnostic") {
       process.stderr.write(
         `${JSON.stringify({
@@ -656,6 +658,15 @@ class FakeEmulator {
       this.error(request, "INVALID_STATE", "step requires an idle boundary");
       return;
     }
+    if (this.rejectNextStep) {
+      this.rejectNextStep = false;
+      this.error(
+        request,
+        "EMU_STEP_REJECTED",
+        "synthetic structured step rejection",
+      );
+      return;
+    }
     this.executeOne();
     this.snapshot = {
       ...this.snapshot,
@@ -700,7 +711,10 @@ class FakeEmulator {
     } else if (from === 0x0003) {
       next = 0x0002;
     }
-    this.knownPredecessor.set(next, from);
+    const sequentialNext = from + decoded.size;
+    if (sequentialNext <= 0xffff && next === sequentialNext) {
+      this.knownPredecessor.set(next, from);
+    }
     this.snapshot = {
       ...this.snapshot,
       pc: next,

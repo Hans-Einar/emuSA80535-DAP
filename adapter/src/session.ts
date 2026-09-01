@@ -55,6 +55,7 @@ const ERROR_IDS = {
   EMU_STATE_CHILD_BUSY: 1305,
   EMU_THREAD_INVALID: 1306,
   EMU_HANDLE_STALE: 1307,
+  EMU_STACKTRACE_INVALID: 1308,
   EMU_CLEANUP_FAILED: 1400,
   EMU_MEMORY_INVALID: 1500,
   EMU_BREAKPOINT_FAILED: 1600,
@@ -302,8 +303,11 @@ export class EmuDebugSession extends DebugSession {
       this.failNotStopped(response);
       return;
     }
-    const startFrame = args?.startFrame ?? 0;
-    const levels = args?.levels ?? 0;
+    const pagination = this.stackTracePagination(response, args);
+    if (pagination === undefined) {
+      return;
+    }
+    const { startFrame, levels } = pagination;
     const includeFrame = startFrame === 0 && (levels === 0 || levels > 0);
     response.body = {
       stackFrames: includeFrame
@@ -775,12 +779,14 @@ export class EmuDebugSession extends DebugSession {
     response: DebugProtocol.StepInResponse,
   ): Promise<void> {
     const operation = this.launchBackend.stepInstruction;
-    const priorSnapshot = this.stops.active?.snapshot;
-    if (operation === undefined || priorSnapshot === undefined) {
+    if (operation === undefined || this.stops.active === undefined) {
       this.failNotStopped(response);
       return;
     }
-    const generation = this.resumeFromStop();
+    const generation = this.runGeneration;
+    this.latestYield = undefined;
+    this.pauseIntent = false;
+    this.logicalState = "running";
     this.childState = "other-command-active";
     let snapshot: EmulatorSnapshot;
     try {
@@ -793,7 +799,8 @@ export class EmuDebugSession extends DebugSession {
       ) {
         this.childState = "idle-at-boundary";
         this.logicalState = "stopped";
-        this.stops.activate(priorSnapshot);
+        this.latestYield = undefined;
+        this.pauseIntent = false;
       }
       this.fail(
         response,
@@ -971,6 +978,27 @@ export class EmuDebugSession extends DebugSession {
       `EMU_THREAD_INVALID: Slice 1 exposes only thread ${MCU_THREAD_ID}`,
     );
     return false;
+  }
+
+  private stackTracePagination(
+    response: DebugProtocol.StackTraceResponse,
+    args: DebugProtocol.StackTraceArguments,
+  ): { startFrame: number; levels: number } | undefined {
+    const startFrame = args?.startFrame;
+    const levels = args?.levels;
+    if (
+      (startFrame !== undefined &&
+        (!Number.isSafeInteger(startFrame) || startFrame < 0)) ||
+      (levels !== undefined && (!Number.isSafeInteger(levels) || levels < 0))
+    ) {
+      this.fail(
+        response,
+        ERROR_IDS.EMU_STACKTRACE_INVALID,
+        "EMU_STACKTRACE_INVALID: startFrame and levels must be non-negative safe integers when present",
+      );
+      return undefined;
+    }
+    return { startFrame: startFrame ?? 0, levels: levels ?? 0 };
   }
 
   private failUnsupported(
