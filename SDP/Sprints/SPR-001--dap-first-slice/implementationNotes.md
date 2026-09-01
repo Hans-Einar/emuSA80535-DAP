@@ -170,3 +170,7 @@ On remote HEAD `3b0e482…`, both Ubuntu jobs and Windows push passed, but Windo
 PR failed because an AC-006 test reused a 50 ms global command timeout intended
 for `run` during launch. `CR-021` requires deterministic timing separation;
 rerunning for a lucky green result is not accepted.
+
+Corrective test commit `1e104a18a365b5ad7666e86faad4b8fa00f14715`
+replaces the flakiness with a deterministic deferred timeout and passes 100/100
+Windows process runs. Fresh review and exact-head Actions rerun remain required.

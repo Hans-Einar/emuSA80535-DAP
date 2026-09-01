@@ -719,3 +719,19 @@ timing, not acceptance.
 `CR-021` captures this platform-speed-dependent harness defect. `CR-020` stays
 open. A fresh narrow worker/reviewer pass is required before rerunning both
 platform jobs and `VER-001-002-002`.
+
+### AC-006 remote determinism corrective result
+
+**Corrective commit:** `1e104a18a365b5ad7666e86faad4b8fa00f14715`
+
+The fresh worker changed only `test/dapBehavior.test.ts`. The test now uses a
+controllable test backend: launch succeeds without an artificial short bound,
+one `run` promise stays pending, pause is acknowledged, and the test explicitly
+rejects that run with `EMU_TRANSPORT_TIMEOUT`. It still proves diagnostic,
+no stopped promotion, one run, exactly one termination, and idempotent cleanup.
+Real client timeout/kill/reap remains covered in contract tests.
+
+The target passed 100/100 separate Windows processes; clean 99/99, 45/45,
+fixture/package/policy, installed floor smoke, process/safety, and diff checks
+also passed. `CR-021` remains open pending fresh `RVW-001-002-009` and remote
+rerun.

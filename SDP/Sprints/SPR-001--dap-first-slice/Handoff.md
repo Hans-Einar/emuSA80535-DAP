@@ -52,11 +52,11 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh worker fixes only `CR-021`: make the AC-006 run-timeout test bound the
-delayed run without applying an unrealistically small launch timeout, retain a
-deterministic timeout assertion, and add/adjust regression coverage without
-weakening product behavior. Fresh `RVW-001-002-009`, push, both-platform jobs,
-then `VER-001-002-002` follow.
+A fresh reviewer performs `RVW-001-002-009` against exact corrective commit
+`1e104a18a365b5ad7666e86faad4b8fa00f14715`, verifies deterministic deferred
+run-timeout semantics, real client timeout coverage retention, 100-run
+stability, and unchanged product behavior. Then Master pushes and reruns all
+four Actions jobs before `VER-001-002-002`.
 
 ## Verification completed
 
