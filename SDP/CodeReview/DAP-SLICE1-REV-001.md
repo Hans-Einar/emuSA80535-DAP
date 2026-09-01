@@ -1532,3 +1532,181 @@ still prove the exact accepted branch on Linux and Windows, supported-floor
 VS Code package/install and real UI behavior, map every `EMU-BLK-001`–`010` to
 an exact accepted emulator commit, and pass the real-runtime contract plus F5
 smoke. Until those independent gates pass, Slice 1 remains **NOT_READY**.
+
+## AC-010 cross-platform correction review - RVW-001-002-008
+
+**Review date:** 2026-09-01
+
+**Reviewer role:** fresh independent corrective reviewer; not the author of
+the verification report, corrective product/CI commit, or Master handoff
+
+**Reviewed corrective commit:**
+2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5
+
+**Reviewed parent:**
+6527065e74706f370197670608c5ff96f857f479
+
+**Authority:** GitHub Issue #3, accepted PR #2 SDP baseline, active
+IT-001-002 / SL-001-002-001, AC-010, CR-020, and DAP-SLICE1-VER-001
+
+**Disposition:** **accepted for exact-HEAD remote verification; no new
+finding; CR-020 implementation correction accepted but remains open until
+both GitHub Actions jobs pass**
+
+### Scope and independence
+
+This pass reviewed the exact 21-path CR-020 correction against its exact parent
+and did not rely on the worker's report. The commit adds the dual-platform
+workflow, pinned test dependencies, exact VSIX policy, packaged extension-host
+smoke driver, test-only Linux and Windows fake launchers, and focused support
+tests. It changes no adapter or extension product source. The only
+contract-fake change adds optional test evidence sinks for the request log and
+process ID; no fake-only command or alternate product protocol is added.
+
+The branch contained later Master-owned SDP handoff commits during execution.
+The non-SDP diff from exact 2ecbec37... to the working HEAD was empty, proving
+that every tested product, CI, script, fixture, package, and test path was
+byte-identical to the exact corrective commit. This reviewer changed only this
+review section.
+
+### Workflow and toolchain assessment
+
+- .github/workflows/ci.yml defines separate ubuntu-latest and windows-latest
+  jobs, each bounded to 25 minutes. Both select exact Node 22.20.0 and run npm
+  ci, lint, the full suite, the focused protocol contract suite, fixture
+  verification, package creation, package contents, exact archive policy, and
+  the floor-version packaged smoke.
+- The Linux lane runs the smoke under xvfb-run -a; the Windows lane invokes the
+  same Node entry point directly. The shared script downloads declared VS Code
+  floor 1.95.0, uses isolated extension and user-data directories, installs
+  the newly built VSIX, and verifies editor version, installed extension
+  ID/version, manifest floor/entry point, and unique installed filesystem root
+  before launching a debug session.
+- Root runtime and development dependencies are exact versions in both
+  manifest and npm v3 lockfile. The production dependency tree remains only
+  @vscode/debugadapter@1.68.0 and @vscode/debugprotocol@1.68.0, with the latter
+  de-duplicated.
+- Linux portability was reviewed statically, not represented as executed
+  evidence. The non-Windows wrapper is a mode-0755 /bin/sh file whose only
+  action is the safely quoted exec of EMU_SMOKE_NODE, EMU_SMOKE_SERVER, and
+  every forwarded argument. Node-side process discovery uses /proc, timeout
+  cleanup kills the detached process group, and no PowerShell or Windows path
+  assumption is reachable on that branch.
+
+No workflow or toolchain finding was found. At review time this commit had not
+been pushed, so this review deliberately makes no GitHub Actions execution or
+exact-commit Linux claim. Only an exact pushed Actions run can prove the
+hosted Ubuntu image, Xvfb, download, install, and extension-host execution
+together.
+
+### Packaged-product smoke assessment
+
+The development extension passed to @vscode/test-electron is only a test
+harness and contains no debugger contribution or adapter implementation.
+Inside the VS Code extension host, the harness obtains the installed product
+by exact ID, checks version and canonical extension path against the isolated
+VSIX installation, and explicitly activates that installed extension. It then
+calls vscode.debug.startDebugging. The installed product contributes the debug
+type and resolves its external adapter from the installed
+out/adapter/src/main.js. Thus the smoke neither substitutes the harness for
+the product nor executes the repository's development adapter.
+
+The contract fake, firmware, POSIX wrapper, C# wrapper, harness, and smoke
+scripts all stay outside the VSIX. The adapter continues to spawn the supplied
+emulator executable directly with shell false and only the frozen
+--headless-debug argument. The Windows launcher invokes Node through
+CreateProcess, duplicates stdin/stdout/stderr independently with
+STARTF_USESTDHANDLES, quotes every argument without cmd.exe, waits for the fake
+child, and forwards its exit code. The focused Windows pipe test independently
+completed a protocol 1.0 hello and terminate through this launcher. The Linux
+wrapper quotes both executable paths and all forwarded arguments and replaces
+itself with the fake process.
+
+The successful floor smoke proved all of the following in one isolated VS Code
+1.95.0 extension-host run:
+
+- installed identity undefined_publisher.emusa80535-dap@0.1.0 and canonical
+  target root under the temporary extensions directory;
+- packaged adapter presence under that installed root;
+- DAP initialize, launch, configurationDone, entry stop, disconnect, and
+  exactly one observed terminated event;
+- exact product-protocol fake command order hello, load, reset, empty
+  replaceCodeBreakpoints, then terminate; and
+- successful launch response, entry reason/thread validation, clean fake exit,
+  zero matching adapter/fake/wrapper processes, and removal of the complete
+  isolated temporary root.
+
+The upstream test utility/Electron emitted a Node DEP0190 warning and transient
+mutex/utility-process diagnostics while still returning exit code zero. These
+did not involve the adapter's emulator spawn path, which remains no-shell, and
+the independently written harness evidence, exact fake request log, child PID
+exit check, and final process scan all passed. No product or CI finding is
+raised from those non-fatal host diagnostics.
+
+### Package boundary, safety, and claim assessment
+
+The rebuilt archive contains exactly 47 allowlisted entries. Besides VSIX
+metadata it contains only the manifest/readme/license, eight compiled adapter
+JavaScript files, three compiled extension JavaScript files, and the two pinned
+@vscode runtime packages. The exact allowlist rejects every additional path,
+including emulator/fake/fixture/test/harness/script/SDP/protocol material,
+owned TypeScript, source maps, C# source, firmware, and executables. Vendor
+runtime declaration files are explicit allowlist members; no owned source is
+present.
+
+The correction adds no P1000 semantic, physical-I/O endpoint, private emulator
+layout, deferred DAP feature, emulator bundling, or download behavior. README
+claims are bounded correctly: the workflow is described as fake-backed package
+smoke, while real-emulator F5 and disassembly-UI acceptance, independent
+verification, and READY remain explicitly unclaimed.
+
+### Independent executable evidence
+
+- reviewer host: Windows 11 Pro x64 10.0.26200, Node v24.11.0, npm 11.6.1,
+  and installed VS Code 1.134.0 commit
+  110a328ea54b42367b803ec53ee0bf52ef26b419;
+- exact parent/merge-base and reviewed commit:
+  6527065e74706f370197670608c5ff96f857f479 and
+  2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5; git diff --check passed;
+- clean npm ci: pass, 405 packages installed, zero reported vulnerabilities;
+  two transitive deprecation notices only;
+- npm run lint: pass;
+- npm test: 99/99 pass, including archive/process/evidence policy and the
+  Windows stdio-forwarding launcher test;
+- npm run test:contract: 45/45 pass;
+- npm run fixture:check: pass, 65,536 bytes, SHA-256
+  1550101BC337EBA836F6FC6A3012B80677B9DFE6A0C658FCF615194BE54E5B88;
+- npm run package, npm run package:contents, and npm run package:policy: pass;
+  47 entries, 122,481 bytes, exact policy;
+- reviewer-built VSIX SHA-256:
+  44E1FA3C2174427FE4D7574752EACC4D71E1C92126AD88461AA187B5D06B6153;
+- package.json SHA-256:
+  573D09C779DACF5E194DD5F0DA211CB3B972C3154AE5B7CCD659AA603CCCEB82;
+- package-lock.json SHA-256:
+  C8FAA1219F927B8D37C9B16ECF5F75109D9BBE1FB22C76DFC8AE6E5A8666B9C5;
+- actual downloaded floor runtime: VS Code 1.95.0, commit
+  912bb683695358a54ae0c670461738984cbb5b95, x64;
+- npm run smoke:vsix: pass as
+  undefined_publisher.emusa80535-dap@0.1.0; fake PID 13324; exact command order
+  and DAP entry/disconnect evidence above; zero orphan processes;
+- independent post-smoke Windows process scan: no target adapter, fake server,
+  or wrapper; temporary-directory scan: no emusa80535-packaged-smoke-*
+  directory remained; and
+- final tracked worktree and git diff --check: clean before this review edit.
+
+### Result and remaining gates
+
+RVW-001-002-008 **accepts** exact corrective commit 2ecbec37... for Master push
+and separate exact-HEAD verification. No new finding is raised. The
+implementation part of CR-020 is accepted, but the finding must remain open
+until both Ubuntu and Windows Actions jobs complete successfully on the exact
+pushed review-integrated HEAD; this local Windows review cannot close a
+cross-platform CI finding by itself.
+
+Even after successful fake-backed dual-platform Actions, this review does not
+satisfy the accepted-real-emulator contract tests, real-runtime F5 launch, or
+actual VS Code disassembly-UI gate required by Issue #3. Master and a fresh
+verifier must preserve the prior strict dispositions for AC-001, AC-003,
+AC-004, AC-011, and the remaining EMU-BLK dependencies. Until exact Actions
+evidence and every mandatory real-emulator gate pass, Slice 1 remains
+**NOT_READY**.
