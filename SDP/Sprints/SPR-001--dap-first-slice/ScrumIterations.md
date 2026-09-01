@@ -687,3 +687,19 @@ termination, and zero orphans. Worker-stage VSIX SHA-256 is
 `594B9A09CCF6FCA6BC43E40069BEEC5E24CC28EED555D15A7DDE6EB4FF0DB8AB`.
 Linux semantics require actual Actions execution after review/push. Real
 emulator F5/disassembly remains explicitly unclaimed.
+
+### AC-010 corrective review `RVW-001-002-008`
+
+**Reviewed commit:** `2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5`
+
+**Review commit:** `fd881a17397d6737593cf7874c910c00c59c4d60`
+
+**Disposition:** **accepted for exact-HEAD remote verification**
+
+The fresh reviewer independently reproduced the complete local Windows
+99/45/package/policy matrix and actual isolated installed-VSIX extension-host
+smoke at VS Code 1.95.0: entry stop, exact fake command order, clean disconnect,
+exactly one termination, no orphan or temp residue. Workflow/launcher/archive
+semantics were accepted with no new finding. `CR-020` remains open until both
+Ubuntu and Windows Actions jobs pass on the pushed integrated HEAD. Real F5/UI
+and emulator blockers remain external and unclaimed.

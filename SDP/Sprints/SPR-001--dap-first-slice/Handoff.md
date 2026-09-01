@@ -52,12 +52,11 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh reviewer performs `RVW-001-002-008` against exact corrective commit
-`2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5`, challenging both workflow lanes,
-floor download/install, installed-artifact launch smoke, test-only launcher
-isolation, timeouts/cleanup, archive policy, and truthful real-gate wording.
-After acceptance Master pushes and requires both real Actions jobs before
-`VER-001-002-002`.
+Master pushes the review-integrated HEAD, waits for both Ubuntu and Windows
+Actions jobs, and records exact run/job evidence. If both pass, a fresh verifier
+performs `VER-001-002-002`, closes `CR-020`/AC-010 as appropriate, revalidates
+the emulator default and final AC table, and preserves `NOT_READY` unless the
+real runtime gate has independently changed.
 
 ## Verification completed
 

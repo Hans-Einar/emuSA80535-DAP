@@ -161,3 +161,7 @@ also remains blocked at emulator commit `c0cd6f26…`; no READY claim is made.
 CR-020 corrective commit `2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5`
 adds dual-platform package/install/fake-launch smoke. Local Windows floor-smoke
 passes; fresh review and actual Linux/Windows Actions evidence remain required.
+
+Fresh `RVW-001-002-008` accepted the CR-020 implementation for remote
+verification with no new finding. `CR-020` remains open until both Actions jobs
+pass exact integrated HEAD; the real runtime gate is unchanged.
