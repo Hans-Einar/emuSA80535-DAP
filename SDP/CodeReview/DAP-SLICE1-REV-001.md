@@ -193,3 +193,178 @@ A fresh corrective Worker A pass must resolve `CR-009`–`CR-011` without adding
 Worker B protocol behavior or Worker C debug behavior. Re-review must inspect
 the exact corrective commit and rerun the lifecycle race and runtime-shape
 cases in addition to the normal lint/build/test/package/install checks.
+
+## Worker A corrective re-review — `RVW-001-002-004`
+
+**Review date:** 2026-09-01
+
+**Reviewer role:** fresh independent corrective reviewer; not the author of
+the original review or either product commit
+
+**Reviewed corrective commit:**
+`a01c48c917186a98152d849565660081ff11746e`
+
+**Reviewed parent:**
+`513cf2b17e90e69b80128e58d2c135019eb13419`
+
+**Original Worker A comparison commit:**
+`a30129bfcbd17c8fd0e57696700ff9f2440bb639`
+
+**Authority:** GitHub Issue #3, the accepted PR #2 SDP baseline, active
+`IT-001-002 / SL-001-002-001`, and `CR-009`–`CR-011` above
+
+**Disposition:** **accepted; `CR-009`–`CR-011` resolved; no new finding**
+
+### Scope and independence
+
+This pass reviewed the exact four-path corrective product commit in detached
+worktrees, not the later Master SDP handoff commits on the branch. The
+corrective commit changes `README.md`, `adapter/src/launchConfiguration.ts`,
+and `adapter/src/session.ts`, and adds `test/lifecycle.test.ts`; it has 676
+insertions and 27 deletions. The reviewer changed no product, sprint,
+traceability, or verification file.
+
+The review independently inspected the implementation and drove DAP
+`Content-Length` frames through in-memory sessions with controlled launch and
+cleanup promises. A separately authored transient probe was removed before
+packaging, and the exact detached corrective worktree was clean when the final
+package was built. Worker assertions were not treated as the sole evidence.
+
+### Finding dispositions
+
+#### `CR-009` — resolved
+
+The correction makes terminal intent monotonic for the foundation lifecycle.
+One active launch owns a generation and its response. `beginTermination`
+closes configuration before awaiting cleanup, coalesces cleanup into one
+generation, and disconnect settles the active launch immediately as
+`EMU_LAUNCH_CANCELLED`. Every continuation after the asynchronous backend
+launch checks that the same launch generation is still live before publishing
+state or an event. Launch failure and configuration completion clear the
+single owned response before sending it. `terminateOnce` remains the final
+event guard.
+
+The fresh reviewer first proved that its probe detects the original defect on
+exact `a30129b…`:
+
+- late resolve produced initialize success, disconnect success, `terminated`,
+  then `initialized`, configurationDone success, and stale launch success;
+- late reject produced initialize success, disconnect success, `terminated`,
+  and only then the stale launch failure, while invoking backend disconnect a
+  second time.
+
+The same scenarios on exact `a01c48c…` passed the corrected invariants:
+
+- for both late resolve and late reject, the pending launch received exactly
+  one `EMU_LAUNCH_CANCELLED` response;
+- disconnect completed cleanup and emitted exactly one `terminated`;
+- the stale backend completion emitted no `initialized`, launch success,
+  second launch response, diagnostic, or second termination;
+- configurationDone after disconnect failed `DAP_SESSION_TERMINATED` and did
+  not reopen configuration;
+- launch after termination failed `DAP_SESSION_TERMINATED` without another
+  backend launch;
+- a second disconnect succeeded without another cleanup call or termination;
+- a duplicate launch while the first was pending failed
+  `EMU_LAUNCH_ALREADY_STARTED`, retained the original launch owner, and left
+  backend launch count at one.
+
+Cleanup rejection now has a deliberate, actionable disposition. When a DAP
+disconnect owns the cleanup, the disconnect response fails
+`EMU_CLEANUP_FAILED`, tells the user to verify that no child remains, and is
+followed by exactly one `terminated`. When backend launch itself fails and its
+automatic cleanup rejects, launch fails `EMU_INTEGRATION_PENDING`, one stderr
+`output` diagnostic reports `EMU_CLEANUP_FAILED` with the same action, and one
+`terminated` follows. Both paths call backend cleanup once. The concrete
+terminate/kill/reap implementation and bounded timeout remain correctly
+assigned to Worker B; this foundation review does not claim `AC-009`.
+
+#### `CR-010` — resolved
+
+`stopOnEntry`, when supplied, must now be the literal boolean `true`.
+`emulatorPath`, when supplied, must now be a non-empty string. Independent raw
+DAP probes covered `stopOnEntry: "false"`, `stopOnEntry: 0`,
+`emulatorPath: 42`, and `emulatorPath: null`. Each launch failed with the
+stable field-specific `CONFIG_STOP_ON_ENTRY` or `CONFIG_EMULATOR_PATH` prefix,
+emitted one terminal event, and left both backend launch and disconnect counts
+at zero. The committed suite additionally covers numeric `stopOnEntry`, empty
+`emulatorPath`, and the normal valid configuration path.
+
+#### `CR-011` — resolved
+
+The README now says that emulator protocol and debug behavior remain for
+separate Worker B/C implementation and independent review, and explicitly says
+that the foundation VSIX cannot yet launch an emulator. This matches the
+actual tree and makes no fake-backed, real-emulator, AC, or READY claim.
+
+### Scope, safety, and regression assessment
+
+- The correction adds no emulator client, fake command, protocol message,
+  fixture, register/state model, disassembler, breakpoint implementation,
+  continue/pause/step behavior, or capability claim assigned to Worker B/C.
+- `initialize` still advertises only
+  `supportsConfigurationDoneRequest`. Deferred `readMemory`, writes,
+  evaluation, source breakpoints/maps, watchpoints, attach/TCP, richer frames,
+  bundling/download, and Marketplace behavior remain absent.
+- Owned product/test/config inspection found no P1000 semantic, physical-I/O
+  endpoint, serial/GPIO/bus integration, private emulator structure, or
+  hardware dependency. The correction introduces only DAP-framed diagnostic
+  output; it does not mix child protocol bytes into DAP stdout or logs.
+- The final VSIX contains the manifest, README/license, compiled extension and
+  adapter JavaScript, and the two runtime `@vscode` dependencies. It contains
+  no emulator executable, test/reviewer file, fixture, SDP/protocol file,
+  source, sourcemap, or build toolchain.
+
+No new corrective finding was found. The lifecycle code is intentionally only
+the Worker A foundation; accepting it does not imply that the complete
+starting/stopped/running state machine exists before Worker B/C implement their
+contracted responsibilities.
+
+### Independent evidence
+
+All local executable evidence below ran on the exact detached corrective
+commit `a01c48c…` unless explicitly identified as the original-commit contrast
+probe:
+
+- reviewer host: Windows x64, Node `v24.11.0`, npm `11.6.1`, VS Code
+  `1.134.0`;
+- `git merge-base 513cf2b… a01c48c` returned exact parent `513cf2b…`;
+- `git diff --check 513cf2b… a01c48c`: pass;
+- full corrective diff and source/test inspection: four intended paths only;
+- `npm ci`: pass, 376 packages installed, 0 reported vulnerabilities; the two
+  transitive deprecation warnings were non-blocking;
+- `npm run lint`: pass;
+- `npm run build`: pass;
+- `npm test`: pass, 18/18 tests;
+- independent corrected DAP probe: pass for late resolve, late reject,
+  duplicate/post-terminal launch, post-terminal configurationDone, exactly-one
+  launch settlement/termination, cleanup rejection, and runtime JSON types;
+- independent original-commit contrast probe on exact `a30129b…`: reproduced
+  both original post-terminal completion paths described above;
+- `npm run package` and `npm run package:contents`: pass; final clean package
+  contains 42 files and is 102.84 KB;
+- reviewer-built clean VSIX SHA-256:
+  `477179BAE1F0A6FB38D899F18E90497CEB6679E90FB7A0C60F6F2F126B3E3A84`;
+- archive allowlist/name inspection and owned product/test safety scan: pass;
+- isolated `code --extensions-dir ... --user-data-dir ...
+  --install-extension ... --force`: pass; VS Code lists
+  `undefined_publisher.emusa80535-dap@0.1.0`.
+
+No exact-`a01c48c…` remote Linux run existed at review time because the remote
+PR head was still `1752c454bc1714af7cfbe988fa3e33f53ee465a7`. The already
+recorded push and PR Linux runs `33451522922` and `33451523471` passed on that
+earlier foundation handoff, but they are not relabeled as corrective-commit
+evidence. The correction did not change the workflow. Exact Linux and final
+Windows lanes remain required verification gates for the complete slice.
+
+### Result and forward gate
+
+`RVW-001-002-004` accepts the Worker A corrective commit and resolves
+`CR-009`, `CR-010`, and `CR-011`. Worker B may now build the strict emulator
+protocol client and contract-faithful fake on this reviewed foundation.
+
+This result does not accept Worker B/C work, any `AC-001`–`AC-011`, a real
+emulator commit, or Slice-1 READY. Those remain subject to their separate
+reviews and `VER-001-002-001`, including Linux/Windows, packaged VS Code, and
+real-emulator integration gates. Master owns the corresponding sprint and
+traceability state updates outside this reviewer-only commit.
