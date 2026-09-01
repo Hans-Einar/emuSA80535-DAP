@@ -368,3 +368,229 @@ emulator commit, or Slice-1 READY. Those remain subject to their separate
 reviews and `VER-001-002-001`, including Linux/Windows, packaged VS Code, and
 real-emulator integration gates. Master owns the corresponding sprint and
 traceability state updates outside this reviewer-only commit.
+
+## Worker B protocol-client/fake review — `RVW-001-002-002`
+
+**Review date:** 2026-09-01
+
+**Reviewer role:** fresh independent reviewer; not the Worker B author
+
+**Reviewed product commit:**
+`33a83a5a62b3be827fac6ea052517cb588d899e2`
+
+**Reviewed parent:**
+`f9bc1a64784bdd90c118f60aab9bb302242aead0`
+
+**Authority:** GitHub Issue #3, the accepted PR #2 SDP baseline, the active
+`IT-001-002 / SL-001-002-001` contract, and the complete frozen
+`emu-debug` 1.0 contract in `protocol/EMU_DEBUG_API_REQUIREMENTS.md`
+
+**Disposition:** **changes-required**
+
+### Scope and independence
+
+This pass reviewed the exact Worker B product commit in a detached worktree.
+The later Master handoff commit
+`ae3704e5dbbadf242c8c1abfe78b6d67aec5ea2e` changes only SDP and traceability
+surfaces and is not part of the reviewed product diff. The reviewer changed no
+product, test, fixture, sprint, traceability, or verification file; this section
+is the only durable review change.
+
+The reviewed 15-path diff adds the emulator process/client boundary, entry-stop
+launch integration, contract fake, synthetic firmware fixture and tests. It
+does not add Worker C register, disassembly-DAP, breakpoint-DAP, continue,
+pause, step, or handle-epoch handlers/capability claims. The reviewer did not
+treat the 41 committed tests or the 23-test contract subset as sufficient
+evidence and drove separately authored hostile servers and raw fake-server
+requests against the exact compiled commit.
+
+### Findings
+
+#### `CR-012` — Blocking/high: known command-response semantics are accepted as unknown-field compatibility
+
+**Evidence:** the generic snapshot validator at `adapter/src/emulatorClient.ts`
+lines 360–415 validates architectural widths and basic shape but does not bind
+the snapshot variant to the variants negotiated by `hello`. The `run` method at
+lines 739–749 applies that generic validator without enforcing the frozen `run`
+result set. The decode validator at lines 418–465 checks count and field types
+but not ordered/contiguous addresses, range consistency, or the mandatory exact
+`<invalid>` text. The replacement-breakpoint validator at lines 468–493 is not
+given either the requested address set or the negotiated limit, so it cannot
+prove that accepted/rejected entries are unique, complete, disjoint, requested,
+or within the negotiated result contract.
+
+An independent server advertised only variant `sab80535` and otherwise returned
+a valid exact hello. The exact client then accepted all of these responses:
+
+- `decodeCode(0, 0, 0, 2)` returned addresses `[2, 1]`, with the second record
+  marked `unknown-predecessor` but text `not-<invalid>`;
+- `run(1)` returned `resultKind: "architectural-stop"` and reason `entry`, even
+  though a run may return only a yield or breakpoint/exception/halt stop;
+- `reset(0, 0)` returned snapshot variant `not-advertised`, despite the hello
+  variant set containing only `sab80535`.
+
+These are not ignorable future fields. They change required major-1 semantics,
+would be handed to Worker C as trusted typed values, and can produce false
+disassembly, state and stop behavior instead of the required fatal protocol
+disposition. In particular, accepting the hostile decode response contradicts
+the exact-count ordered-window and stable-placeholder rules needed by `R-017`,
+`D-003`, `D-005`, and `AC-003`.
+
+**Required correction:** make every typed command validate its complete known
+major-1 response invariant before returning it. At minimum bind snapshot
+variants to the negotiated variant set; restrict run results to yield or
+breakpoint/exception/halt; enforce decode ordering/continuity, uint16 window,
+record size, and exact invalid-placeholder semantics; and validate the
+replace-all response against both the requested unique set and negotiated
+limit. A violation must remain a fatal `EMU_TRANSPORT_SCHEMA`-family failure,
+invalidate the boundary, and reap the child. Add hostile-response tests for
+each case, while continuing to ignore genuinely unknown fields.
+
+#### `CR-013` — Blocking/high: the fake is not yet an exact bounded emu-debug 1.0 server
+
+**Evidence:** the fake hello path at
+`test-fixtures/fake-emulator/server.ts` lines 239–295 checks only that
+`requiredCapabilities` is an array of strings; it does not fail an unknown
+required capability. Request validation at lines 204–226 does not retain
+session IDs and therefore does not enforce their required uniqueness. The
+single write path at lines 614–635 has no negotiated output-record bound.
+
+Independent raw requests reproduced all three defects:
+
+- hello with the seven frozen capabilities plus
+  `unknown-required-capability` returned `success: true`;
+- after a successful hello using ID 1, a load reusing ID 1 also returned
+  `success: true` and the fixture digest;
+- a syntactically valid 65,489-byte first request (inside the advertised
+  65,536-byte input limit) caused the fake to emit a 65,610-byte error response,
+  beyond its own `maxRecordBytes` limit.
+
+Fault selection through environment/CLI options remains correctly outside the
+product protocol; that mechanism is not the finding. The finding is that the
+normal fake protocol surface accepts or emits records the frozen real server
+must reject or bound. Since Issue #3 permits parallel Worker C development only
+against a contract-faithful fake, these false-positive behaviors block that
+handoff.
+
+**Required correction:** reject required capabilities the server does not
+advertise, enforce positive session-unique request IDs, and bound every output
+record (or cleanly terminate when a bounded structured error cannot fit).
+Retain unknown optional-field tolerance within major 1. Add raw-server contract
+tests for unknown required capability, repeated ID, near-limit valid input,
+bounded error output, exact-limit input, oversize input, and clean post-error
+state.
+
+#### `CR-014` — Medium: Windows PATH resolution selects shell scripts that the no-shell launcher cannot execute
+
+**Evidence:** on Windows, `resolveEmulatorExecutable` uses `F_OK` and expands
+every `PATHEXT` entry, defaulting at lines 1172–1185 to
+`.EXE;.CMD;.BAT;.COM`. The actual spawn at lines 553–564 deliberately and
+correctly uses `shell: false`. An independent Windows probe placed only
+`emu-debug.CMD` on a synthetic PATH. Resolution returned that file, and the
+same no-shell child spawn failed `EINVAL: spawn EINVAL`. Explicit configured
+paths use the same file-only Windows check and can produce the same false
+resolution.
+
+This does not execute a shell or create a security expansion; it fails closed
+and actionably. It nevertheless breaks the Worker B executable-resolution
+contract for a path shape the resolver itself declares usable, and Windows is
+a mandatory Issue #3 lane.
+
+**Required correction:** on Windows, accept only file types directly launchable
+under the fixed `shell: false` policy (including for explicit paths), and do not
+select `.CMD`/`.BAT` merely because `PATHEXT` lists them. Add Windows tests that
+prove a native `emu-debug` executable resolves/spawns and a shell-script
+lookalike is skipped or rejected without weakening the no-shell invariant.
+
+### Accepted areas and traceability/scope assessment
+
+- The client emits the exact hello as command/ID 1 with the seven frozen
+  required capabilities. Normal launch is ordered `hello -> load -> reset`,
+  uses an absolute image path, exact format and SHA-256, and verifies the
+  returned digest and entry PC/reason.
+- The UTF-8 decoder is fatal, newline framing is byte-counted, malformed/empty,
+  unsolicited, mismatched-ID/command and oversized records are fatal, commands
+  after the established handshake are serialized, and request payloads are not
+  written to human logs. Child stdout remains protocol-only and stderr is
+  separately bounded for diagnostic delivery.
+- Hello major mismatch and missing frozen capabilities are fatal. A higher
+  minor with all known semantics and unknown optional fields is accepted. Large
+  advertised numeric limits are clamped to local hard caps of 1,024
+  breakpoints, 1,000,000 run instructions, 4,096 decode records and 65,536
+  record bytes. The fake advertises the Slice-1 minimum of one breakpoint.
+- Raw image inspection rejects both 65,535- and 65,537-byte files before spawn.
+  The checked-in generic fixture is exactly 65,536 bytes, has SHA-256
+  `1550101bc337eba836f6fc6a3012b80677b9dfe6a0c658fcf615194be54e5b88`,
+  and contains only the documented MOV/INC/SJMP loop plus neutral NOP fill.
+- The typed `getState`, `decodeCode`, `replaceCodeBreakpoints`, `run`, and
+  `stepInstruction` surfaces exist and validate numeric input bounds. The fake's
+  normal path demonstrates forward decode, known predecessors, one-byte unknown
+  predecessors, underflow rejection, replacement/clear shape, pre-execution
+  breakpoint stop, bounded run and one-instruction step. `CR-012` and `CR-013`
+  qualify this acceptance; they do not erase the correctly implemented parts.
+- Timeout and crash probes after a complete hello/load/reset returned
+  `EMU_TRANSPORT_TIMEOUT` and `EMU_TRANSPORT_EOF`, respectively, and both child
+  PIDs were reaped. The committed suite additionally passes spawn failure,
+  malformed response, hello EOF/crash, disconnect during pending handshake and
+  hung-terminate forced cleanup. No test suppressed a live PID as success.
+- Product/default/fixture/package inspection found no private emulator struct,
+  P1000 semantic, physical endpoint, fake-only product command, bundled or
+  downloaded emulator, source map, attach/TCP, memory access, write/evaluate,
+  source breakpoint, watchpoint, or Worker C DAP behavior/capability claim.
+- The VSIX contains only manifest/readme/license, compiled extension/adapter and
+  the two runtime `@vscode` dependencies. It excludes the fake, firmware,
+  emulator executable, tests, scripts, SDP/protocol sources, TypeScript,
+  declarations, maps and build dependencies.
+
+The diff is otherwise aligned with `R-001`, `R-003`, `R-005`, `R-007`,
+`R-008`, `R-022`, `R-026`, `R-029`–`R-031`, `A-001`, `A-002`, `A-006`–`A-008`,
+and `D-002`–`D-004`, `D-010`. No `AC-001`–`AC-011`, real-emulator gate, or
+Slice-1 READY result is accepted by this responsibility review.
+
+### Independent executable evidence
+
+All exact-product commands below ran in a clean detached worktree at
+`33a83a5…` unless explicitly described as remote/non-exact evidence:
+
+- `git merge-base f9bc1a6… 33a83a5…`: exact reviewed parent;
+- `git diff --check f9bc1a6… 33a83a5…`: pass; 15 intended paths, 2,835
+  insertions and 32 deletions;
+- reviewer host: Windows x64, Node `v24.11.0`, npm `11.6.1`, VS Code
+  `1.134.0`;
+- `npm ci`: pass, 376 packages, 0 reported vulnerabilities; two transitive
+  deprecation warnings are non-blocking;
+- `npm run lint`, `npm run build`: pass;
+- `npm test`: pass, 41/41;
+- `npm run test:contract`: pass, 23/23;
+- `npm run fixture:check`: pass with the exact size/hash above;
+- independent hostile client/fake, post-launch timeout/crash/reap, limit-clamp
+  and Windows resolver probes: positive cleanup/bounds evidence plus failures
+  recorded as `CR-012`–`CR-014`;
+- `npm run package` and `npm run package:contents`: pass; 43-file, 111.38-KB
+  package;
+- reviewer-built VSIX SHA-256:
+  `1E0401700ECEDBE74452D665F11F1FE9A4389214F82A165084924754156B89FB`;
+- archive allowlist and case-insensitive safety/deferred-feature scan: pass;
+- isolated VSIX install: pass; VS Code lists
+  `undefined_publisher.emusa80535-dap@0.1.0`.
+
+At review time the remote implementation PR head remained exact parent
+`f9bc1a64784bdd90c118f60aab9bb302242aead0`. Linux push and PR runs
+`33453396751` and `33453400082` passed on that parent, but they contain no
+Worker B product diff and are not relabeled as Worker B Linux evidence. No
+exact-`33a83a5…` remote Linux run existed. This is an evidence gap in addition
+to, not a cause of, the changes-required disposition; final Linux/Windows and
+real-emulator lanes remain the verifier's gates.
+
+### Result and re-review gate
+
+`RVW-001-002-002` does not accept Worker B. `CR-012`–`CR-014` require a narrow
+corrective Worker B commit and fresh independent re-review before Worker C uses
+the fake or typed client. The correction must not add Worker C DAP handlers,
+capabilities, emulator bundling, or any deferred Slice-1 feature. Re-review must
+rerun the hostile response, raw fake-server, Windows no-shell resolver, cleanup,
+fixture, package and safety cases in addition to the normal full suite.
+
+Master owns finding/traceability integration and any rework handoff outside
+this review-only commit. The real-emulator `EMU-BLK` gate remains untested and
+Slice 1 remains **NOT_READY**.
