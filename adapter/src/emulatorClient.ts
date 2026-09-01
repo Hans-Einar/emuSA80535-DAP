@@ -242,6 +242,9 @@ function validateResponseEnvelope(
   }
   const success = requireBoolean(response.success, "response.success");
   if (!success) {
+    if (response.body !== undefined) {
+      throw schemaError("an unsuccessful response must not carry a body");
+    }
     const wireError = requireObject(response.error, "response.error");
     const code = requireString(wireError.code, "response.error.code");
     const message = requireString(wireError.message, "response.error.message");
@@ -254,6 +257,9 @@ function validateResponseEnvelope(
         ? {}
         : requireObject(wireError.data, "response.error.data");
     throw new EmulatorControlError(code, message, retryable, data);
+  }
+  if (response.error !== undefined) {
+    throw schemaError("a successful response must not carry an error");
   }
   return response.body === undefined
     ? {}
@@ -357,7 +363,17 @@ function validateRegisters(value: unknown): BasicRegisters {
   };
 }
 
-function validateSnapshot(value: JsonObject): EmulatorSnapshot {
+interface SnapshotExpectation {
+  command: string;
+  hello: EmulatorHello;
+  architecturalReasons: readonly ArchitecturalStopReason[];
+  allowYield: boolean;
+}
+
+function validateSnapshot(
+  value: JsonObject,
+  expectation: SnapshotExpectation,
+): EmulatorSnapshot {
   if (value.state !== "idle") {
     throw schemaError("snapshot.state must be idle at a response boundary");
   }
@@ -370,19 +386,24 @@ function validateSnapshot(value: JsonObject): EmulatorSnapshot {
     );
   }
   const reason = requireString(value.reason, "snapshot.reason");
-  const architecturalReasons: readonly string[] = [
-    "entry",
-    "breakpoint",
-    "step",
-    "exception",
-    "halt",
-  ];
   if (
-    (value.resultKind === "yield" && reason !== "yield") ||
+    (value.resultKind === "yield" &&
+      (!expectation.allowYield || reason !== "yield")) ||
     (value.resultKind === "architectural-stop" &&
-      !architecturalReasons.includes(reason))
+      !expectation.architecturalReasons.includes(
+        reason as ArchitecturalStopReason,
+      ))
   ) {
-    throw schemaError("snapshot reason does not match resultKind");
+    throw schemaError(
+      `${expectation.command} snapshot reason does not match its result kind`,
+    );
+  }
+
+  const variant = requireString(value.variant, "snapshot.variant");
+  if (!expectation.hello.variants.includes(variant)) {
+    throw schemaError(
+      `${expectation.command} snapshot variant was not advertised by hello`,
+    );
   }
 
   const snapshot: EmulatorSnapshot = {
@@ -391,7 +412,7 @@ function validateSnapshot(value: JsonObject): EmulatorSnapshot {
     reason: reason as EmulatorSnapshot["reason"],
     pc: requireInteger(value.pc, "snapshot.pc", 0, 0xffff),
     registers: validateRegisters(value.registers),
-    variant: requireString(value.variant, "snapshot.variant"),
+    variant,
     instructionCount: requireInteger(
       value.instructionCount,
       "snapshot.instructionCount",
@@ -417,6 +438,9 @@ function validateSnapshot(value: JsonObject): EmulatorSnapshot {
 
 function validateDecodeCode(
   body: JsonObject,
+  reference: number,
+  byteOffset: number,
+  instructionOffset: number,
   expectedCount: number,
 ): DecodeCodeResult {
   if (!Array.isArray(body.instructions)) {
@@ -453,44 +477,155 @@ function validateDecodeCode(
       ),
     };
     if (!valid) {
-      if (record.reason !== "unknown-predecessor" || decoded.size !== 1) {
+      if (
+        record.reason !== "unknown-predecessor" ||
+        decoded.size !== 1 ||
+        decoded.text !== "<invalid>"
+      ) {
         throw schemaError(
-          "invalid decode records must be one-byte unknown-predecessor placeholders",
+          "invalid decode records must be exact one-byte <invalid> unknown-predecessor placeholders",
         );
       }
       decoded.reason = "unknown-predecessor";
+    } else if (record.reason !== undefined) {
+      throw schemaError(
+        "valid decode records must not carry a placeholder reason",
+      );
     }
     return decoded;
   });
+
+  const base = reference + byteOffset;
+  if (!Number.isSafeInteger(base) || base < 0 || base > 0xffff) {
+    throw schemaError(
+      "decodeCode returned success for an out-of-range byte offset",
+    );
+  }
+  let sawValid = false;
+  for (const [index, instruction] of instructions.entries()) {
+    const end = instruction.address + instruction.size;
+    if (end > 0x1_0000) {
+      throw schemaError(`decodeCode.instructions[${index}] leaves CODE range`);
+    }
+    if (index > 0) {
+      const previous = instructions[index - 1];
+      if (
+        previous === undefined ||
+        instruction.address !== previous.address + previous.size
+      ) {
+        throw schemaError("decodeCode records must be ordered and contiguous");
+      }
+    }
+    if (!instruction.valid) {
+      if (instructionOffset >= 0 || sawValid) {
+        throw schemaError(
+          "unknown-predecessor placeholders are valid only as a negative-offset prefix",
+        );
+      }
+    } else {
+      sawValid = true;
+    }
+  }
+
+  if (instructionOffset === 0 && instructions[0]?.address !== base) {
+    throw schemaError("decodeCode zero-offset window must begin at the byte base");
+  }
+  if (
+    instructionOffset > 0 &&
+    (instructions[0] === undefined ||
+      instructions[0].address < base + instructionOffset)
+  ) {
+    throw schemaError(
+      "decodeCode forward window cannot precede its instruction offset",
+    );
+  }
+  if (instructionOffset < 0) {
+    if (
+      instructions[0] === undefined ||
+      instructions[0].address > base + instructionOffset
+    ) {
+      throw schemaError(
+        "decodeCode predecessor window cannot follow its instruction offset",
+      );
+    }
+    const anchorIndex = -instructionOffset;
+    if (
+      anchorIndex < instructions.length &&
+      instructions[anchorIndex]?.address !== base
+    ) {
+      throw schemaError(
+        "decodeCode negative-offset window does not reach its byte base",
+      );
+    }
+    if (anchorIndex === instructions.length) {
+      const final = instructions.at(-1);
+      if (final === undefined || final.address + final.size !== base) {
+        throw schemaError(
+          "decodeCode predecessor window does not end at its byte base",
+        );
+      }
+    }
+  }
   return { instructions };
 }
 
 function validateReplaceBreakpoints(
   body: JsonObject,
+  requested: ReadonlySet<number>,
+  negotiatedLimit: number,
 ): ReplaceCodeBreakpointsResult {
   if (!Array.isArray(body.accepted) || !Array.isArray(body.rejected)) {
     throw schemaError(
       "replaceCodeBreakpoints accepted and rejected must be arrays",
     );
   }
-  return {
-    accepted: body.accepted.map((address, index) =>
-      requireInteger(address, `accepted[${index}]`, 0, 0xffff),
-    ),
-    rejected: body.rejected.map((item, index) => {
-      const rejected = requireObject(item, `rejected[${index}]`);
-      return {
-        address: requireInteger(
-          rejected.address,
-          `rejected[${index}].address`,
-          0,
-          0xffff,
-        ),
-        reason: requireString(rejected.reason, `rejected[${index}].reason`),
-      };
-    }),
-    limit: requireInteger(body.limit, "limit", 1, Number.MAX_SAFE_INTEGER),
-  };
+  const accepted = body.accepted.map((address, index) =>
+    requireInteger(address, `accepted[${index}]`, 0, 0xffff),
+  );
+  const rejected = body.rejected.map((item, index) => {
+    const rejected = requireObject(item, `rejected[${index}]`);
+    return {
+      address: requireInteger(
+        rejected.address,
+        `rejected[${index}].address`,
+        0,
+        0xffff,
+      ),
+      reason: requireString(rejected.reason, `rejected[${index}].reason`),
+    };
+  });
+  const limit = requireInteger(body.limit, "limit", 1, Number.MAX_SAFE_INTEGER);
+  if (limit !== negotiatedLimit) {
+    throw schemaError(
+      "replaceCodeBreakpoints.limit must match the hello-negotiated limit",
+    );
+  }
+  if (accepted.length > negotiatedLimit) {
+    throw schemaError("replaceCodeBreakpoints accepted more than the negotiated limit");
+  }
+  const returned = new Set<number>();
+  for (const address of accepted) {
+    if (!requested.has(address) || returned.has(address)) {
+      throw schemaError(
+        "replaceCodeBreakpoints accepted an extra or duplicate address",
+      );
+    }
+    returned.add(address);
+  }
+  for (const item of rejected) {
+    if (!requested.has(item.address) || returned.has(item.address)) {
+      throw schemaError(
+        "replaceCodeBreakpoints rejected an extra, duplicate, or accepted address",
+      );
+    }
+    returned.add(item.address);
+  }
+  if (returned.size !== requested.size) {
+    throw schemaError(
+      "replaceCodeBreakpoints response must partition every requested address",
+    );
+  }
+  return { accepted, rejected, limit };
 }
 
 export class EmulatorClient {
@@ -637,7 +772,7 @@ export class EmulatorClient {
       expectedSha256: image.sha256,
     });
     return this.validateReceived(() => {
-      const sha256 = requireString(body.sha256, "load.sha256").toLowerCase();
+      const sha256 = requireString(body.sha256, "load.sha256");
       if (!/^[0-9a-f]{64}$/.test(sha256)) {
         throw schemaError(
           "load.sha256 must be 64 lowercase hexadecimal characters",
@@ -656,9 +791,15 @@ export class EmulatorClient {
   }
 
   public async reset(seed: number, entryAddress: number): Promise<EmulatorSnapshot> {
+    const hello = this.requireHello();
     const body = await this.request("reset", { seed, entryAddress });
     return this.validateReceived(() => {
-      const snapshot = validateSnapshot(body);
+      const snapshot = validateSnapshot(body, {
+        command: "reset",
+        hello,
+        architecturalReasons: ["entry"],
+        allowYield: false,
+      });
       if (
         snapshot.resultKind !== "architectural-stop" ||
         snapshot.reason !== "entry" ||
@@ -673,8 +814,22 @@ export class EmulatorClient {
   }
 
   public async getState(): Promise<EmulatorSnapshot> {
+    const hello = this.requireHello();
     const body = await this.request("getState");
-    return this.validateReceived(() => validateSnapshot(body));
+    return this.validateReceived(() =>
+      validateSnapshot(body, {
+        command: "getState",
+        hello,
+        architecturalReasons: [
+          "entry",
+          "breakpoint",
+          "step",
+          "exception",
+          "halt",
+        ],
+        allowYield: true,
+      }),
+    );
   }
 
   public async decodeCode(
@@ -705,7 +860,13 @@ export class EmulatorClient {
       instructionCount,
     });
     return this.validateReceived(() =>
-      validateDecodeCode(body, instructionCount),
+      validateDecodeCode(
+        body,
+        reference,
+        byteOffset,
+        instructionOffset,
+        instructionCount,
+      ),
     );
   }
 
@@ -733,7 +894,9 @@ export class EmulatorClient {
     const body = await this.request("replaceCodeBreakpoints", {
       addresses: [...addresses],
     });
-    return this.validateReceived(() => validateReplaceBreakpoints(body));
+    return this.validateReceived(() =>
+      validateReplaceBreakpoints(body, unique, hello.limits.maxBreakpoints),
+    );
   }
 
   public async run(maxInstructions: number): Promise<EmulatorSnapshot> {
@@ -745,20 +908,26 @@ export class EmulatorClient {
       hello.limits.maxRunChunkInstructions,
     );
     const body = await this.request("run", { maxInstructions });
-    return this.validateReceived(() => validateSnapshot(body));
+    return this.validateReceived(() =>
+      validateSnapshot(body, {
+        command: "run",
+        hello,
+        architecturalReasons: ["breakpoint", "exception", "halt"],
+        allowYield: true,
+      }),
+    );
   }
 
   public async stepInstruction(): Promise<EmulatorSnapshot> {
+    const hello = this.requireHello();
     const body = await this.request("stepInstruction");
     return this.validateReceived(() => {
-      const snapshot = validateSnapshot(body);
-      if (
-        snapshot.resultKind !== "architectural-stop" ||
-        !["step", "exception", "halt"].includes(snapshot.reason)
-      ) {
-        throw schemaError("stepInstruction returned an invalid stop result");
-      }
-      return snapshot;
+      return validateSnapshot(body, {
+        command: "stepInstruction",
+        hello,
+        architecturalReasons: ["step", "exception", "halt"],
+        allowYield: false,
+      });
     });
   }
 
@@ -771,7 +940,12 @@ export class EmulatorClient {
       return;
     }
     try {
-      await this.request("terminate");
+      const body = await this.request("terminate");
+      this.validateReceived(() => {
+        if (body.terminated !== true) {
+          throw schemaError("terminate.terminated must be true");
+        }
+      });
       this.expectedExit = true;
       this.child.stdin.end();
       if (!(await this.waitForExit(this.terminationTimeoutMs))) {
@@ -814,13 +988,12 @@ export class EmulatorClient {
     try {
       return validator();
     } catch (error: unknown) {
-      if (
-        error instanceof EmulatorControlError &&
-        error.code.startsWith("EMU_TRANSPORT_")
-      ) {
-        this.failTransport(error);
-      }
-      throw error;
+      const stable =
+        error instanceof EmulatorControlError
+          ? error
+          : schemaError("invalid emulator command response");
+      this.failTransport(stable);
+      throw stable;
     }
   }
 
@@ -1131,8 +1304,17 @@ export interface ResolveExecutableOptions {
   executableName?: string;
 }
 
-async function isExecutable(candidate: string, platform: NodeJS.Platform): Promise<boolean> {
+async function isExecutable(
+  candidate: string,
+  platform: NodeJS.Platform,
+): Promise<boolean> {
   try {
+    if (
+      platform === "win32" &&
+      ![".exe", ".com"].includes(path.extname(candidate).toLowerCase())
+    ) {
+      return false;
+    }
     const candidateStat = await stat(candidate);
     if (!candidateStat.isFile()) {
       return false;
@@ -1169,12 +1351,28 @@ export async function resolveEmulatorExecutable(
   const pathEntries = (env.PATH ?? "")
     .split(path.delimiter)
     .filter((entry) => entry.length > 0);
-  const suffixes =
-    platform === "win32"
-      ? (env.PATHEXT ?? ".EXE;.CMD;.BAT;.COM")
-          .split(";")
-          .filter((suffix) => suffix.length > 0)
-      : [""];
+  let suffixes: string[];
+  if (platform !== "win32") {
+    suffixes = [""];
+  } else if (path.extname(executableName).length > 0) {
+    suffixes = [""];
+  } else {
+    const seen = new Set<string>();
+    suffixes = (env.PATHEXT ?? ".EXE;.COM")
+      .split(";")
+      .map((suffix) =>
+        suffix.startsWith(".")
+          ? suffix.toUpperCase()
+          : `.${suffix.toUpperCase()}`,
+      )
+      .filter((suffix) => {
+        if (![".EXE", ".COM"].includes(suffix) || seen.has(suffix)) {
+          return false;
+        }
+        seen.add(suffix);
+        return true;
+      });
+  }
   for (const entry of pathEntries) {
     for (const suffix of suffixes) {
       const candidate = path.resolve(entry, `${executableName}${suffix}`);

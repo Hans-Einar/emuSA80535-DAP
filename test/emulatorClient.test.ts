@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import { spawn } from "node:child_process";
+import { spawn, type ChildProcessWithoutNullStreams } from "node:child_process";
 import { createHash } from "node:crypto";
 import fs from "node:fs";
 import os from "node:os";
@@ -49,6 +49,7 @@ async function startFake(
     commandTimeoutMs?: number;
     terminationTimeoutMs?: number;
     onDiagnostic?: (message: string) => void;
+    onFatal?: (error: EmulatorControlError) => void;
     additionalArguments?: readonly string[];
   } = {},
 ): Promise<EmulatorClient> {
@@ -59,8 +60,96 @@ async function startFake(
       commandTimeoutMs: options.commandTimeoutMs ?? 1_000,
       terminationTimeoutMs: options.terminationTimeoutMs ?? 250,
       onDiagnostic: options.onDiagnostic,
+      onFatal: options.onFatal,
     },
   );
+}
+
+interface RawFake {
+  child: ChildProcessWithoutNullStreams;
+  records: Array<{ body: JsonObject; bytes: number }>;
+  next: () => Promise<{ body: JsonObject; bytes: number }>;
+  closed: Promise<{ code: number | null; signal: NodeJS.Signals | null }>;
+  send: (record: JsonObject | string) => void;
+}
+
+function startRawFake(scenario = "compatible"): RawFake {
+  const child = spawn(process.execPath, fakeArguments(scenario), {
+    shell: false,
+    stdio: ["pipe", "pipe", "pipe"],
+  });
+  const records: Array<{ body: JsonObject; bytes: number }> = [];
+  const waiters: Array<(record: { body: JsonObject; bytes: number }) => void> = [];
+  let stdout = Buffer.alloc(0);
+  child.stdout.on("data", (chunk: Buffer) => {
+    stdout = Buffer.concat([stdout, chunk]);
+    for (;;) {
+      const newline = stdout.indexOf(0x0a);
+      if (newline < 0) {
+        return;
+      }
+      const line = stdout.subarray(0, newline);
+      stdout = stdout.subarray(newline + 1);
+      const record = {
+        body: JSON.parse(line.toString("utf8")) as JsonObject,
+        bytes: line.length,
+      };
+      const waiter = waiters.shift();
+      if (waiter === undefined) {
+        records.push(record);
+      } else {
+        waiter(record);
+      }
+    }
+  });
+  const closed = new Promise<{
+    code: number | null;
+    signal: NodeJS.Signals | null;
+  }>((resolve) => {
+    child.once("close", (code, signal) => resolve({ code, signal }));
+  });
+  return {
+    child,
+    records,
+    next: async () =>
+      new Promise((resolve) => {
+        const existing = records.shift();
+        if (existing !== undefined) {
+          resolve(existing);
+        } else {
+          waiters.push(resolve);
+        }
+      }),
+    closed,
+    send: (record) => {
+      child.stdin.write(`${typeof record === "string" ? record : JSON.stringify(record)}\n`);
+    },
+  };
+}
+
+function helloRequest(id: number, padding = ""): JsonObject {
+  return {
+    type: "request",
+    id,
+    command: "hello",
+    arguments: {
+      protocol: { major: 1, minor: 0 },
+      requiredCapabilities: [...REQUIRED_EMULATOR_CAPABILITIES],
+      padding,
+    },
+  };
+}
+
+function recordWithExactBytes(target: number): string {
+  const request = helloRequest(1);
+  const initial = JSON.stringify(request);
+  const paddingBytes = target - Buffer.byteLength(initial, "utf8");
+  assert.ok(paddingBytes >= 0);
+  const argumentsObject = request.arguments as JsonObject;
+  argumentsObject.padding = "x".repeat(paddingBytes);
+  const record = JSON.stringify(request);
+  assert.equal(Buffer.byteLength(record, "utf8"), target);
+  return record;
 }
 
 function assertControlError(error: unknown, code: string | RegExp): boolean {
@@ -81,6 +170,12 @@ async function assertReaped(client: EmulatorClient): Promise<void> {
     return;
   }
   assert.throws(() => process.kill(pid, 0));
+}
+
+async function establishEntry(client: EmulatorClient): Promise<void> {
+  await client.handshake();
+  await client.loadImage(await inspectRawCodeImage(fixture));
+  await client.reset(1, 0);
 }
 
 void test("synthetic raw image has exact size, bytes, and reviewed SHA-256", () => {
@@ -245,24 +340,44 @@ void test("a newer compatible minor and unknown fields are tolerated", { timeout
   }
 });
 
-for (const testCase of [
-  { scenario: "major-mismatch", code: "EMU_VERSION_MAJOR" },
-  { scenario: "missing-capability", code: "EMU_VERSION_CAPABILITY" },
-  { scenario: "malformed-hello", code: "EMU_TRANSPORT_MALFORMED" },
-  { scenario: "invalid-utf8", code: "EMU_TRANSPORT_MALFORMED" },
-  { scenario: "oversize-hello", code: "EMU_TRANSPORT_OVERSIZE" },
-  { scenario: "mismatch-id", code: "EMU_TRANSPORT_CORRELATION" },
-  { scenario: "mismatch-command", code: "EMU_TRANSPORT_CORRELATION" },
-] as const) {
-  void test(`${testCase.scenario} is a stable fatal handshake failure with no orphan`, { timeout: 10_000 }, async () => {
-    const client = await startFake(testCase.scenario);
-    await assert.rejects(
-      client.handshake(),
-      (error: unknown) => assertControlError(error, testCase.code),
-    );
-    await assertReaped(client);
+void test("fatal handshake failures are stable and reap the child", async (context) => {
+  for (const testCase of [
+    { scenario: "major-mismatch", code: "EMU_VERSION_MAJOR" },
+    { scenario: "missing-capability", code: "EMU_VERSION_CAPABILITY" },
+    { scenario: "malformed-hello", code: "EMU_TRANSPORT_MALFORMED" },
+    { scenario: "invalid-utf8", code: "EMU_TRANSPORT_MALFORMED" },
+    { scenario: "mismatch-id", code: "EMU_TRANSPORT_CORRELATION" },
+    { scenario: "mismatch-command", code: "EMU_TRANSPORT_CORRELATION" },
+  ] as const) {
+    await context.test(testCase.scenario, { timeout: 10_000 }, async () => {
+      const client = await startFake(testCase.scenario);
+      await assert.rejects(
+        client.handshake(),
+        (error: unknown) => assertControlError(error, testCase.code),
+      );
+      await assertReaped(client);
+    });
+  }
+});
+
+void test("client rejects and reaps an independently oversized response", { timeout: 10_000 }, async () => {
+  const script = [
+    "process.stdin.once('data', () => {",
+    "const response = {type:'response',id:1,command:'hello',success:true,body:{padding:'x'.repeat(65536)}};",
+    "process.stdout.write(JSON.stringify(response) + '\\n');",
+    "});",
+    "setInterval(() => {}, 1000);",
+  ].join("");
+  const client = await EmulatorClient.spawn(process.execPath, ["-e", script], {
+    commandTimeoutMs: 1_000,
+    terminationTimeoutMs: 250,
   });
-}
+  await assert.rejects(
+    client.handshake(),
+    (error: unknown) => assertControlError(error, "EMU_TRANSPORT_OVERSIZE"),
+  );
+  await assertReaped(client);
+});
 
 void test("hello timeout kills and reaps without proving a boundary", { timeout: 10_000 }, async () => {
   const client = await startFake("timeout-hello", {
@@ -296,6 +411,106 @@ void test("a schema-invalid response after launch is fatal and reaped", { timeou
     (error: unknown) => assertControlError(error, "EMU_TRANSPORT_SCHEMA"),
   );
   await assertReaped(client);
+});
+
+void test("hostile command responses are fatal and reap the child", async (context) => {
+  for (const testCase of [
+    {
+      name: "load digest mismatch",
+      scenario: "hostile-load-hash",
+      expectedCode: "EMU_IMAGE_HASH",
+      invoke: async (client: EmulatorClient) => {
+        await client.handshake();
+        await client.loadImage(await inspectRawCodeImage(fixture));
+      },
+    },
+    {
+      name: "reset unadvertised variant",
+      scenario: "hostile-reset-variant",
+      expectedCode: "EMU_TRANSPORT_SCHEMA",
+      invoke: async (client: EmulatorClient) => {
+        await client.handshake();
+        await client.loadImage(await inspectRawCodeImage(fixture));
+        await client.reset(1, 0);
+      },
+    },
+    {
+      name: "reset result kind",
+      scenario: "hostile-reset-kind",
+      expectedCode: "EMU_TRANSPORT_SCHEMA",
+      invoke: async (client: EmulatorClient) => {
+        await client.handshake();
+        await client.loadImage(await inspectRawCodeImage(fixture));
+        await client.reset(1, 0);
+      },
+    },
+    {
+      name: "getState register width",
+      scenario: "hostile-state-register-width",
+      expectedCode: "EMU_TRANSPORT_SCHEMA",
+      invoke: async (client: EmulatorClient) => {
+        await establishEntry(client);
+        await client.getState();
+      },
+    },
+    {
+      name: "decode order and placeholder",
+      scenario: "hostile-decode-window",
+      expectedCode: "EMU_TRANSPORT_SCHEMA",
+      invoke: async (client: EmulatorClient) => {
+        await establishEntry(client);
+        await client.decodeCode(0, 0, 0, 2);
+      },
+    },
+    {
+      name: "breakpoint response partition",
+      scenario: "hostile-breakpoint-partition",
+      expectedCode: "EMU_TRANSPORT_SCHEMA",
+      invoke: async (client: EmulatorClient) => {
+        await establishEntry(client);
+        await client.replaceCodeBreakpoints([2]);
+      },
+    },
+    {
+      name: "run entry stop",
+      scenario: "hostile-run-entry",
+      expectedCode: "EMU_TRANSPORT_SCHEMA",
+      invoke: async (client: EmulatorClient) => {
+        await establishEntry(client);
+        await client.run(1);
+      },
+    },
+    {
+      name: "step yield",
+      scenario: "hostile-step-yield",
+      expectedCode: "EMU_TRANSPORT_SCHEMA",
+      invoke: async (client: EmulatorClient) => {
+        await establishEntry(client);
+        await client.stepInstruction();
+      },
+    },
+  ] as const) {
+    await context.test(testCase.name, { timeout: 10_000 }, async () => {
+      const client = await startFake(testCase.scenario);
+      await assert.rejects(
+        testCase.invoke(client),
+        (error: unknown) => assertControlError(error, testCase.expectedCode),
+      );
+      await assertReaped(client);
+    });
+  }
+});
+
+void test("invalid terminate acknowledgment is fatal and reaped", { timeout: 10_000 }, async () => {
+  const fatal: EmulatorControlError[] = [];
+  const client = await startFake("hostile-terminate-ack", {
+    onFatal: (error) => fatal.push(error),
+  });
+  await client.handshake();
+  await client.terminate();
+  await assertReaped(client);
+  assert.equal(fatal.length, 1);
+  assert.equal(fatal[0]?.code, "EMU_TRANSPORT_SCHEMA");
 });
 
 void test("stderr diagnostics stay separate from stdout protocol records", { timeout: 10_000 }, async () => {
@@ -350,6 +565,51 @@ void test("executable resolution honors explicit path and reports missing PATH",
     (error: unknown) => assertControlError(error, "CONFIG_EMULATOR_NOT_FOUND"),
   );
 });
+
+void test(
+  "Windows resolution skips shell wrappers and honors direct PATHEXT ordering without fallback",
+  { skip: process.platform !== "win32", timeout: 10_000 },
+  async () => {
+    const temporary = fs.mkdtempSync(path.join(os.tmpdir(), "emu-path-win32-"));
+    const native = path.join(temporary, "emu-debug.EXE");
+    const wrapper = path.join(temporary, "emu-debug.CMD");
+    try {
+      fs.copyFileSync(process.execPath, native);
+      fs.writeFileSync(wrapper, "@echo off\r\nexit /b 0\r\n", "utf8");
+      const resolved = await resolveEmulatorExecutable(undefined, {
+        env: { PATH: temporary, PATHEXT: ".CMD;.EXE;.BAT" },
+        executableName: "emu-debug",
+        platform: "win32",
+      });
+      assert.equal(resolved.toLowerCase(), native.toLowerCase());
+      const directExit = await new Promise<number | null>((resolve, reject) => {
+        const child = spawn(resolved, ["--version"], {
+          shell: false,
+          stdio: ["ignore", "ignore", "ignore"],
+          windowsHide: true,
+        });
+        child.once("error", reject);
+        child.once("close", resolve);
+      });
+      assert.equal(directExit, 0);
+
+      await assert.rejects(
+        resolveEmulatorExecutable(undefined, {
+          env: { PATH: temporary, PATHEXT: ".CMD;.BAT" },
+          executableName: "emu-debug",
+          platform: "win32",
+        }),
+        (error: unknown) => assertControlError(error, "CONFIG_EMULATOR_NOT_FOUND"),
+      );
+      await assert.rejects(
+        resolveEmulatorExecutable(wrapper, { platform: "win32" }),
+        (error: unknown) => assertControlError(error, "CONFIG_EMULATOR_NOT_FOUND"),
+      );
+    } finally {
+      fs.rmSync(temporary, { recursive: true, force: true });
+    }
+  },
+);
 
 void test("direct spawn failure is stable and does not hang cleanup", async () => {
   await assert.rejects(
@@ -498,7 +758,7 @@ void test("session uses the real backend and publishes only the entry stop after
   const input = new PassThrough();
   const output = new PassThrough();
   const dap = dapReader(output);
-  new EmuDebugSession(undefined, undefined, backend).start(input, output);
+  new EmuDebugSession(undefined, true, backend).start(input, output);
   const send = (seq: number, command: string, args: object): void => {
     input.write(frame({ seq, type: "request", command, arguments: args }));
   };
@@ -536,6 +796,119 @@ void test("session uses the real backend and publishes only the entry stop after
     input.destroy();
     output.destroy();
     await backend.disconnect();
+  }
+});
+
+void test("fake rejects unknown required capabilities and remains in a clean failed-handshake state", { timeout: 10_000 }, async () => {
+  const fake = startRawFake();
+  try {
+    const request = helloRequest(1);
+    const args = request.arguments as JsonObject;
+    args.requiredCapabilities = [
+      ...REQUIRED_EMULATOR_CAPABILITIES,
+      "unknown-required-capability",
+    ];
+    fake.send(request);
+    const rejected = await fake.next();
+    assert.equal(rejected.body.success, false);
+    assert.equal((rejected.body.error as JsonObject).code, "UNSUPPORTED_CAPABILITY");
+    assert.ok(rejected.bytes <= 65_536);
+
+    fake.send({ type: "request", id: 2, command: "getState" });
+    const state = await fake.next();
+    assert.equal(state.body.success, false);
+    assert.equal((state.body.error as JsonObject).code, "INVALID_STATE");
+    assert.ok(state.bytes <= 65_536);
+    fake.child.stdin.end();
+    assert.equal((await fake.closed).code, 0);
+  } finally {
+    fake.child.kill();
+  }
+});
+
+void test("fake rejects a reused positive request id session-wide without corrupting state", { timeout: 10_000 }, async () => {
+  const fake = startRawFake();
+  try {
+    fake.send(helloRequest(1));
+    assert.equal((await fake.next()).body.success, true);
+    fake.send({ type: "request", id: 1, command: "getState" });
+    const duplicate = await fake.next();
+    assert.equal(duplicate.body.success, false);
+    assert.equal((duplicate.body.error as JsonObject).code, "INVALID_REQUEST");
+    fake.send({ type: "request", id: 2, command: "getState" });
+    const fresh = await fake.next();
+    assert.equal(fresh.body.success, false);
+    assert.equal((fresh.body.error as JsonObject).code, "INVALID_STATE");
+    fake.child.stdin.end();
+    assert.equal((await fake.closed).code, 0);
+  } finally {
+    fake.child.kill();
+  }
+});
+
+for (const inputBytes of [65_535, 65_536] as const) {
+  void test(`fake accepts an exact ${inputBytes}-byte hello record and bounds all responses`, { timeout: 10_000 }, async () => {
+    const fake = startRawFake();
+    try {
+      fake.send(recordWithExactBytes(inputBytes));
+      const hello = await fake.next();
+      assert.equal(hello.body.success, true);
+      assert.ok(hello.bytes <= 65_536);
+      fake.child.stdin.end();
+      assert.equal((await fake.closed).code, 0);
+    } finally {
+      fake.child.kill();
+    }
+  });
+}
+
+void test("fake cleanly terminates on an input record beyond maxRecordBytes", { timeout: 10_000 }, async () => {
+  const fake = startRawFake();
+  try {
+    fake.send(recordWithExactBytes(65_537));
+    const exit = await fake.closed;
+    assert.equal(exit.code, 65);
+    assert.deepEqual(fake.records, []);
+  } finally {
+    fake.child.kill();
+  }
+});
+
+void test("fake bounds an oversized generated response with a structured error", { timeout: 10_000 }, async () => {
+  const fake = startRawFake("oversize-hello");
+  try {
+    fake.send(helloRequest(1));
+    const response = await fake.next();
+    assert.equal(response.body.success, false);
+    assert.equal((response.body.error as JsonObject).code, "RESPONSE_TOO_LARGE");
+    assert.ok(response.bytes <= 65_536);
+    fake.child.stdin.end();
+    assert.equal((await fake.closed).code, 0);
+  } finally {
+    fake.child.kill();
+  }
+});
+
+void test("fake terminates rather than echoing an unbounded near-limit command", { timeout: 10_000 }, async () => {
+  const fake = startRawFake();
+  try {
+    const request: JsonObject = {
+      type: "request",
+      id: 1,
+      command: "",
+    };
+    const initial = JSON.stringify(request);
+    (request as { command: string }).command = "x".repeat(
+      65_489 - Buffer.byteLength(initial, "utf8"),
+    );
+    const record = JSON.stringify(request);
+    assert.equal(Buffer.byteLength(record, "utf8"), 65_489);
+    fake.send(record);
+    const exit = await fake.closed;
+    assert.equal(exit.code, 65);
+    assert.deepEqual(fake.records, []);
+  } finally {
+    fake.child.kill();
   }
 });
 

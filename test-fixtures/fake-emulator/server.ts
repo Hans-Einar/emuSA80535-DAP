@@ -112,6 +112,7 @@ function integer(
 
 class FakeEmulator {
   private firstCommand = true;
+  private readonly requestIds = new Set<number>();
   private loadedImage: Buffer | undefined;
   private snapshot: Snapshot | undefined;
   private breakpoints = new Set<number>();
@@ -131,6 +132,15 @@ class FakeEmulator {
 
   public async accept(raw: unknown): Promise<void> {
     const request = this.validateRequest(raw);
+    if (this.requestIds.has(request.id)) {
+      this.error(
+        request,
+        "INVALID_REQUEST",
+        "request id must be positive and unique for the session",
+      );
+      return;
+    }
+    this.requestIds.add(request.id);
     this.observe(request);
     if (this.firstCommand && request.command !== "hello") {
       this.error(
@@ -249,6 +259,18 @@ class FakeEmulator {
       this.error(request, "INVALID_REQUEST", "invalid hello arguments");
       return;
     }
+    const unsupported = requiredCapabilities.filter(
+      (capability): capability is string =>
+        typeof capability === "string" && !CAPABILITIES.includes(capability),
+    );
+    if (unsupported.length > 0) {
+      this.error(
+        request,
+        "UNSUPPORTED_CAPABILITY",
+        `unsupported required capability: ${unsupported.join(", ")}`,
+      );
+      return;
+    }
     if (this.options.scenario === "malformed-hello") {
       process.stdout.write("{not-json}\n");
       return;
@@ -332,6 +354,10 @@ class FakeEmulator {
       this.error(request, "IMAGE_HASH", "raw image SHA-256 does not match");
       return;
     }
+    if (this.options.scenario === "hostile-load-hash") {
+      this.success(request, { sha256: "0".repeat(64) });
+      return;
+    }
     this.loadedImage = image;
     this.snapshot = undefined;
     this.knownPredecessor.clear();
@@ -362,6 +388,18 @@ class FakeEmulator {
       0,
       0,
     );
+    if (this.options.scenario === "hostile-reset-variant") {
+      this.success(request, { ...this.snapshot, variant: "not-advertised" });
+      return;
+    }
+    if (this.options.scenario === "hostile-reset-kind") {
+      this.success(request, {
+        ...this.snapshot,
+        resultKind: "yield",
+        reason: "yield",
+      });
+      return;
+    }
     this.success(request, this.snapshot);
   }
 
@@ -372,6 +410,13 @@ class FakeEmulator {
     }
     if (this.options.scenario === "malformed-state") {
       this.success(request, {});
+      return;
+    }
+    if (this.options.scenario === "hostile-state-register-width") {
+      this.success(request, {
+        ...this.snapshot,
+        registers: { ...this.snapshot.registers, a: 256 },
+      });
       return;
     }
     this.success(request, this.snapshot);
@@ -397,6 +442,21 @@ class FakeEmulator {
     const base = args.reference + args.byteOffset;
     if (!integer(base, 0, 0xffff)) {
       this.error(request, "RANGE", "decodeCode byte offset leaves CODE range");
+      return;
+    }
+    if (this.options.scenario === "hostile-decode-window") {
+      this.success(request, {
+        instructions: [
+          { address: 2, size: 1, valid: true, text: "INC A" },
+          {
+            address: 1,
+            size: 1,
+            valid: false,
+            reason: "unknown-predecessor",
+            text: "not-<invalid>",
+          },
+        ].slice(0, args.instructionCount),
+      });
       return;
     }
     const records: Decoded[] = [];
@@ -483,6 +543,14 @@ class FakeEmulator {
       );
       return;
     }
+    if (this.options.scenario === "hostile-breakpoint-partition") {
+      this.success(request, {
+        accepted: [addresses[0], addresses[0]],
+        rejected: [{ address: 0xffff, reason: "not requested" }],
+        limit: MAX_BREAKPOINTS + 1,
+      });
+      return;
+    }
     this.breakpoints = new Set(addresses as number[]);
     this.success(request, {
       accepted: [...this.breakpoints],
@@ -502,6 +570,14 @@ class FakeEmulator {
         this.snapshot === undefined ? "INVALID_STATE" : "INVALID_REQUEST",
         "run requires an idle boundary and a negotiated instruction bound",
       );
+      return;
+    }
+    if (this.options.scenario === "hostile-run-entry") {
+      this.success(request, {
+        ...this.snapshot,
+        resultKind: "architectural-stop",
+        reason: "entry",
+      });
       return;
     }
     for (let count = 0; count < maxInstructions; count += 1) {
@@ -535,11 +611,23 @@ class FakeEmulator {
       resultKind: "architectural-stop",
       reason: "step",
     };
+    if (this.options.scenario === "hostile-step-yield") {
+      this.success(request, {
+        ...this.snapshot,
+        resultKind: "yield",
+        reason: "yield",
+      });
+      return;
+    }
     this.success(request, this.snapshot);
   }
 
   private terminate(request: RequestRecord): void {
     if (this.options.scenario === "terminate-hang") {
+      return;
+    }
+    if (this.options.scenario === "hostile-terminate-ack") {
+      this.success(request, { terminated: false });
       return;
     }
     this.success(request, { terminated: true });
@@ -632,7 +720,40 @@ class FakeEmulator {
   }
 
   private write(record: JsonObject): void {
-    process.stdout.write(`${JSON.stringify(record)}\n`);
+    const encoded = JSON.stringify(record);
+    if (Buffer.byteLength(encoded, "utf8") <= MAX_RECORD_BYTES) {
+      process.stdout.write(`${encoded}\n`);
+      return;
+    }
+
+    const id = record.id;
+    const command = record.command;
+    if (
+      integer(id, 1, Number.MAX_SAFE_INTEGER) &&
+      typeof command === "string" &&
+      command.length > 0
+    ) {
+      const bounded = JSON.stringify({
+        type: "response",
+        id,
+        command,
+        success: false,
+        error: {
+          code: "RESPONSE_TOO_LARGE",
+          message: "response exceeds maxRecordBytes",
+          retryable: false,
+          data: {},
+        },
+      });
+      if (Buffer.byteLength(bounded, "utf8") <= MAX_RECORD_BYTES) {
+        process.stdout.write(`${bounded}\n`);
+        return;
+      }
+    }
+
+    process.stderr.write("fake protocol output exceeds maxRecordBytes\n");
+    process.stdin.destroy();
+    process.stdout.write("", () => process.exit(65));
   }
 }
 
