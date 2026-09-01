@@ -52,10 +52,11 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh reviewer performs `RVW-001-002-006` against exact corrective commit
-`cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`, independently probes the full
-negative traversal matrix and raw-versus-local breakpoint limits, and ensures
-accepted `CR-013`/`CR-014` behavior remains intact. Worker C remains paused.
+Worker C implements the remaining Slice-1 DAP behavior on accepted Worker B
+commit `cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`: stop epochs/handles,
+thread/current frame/registers, disassembly mapping, replacement instruction
+breakpoints, bounded continue/pause, exact step, and frozen unsupported
+requests. Fresh `RVW-001-002-003` follows before final verification.
 
 ## Verification completed
 

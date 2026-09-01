@@ -549,3 +549,18 @@ lint/build, 63/63 full tests, 45/45 contract tests, fixture, package/contents,
 process/safety scans, and diff checks. Worker-stage VSIX SHA-256 is
 `2597B75E34A609A5680F126427BED6D01C4F9304042961BC98CC218F78118A36`.
 `CR-012`, `CR-015`, and `CR-016` remain pending `RVW-001-002-006`.
+
+### Worker B second corrective re-review `RVW-001-002-006`
+
+**Reviewed commit:** `cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`
+
+**Review commit:** `19d837e1abaf7157c8f11c5de39d3155c908ce39`
+
+**Disposition:** **accepted; no blocking Worker B finding remains**
+
+The fresh reviewer independently passed a 31-case traversal/limit/fake/Windows
+probe plus clean lint/build, 63/63 full tests, 45/45 contract tests, fixture,
+package/contents, process cleanup, safety, and diff checks. `CR-012`, `CR-015`,
+and `CR-016` are resolved; `CR-013`/`CR-014` remain resolved; no new finding
+was raised. Worker B is accepted and Worker C may proceed. No AC, real-emulator,
+or READY disposition is implied.

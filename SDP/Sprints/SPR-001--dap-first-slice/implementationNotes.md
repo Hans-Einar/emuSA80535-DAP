@@ -125,3 +125,8 @@ therefore remains partial.
 Second corrective commit `cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`
 addresses the residual traversal/limit findings with 63/63 and 45/45 worker
 tests. Fresh `RVW-001-002-006` is active; no acceptance is inferred yet.
+
+Fresh `RVW-001-002-006` accepted exact commit `cd98df7a…` and resolved
+`CR-012`, `CR-015`, and `CR-016` without a new finding. Worker B's protocol,
+fake, fixture, and process boundary are accepted for Worker C integration.
+Full Slice-1 acceptance and real-emulator evidence remain open.
