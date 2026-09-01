@@ -8,6 +8,7 @@ scripts/**
 test/**
 test-fixtures/**
 out/test/**
+out/test-fixtures/**
 out/**/*.d.ts
 out/**/*.map
 node_modules/@vscode/debugadapter/lib/tests/**

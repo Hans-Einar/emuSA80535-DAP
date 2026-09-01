@@ -366,7 +366,7 @@ void test("cleanup rejection after launch failure emits an actionable diagnostic
     assertFailure(
       await harness.dap.next(),
       "launch",
-      "EMU_INTEGRATION_PENDING",
+      "EMU_LAUNCH_FAILED",
     );
     const diagnostic = await harness.dap.next();
     assert.equal(diagnostic.event, "output");

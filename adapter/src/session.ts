@@ -2,9 +2,16 @@ import {
   DebugSession,
   InitializedEvent,
   OutputEvent,
+  StoppedEvent,
   TerminatedEvent,
 } from "@vscode/debugadapter";
 import type { DebugProtocol } from "@vscode/debugprotocol";
+
+import {
+  EmulatorControlError,
+  EmulatorLaunchBackend,
+  type EmulatorLaunchResult,
+} from "./emulatorClient";
 
 import {
   LaunchConfigurationError,
@@ -18,7 +25,7 @@ const ERROR_IDS = {
   DAP_INITIALIZE_REQUIRED: 1002,
   DAP_SESSION_TERMINATED: 1003,
   CONFIG_INVALID: 1100,
-  EMU_INTEGRATION_PENDING: 1200,
+  EMU_LAUNCH_FAILED: 1200,
   EMU_STATE_NOT_CONFIGURING: 1300,
   EMU_LAUNCH_ALREADY_STARTED: 1301,
   EMU_LAUNCH_CANCELLED: 1302,
@@ -43,30 +50,17 @@ interface TerminationOperation {
 }
 
 export interface LaunchBackend {
-  launch(configuration: ValidatedLaunchConfiguration): Promise<void>;
+  launch(
+    configuration: ValidatedLaunchConfiguration,
+  ): Promise<EmulatorLaunchResult | void>;
   disconnect(): Promise<void>;
 }
 
-class UnavailableLaunchBackend implements LaunchBackend {
-  public launch(): Promise<void> {
-    return Promise.reject(
-      new Error(
-        "the emu-debug 1.0 client is not connected in the foundation pass",
-      ),
-    );
-  }
-
-  public disconnect(): Promise<void> {
-    return Promise.resolve();
-  }
-}
-
 /**
- * Slice-1 DAP process and lifecycle foundation.
+ * Slice-1 DAP process and launch lifecycle.
  *
- * Emulator ownership is deliberately not implemented here. Worker B supplies
- * the contract client and replaces the explicit launch rejection; Worker C
- * adds only capabilities whose complete request semantics exist.
+ * This pass owns only the emulator transport and entry-stop launch boundary.
+ * Worker C adds stopped-state reads and debug-behavior capability claims.
  */
 export class EmuDebugSession extends DebugSession {
   private initializeReceived = false;
@@ -80,14 +74,24 @@ export class EmuDebugSession extends DebugSession {
   private disconnectWaiters = 0;
   private cleanupFailureReported = false;
   private readonly launchBackend: LaunchBackend;
+  private entryStopReady = false;
 
   public constructor(
     debuggerLinesAndColumnsStartAt1?: boolean,
     isServer?: boolean,
-    launchBackend: LaunchBackend = new UnavailableLaunchBackend(),
+    launchBackend?: LaunchBackend,
   ) {
     super(debuggerLinesAndColumnsStartAt1, isServer);
-    this.launchBackend = launchBackend;
+    this.launchBackend =
+      launchBackend ??
+      new EmulatorLaunchBackend({
+        onDiagnostic: (message) => {
+          this.sendEvent(new OutputEvent(`[emulator] ${message}\n`, "stderr"));
+        },
+        onTransportFailure: (error) => {
+          void this.handleUnexpectedTransportFailure(error);
+        },
+      });
     this.setDebuggerLinesStartAt1(false);
     this.setDebuggerColumnsStartAt1(false);
   }
@@ -172,11 +176,12 @@ export class EmuDebugSession extends DebugSession {
     }
 
     try {
-      await this.launchBackend.launch(configuration);
+      const launchResult = await this.launchBackend.launch(configuration);
       if (!this.isLiveLaunch(generation)) {
         return;
       }
 
+      this.entryStopReady = launchResult !== undefined;
       this.lifecycle = "configuring";
       this.configurationOpen = true;
       this.sendEvent(new InitializedEvent());
@@ -185,12 +190,18 @@ export class EmuDebugSession extends DebugSession {
         return;
       }
 
-      const detail = error instanceof Error ? error.message : "launch failed";
+      const stableError =
+        error instanceof EmulatorControlError
+          ? error
+          : new EmulatorControlError(
+              "EMU_LAUNCH_FAILED",
+              error instanceof Error ? error.message : "launch failed",
+            );
       const termination = this.beginTermination();
       this.settleLaunchFailure(
         generation,
-        ERROR_IDS.EMU_INTEGRATION_PENDING,
-        `EMU_INTEGRATION_PENDING: ${detail}`,
+        ERROR_IDS.EMU_LAUNCH_FAILED,
+        `${stableError.code}: ${stableError.message}`,
       );
       const cleanupFailure = await termination.cleanup;
       if (!this.isCurrentTermination(termination.generation)) {
@@ -234,6 +245,10 @@ export class EmuDebugSession extends DebugSession {
     if (launch !== undefined) {
       this.activeLaunch = undefined;
       this.sendResponse(launch.response);
+    }
+    if (this.entryStopReady) {
+      this.entryStopReady = false;
+      this.sendEvent(new StoppedEvent("entry", 1));
     }
   }
 
@@ -308,6 +323,38 @@ export class EmuDebugSession extends DebugSession {
     }
   }
 
+  private async handleUnexpectedTransportFailure(
+    error: EmulatorControlError,
+  ): Promise<void> {
+    if (this.lifecycle === "terminating" || this.lifecycle === "terminated") {
+      return;
+    }
+
+    const launch = this.activeLaunch;
+    const termination = this.beginTermination();
+    if (launch !== undefined) {
+      this.settleLaunchFailure(
+        launch.generation,
+        ERROR_IDS.EMU_LAUNCH_FAILED,
+        `${error.code}: ${error.message}`,
+      );
+    } else {
+      this.sendEvent(
+        new OutputEvent(`${error.code}: ${error.message}\n`, "stderr"),
+      );
+    }
+    const cleanupFailure = await termination.cleanup;
+    if (!this.isCurrentTermination(termination.generation)) {
+      return;
+    }
+    if (cleanupFailure !== undefined) {
+      this.reportCleanupFailureOnce(cleanupFailure);
+    }
+    if (this.disconnectWaiters === 0) {
+      this.finishTermination(termination.generation);
+    }
+  }
+
   private isLiveLaunch(generation: number): boolean {
     return (
       this.lifecycle === "launching" &&
@@ -362,6 +409,7 @@ export class EmuDebugSession extends DebugSession {
     this.lifecycle = "terminated";
     this.activeLaunch = undefined;
     this.configurationOpen = false;
+    this.entryStopReady = false;
     this.terminateOnce();
   }
 
@@ -373,6 +421,7 @@ export class EmuDebugSession extends DebugSession {
     this.lifecycle = "terminated";
     this.activeLaunch = undefined;
     this.configurationOpen = false;
+    this.entryStopReady = false;
     this.terminateOnce();
   }
 

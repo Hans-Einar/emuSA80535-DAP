@@ -232,7 +232,7 @@ void test("compiled adapter speaks DAP framing over stdio", { timeout: 10_000 },
   }
 });
 
-void test("foundation launch fails without fake success and terminates once", { timeout: 10_000 }, async () => {
+void test("launch reports a missing firmware image actionably and terminates once", { timeout: 10_000 }, async () => {
   const adapter = spawn(
     process.execPath,
     [path.join(repositoryRoot, "out", "adapter", "src", "main.js")],
@@ -287,7 +287,7 @@ void test("foundation launch fails without fake success and terminates once", { 
     assert.equal(launchResponse.type, "response");
     assert.equal(launchResponse.command, "launch");
     assert.equal(launchResponse.success, false);
-    assert.match(launchResponse.message, /^EMU_INTEGRATION_PENDING:/);
+    assert.match(launchResponse.message, /^CONFIG_PROGRAM_READ:/);
     assert.deepEqual(await dap.next(), {
       seq: 3,
       type: "event",

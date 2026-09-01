@@ -24,6 +24,7 @@
   "include": [
     "adapter/src/**/*.ts",
     "extension/src/**/*.ts",
+    "test-fixtures/fake-emulator/**/*.ts",
     "test/**/*.ts"
   ]
 }

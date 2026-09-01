@@ -139,6 +139,9 @@
     "build": "tsc -p tsconfig.json",
     "lint": "eslint .",
     "test": "npm run build && node --test out/test/*.test.js",
+    "test:contract": "npm run build && node --test out/test/emulatorClient.test.js",
+    "fixture:generate": "node scripts/generate-synthetic-fixture.mjs",
+    "fixture:check": "node scripts/check-synthetic-fixture.mjs",
     "package": "npm run package:vsix",
     "package:vsix": "npm run build && node scripts/prepare-package.mjs && vsce package --out dist/emuSA80535-dap-0.1.0.vsix",
     "package:contents": "vsce ls"
