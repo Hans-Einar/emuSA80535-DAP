@@ -735,3 +735,18 @@ The target passed 100/100 separate Windows processes; clean 99/99, 45/45,
 fixture/package/policy, installed floor smoke, process/safety, and diff checks
 also passed. `CR-021` remains open pending fresh `RVW-001-002-009` and remote
 rerun.
+
+### AC-006 determinism corrective review `RVW-001-002-009`
+
+**Reviewed commit:** `1e104a18a365b5ad7666e86faad4b8fa00f14715`
+
+**Review commit:** `bf26e6fa7a0dad85bb699fddfa3f2568f2a4d564`
+
+**Disposition:** **accepted for exact-HEAD remote re-verification**
+
+The fresh reviewer passed 100/100 separate Windows target processes, clean
+99/99 full and 45/45 contract tests, fixture/package/policy, installed VS Code
+floor smoke, process/safety, and diff checks. Real client timeout/kill/reap
+tests remain intact and product behavior is unchanged. No new finding exists.
+`CR-020`/`CR-021` remain open until all four Ubuntu/Windows push/PR jobs pass a
+new integrated HEAD.

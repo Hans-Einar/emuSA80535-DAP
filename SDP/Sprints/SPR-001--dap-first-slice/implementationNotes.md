@@ -174,3 +174,7 @@ rerunning for a lucky green result is not accepted.
 Corrective test commit `1e104a18a365b5ad7666e86faad4b8fa00f14715`
 replaces the flakiness with a deterministic deferred timeout and passes 100/100
 Windows process runs. Fresh review and exact-head Actions rerun remain required.
+
+Fresh `RVW-001-002-009` accepted the deterministic test correction with no new
+finding. Exact-head four-job Actions re-verification is the remaining CR-020/021
+closure gate before `VER-001-002-002` can disposition AC-010.

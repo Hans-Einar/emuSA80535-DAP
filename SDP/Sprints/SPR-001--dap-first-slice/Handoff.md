@@ -52,11 +52,10 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh reviewer performs `RVW-001-002-009` against exact corrective commit
-`1e104a18a365b5ad7666e86faad4b8fa00f14715`, verifies deterministic deferred
-run-timeout semantics, real client timeout coverage retention, 100-run
-stability, and unchanged product behavior. Then Master pushes and reruns all
-four Actions jobs before `VER-001-002-002`.
+Master pushes the review-integrated HEAD and requires all four Ubuntu/Windows
+push/PR jobs to pass. Only then may fresh `VER-001-002-002` close
+`CR-020`/`CR-021`, disposition AC-010, revalidate the real emulator default and
+final AC table, and record the continuing external blockers.
 
 ## Verification completed
 
