@@ -5,8 +5,15 @@ import path from "node:path";
 import { PassThrough } from "node:stream";
 import test from "node:test";
 
-import { EmulatorLaunchBackend } from "../adapter/src/emulatorClient";
-import { EmuDebugSession } from "../adapter/src/session";
+import {
+  EmulatorControlError,
+  EmulatorLaunchBackend,
+  type EmulatorClient,
+  type EmulatorHello,
+  type EmulatorLaunchResult,
+  type EmulatorSnapshot,
+} from "../adapter/src/emulatorClient";
+import { EmuDebugSession, type LaunchBackend } from "../adapter/src/session";
 
 interface DapMessage {
   seq: number;
@@ -32,6 +39,11 @@ interface SessionOptions {
   commandTimeoutMs?: number;
   logRequests?: boolean;
   emulatorPath?: string;
+  backend?: TestLaunchBackend;
+}
+
+interface TestLaunchBackend extends LaunchBackend {
+  readonly ownedProcessId?: number;
 }
 
 const repositoryRoot = path.resolve(__dirname, "..", "..");
@@ -110,7 +122,7 @@ class DapHarness {
   public readonly input = new PassThrough();
   public readonly output = new PassThrough();
   public readonly dap = dapReader(this.output);
-  public readonly backend: EmulatorLaunchBackend;
+  public readonly backend: TestLaunchBackend;
   public readonly temporaryDirectory: string | undefined;
   public readonly requestsLog: string | undefined;
   private sequence = 0;
@@ -136,11 +148,13 @@ class DapHarness {
         String(options.delayMs ?? 0),
       );
     }
-    this.backend = new EmulatorLaunchBackend({
-      childArguments,
-      commandTimeoutMs: options.commandTimeoutMs ?? 1_000,
-      terminationTimeoutMs: 250,
-    });
+    this.backend =
+      options.backend ??
+      new EmulatorLaunchBackend({
+        childArguments,
+        commandTimeoutMs: options.commandTimeoutMs ?? 1_000,
+        terminationTimeoutMs: 250,
+      });
     new EmuDebugSession(undefined, true, this.backend).start(
       this.input,
       this.output,
@@ -223,6 +237,107 @@ class DapHarness {
     if (this.temporaryDirectory !== undefined) {
       fs.rmSync(this.temporaryDirectory, { recursive: true, force: true });
     }
+  }
+}
+
+const deterministicHello: EmulatorHello = {
+  protocol: { major: 1, minor: 0 },
+  product: "contract-test-backend",
+  productVersion: "1.0.0",
+  commit: "test-only",
+  variants: ["sab80535"],
+  capabilities: [
+    "rawCode64k",
+    "deterministicReset",
+    "snapshotBasicRegisters",
+    "decodeCode",
+    "replaceCodeBreakpoints",
+    "boundedRun",
+    "stepInstruction",
+  ],
+  limits: {
+    maxBreakpoints: 16,
+    maxRunChunkInstructions: 64,
+    maxDisassembleInstructions: 64,
+    maxRecordBytes: 65_536,
+  },
+};
+
+const deterministicEntrySnapshot: EmulatorSnapshot = {
+  state: "idle",
+  resultKind: "architectural-stop",
+  reason: "entry",
+  pc: 0,
+  registers: {
+    a: 0,
+    b: 0,
+    psw: 0,
+    sp: 7,
+    dptr: 0,
+    r: [0, 0, 0, 0, 0, 0, 0, 0],
+  },
+  variant: "sab80535",
+  instructionCount: 0,
+  machineCycleCount: 0,
+};
+
+class DeferredRunFailureBackend implements TestLaunchBackend {
+  public launchCalls = 0;
+  public runCalls = 0;
+  public cleanupCalls = 0;
+  private runStartedResolve: (() => void) | undefined;
+  private readonly runStarted = new Promise<void>((resolve) => {
+    this.runStartedResolve = resolve;
+  });
+  private rejectRun: ((error: EmulatorControlError) => void) | undefined;
+  private disconnectPromise: Promise<void> | undefined;
+
+  public async launch(): Promise<EmulatorLaunchResult> {
+    this.launchCalls += 1;
+    return {
+      client: {} as EmulatorClient,
+      hello: deterministicHello,
+      image: { path: fixture, sha256: "test-only" },
+      entrySnapshot: deterministicEntrySnapshot,
+    };
+  }
+
+  public run(maxInstructions: number): Promise<EmulatorSnapshot> {
+    assert.equal(
+      maxInstructions,
+      deterministicHello.limits.maxRunChunkInstructions,
+    );
+    this.runCalls += 1;
+    this.runStartedResolve?.();
+    this.runStartedResolve = undefined;
+    return new Promise<EmulatorSnapshot>((_resolve, reject) => {
+      this.rejectRun = reject;
+    });
+  }
+
+  public waitForRun(): Promise<void> {
+    return this.runStarted;
+  }
+
+  public failRun(): void {
+    const reject = this.rejectRun;
+    if (reject === undefined) {
+      throw new Error("no deferred run is active");
+    }
+    this.rejectRun = undefined;
+    reject(
+      new EmulatorControlError(
+        "EMU_TRANSPORT_TIMEOUT",
+        "deterministic test run timeout",
+      ),
+    );
+  }
+
+  public disconnect(): Promise<void> {
+    this.disconnectPromise ??= Promise.resolve().then(() => {
+      this.cleanupCalls += 1;
+    });
+    return this.disconnectPromise;
   }
 }
 
@@ -951,20 +1066,19 @@ void test("AC-006 pause responds before one stop and schedules no chunk after in
 });
 
 void test("AC-006 run timeout after pause intent terminates and never promotes an unproven boundary", { timeout: 10_000 }, async () => {
-  const harness = new DapHarness({
-    logRequests: true,
-    delayCommand: "run",
-    delayMs: 200,
-    commandTimeoutMs: 50,
-  });
+  const backend = new DeferredRunFailureBackend();
+  const harness = new DapHarness({ backend });
   try {
     await harness.initialize();
     await harness.launchToConfiguration();
     await harness.configure();
+    assert.equal(backend.launchCalls, 1);
     harness.send("continue", { threadId: 1 });
     assertSuccess(await harness.dap.next(), "continue");
+    await backend.waitForRun();
     harness.send("pause", { threadId: 1 });
     assertSuccess(await harness.dap.next(), "pause");
+    backend.failRun();
     const diagnostic = await harness.dap.next();
     assert.equal(diagnostic.event, "output");
     assert.match(
@@ -973,14 +1087,18 @@ void test("AC-006 run timeout after pause intent terminates and never promotes a
     );
     const terminated = await harness.dap.next();
     assert.equal(terminated.event, "terminated");
+    await new Promise<void>((resolve) => setImmediate(resolve));
     assert.equal(
       harness.dap.queued.some((message) => message.event === "stopped"),
       false,
     );
     assert.equal(
-      harness.readRequests().filter((request) => request.command === "run").length,
-      1,
+      harness.dap.queued.filter((message) => message.event === "terminated")
+        .length,
+      0,
     );
+    assert.equal(backend.runCalls, 1);
+    assert.equal(backend.cleanupCalls, 1);
   } finally {
     await harness.close();
   }
