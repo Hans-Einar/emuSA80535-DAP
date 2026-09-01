@@ -198,7 +198,12 @@ void test("compiled adapter speaks DAP framing over stdio", { timeout: 10_000 },
       request_seq: 1,
       command: "initialize",
       success: true,
-      body: { supportsConfigurationDoneRequest: true },
+      body: {
+        supportsConfigurationDoneRequest: true,
+        supportsInstructionBreakpoints: true,
+        supportsDisassembleRequest: true,
+        supportsSteppingGranularity: true,
+      },
     });
 
     adapter.stdin.write(

@@ -392,6 +392,19 @@ class FakeEmulator {
       0,
       0,
     );
+    if (this.options.scenario === "register-snapshot") {
+      this.snapshot = {
+        ...this.snapshot,
+        registers: {
+          a: 0x12,
+          b: 0x34,
+          psw: 0x18,
+          sp: 0x7f,
+          dptr: 0xabcd,
+          r: [0x10, 0x21, 0x32, 0x43, 0x54, 0x65, 0x76, 0x87],
+        },
+      };
+    }
     if (this.options.scenario === "hostile-reset-variant") {
       this.success(request, { ...this.snapshot, variant: "not-advertised" });
       return;
