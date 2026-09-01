@@ -52,11 +52,11 @@ VS Code F5/disassembly/safety gates cannot run on current emulator default.
 
 ## Exact next step
 
-A fresh worker addresses only `CR-022`: replace the repeated-yield/pause
-wall-clock/real-child timing with a deterministic controllable backend that
-proves multiple yields, pause response ordering, final yielded-boundary
-promotion, and no next run. Fresh `RVW-001-002-010`, exact-head Actions rerun,
-then restore the real-emulator monitoring handoff.
+A fresh reviewer performs `RVW-001-002-010` against exact corrective commit
+`b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`, verifies explicit run #1–#3
+control, pause/event ordering, unique final-boundary promotion, no run #4,
+100-run stability, and unchanged real-client/contract coverage. Then Master
+pushes and requires all four exact-head Actions jobs.
 
 ## Verification completed
 

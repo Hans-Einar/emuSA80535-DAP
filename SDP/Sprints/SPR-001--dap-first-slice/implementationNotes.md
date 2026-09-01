@@ -190,3 +190,7 @@ The later documentation-only checkpoint rerun exposed `CR-022`: the repeated
 yield/pause test still depended on a 30 ms sleep and real-child scheduling. It
 will be made deterministic before final handoff; product behavior and the
 already verified four-job `3bb4264…` evidence are unchanged.
+
+Corrective test commit `b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`
+replaces repeated-yield wall-clock timing with explicit queued promises and
+passes 100/100 Windows processes. Fresh review and Actions rerun remain.

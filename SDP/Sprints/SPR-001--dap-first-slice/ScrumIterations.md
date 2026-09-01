@@ -791,3 +791,18 @@ instead of the expected pause stop. The identical Windows PR job passed.
 resolved CR-020/021 or change the external emulator blocker, but the branch
 will not be handed off with a flaky exact-head job. A fresh narrow worker and
 `RVW-001-002-010` must replace wall-clock yield timing with controlled promises.
+
+### Repeated-yield determinism corrective result
+
+**Corrective commit:** `b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`
+
+The fresh worker changed only `test/dapBehavior.test.ts`. A queued deferred
+backend now exposes run #1–#3 explicitly. The test resolves two yields, pauses
+with #3 pending, verifies the pause response, promotes exactly the #3 boundary,
+and proves one pause stop, no `continued`, no run #4, final stopped state, and
+exactly-once cleanup.
+
+The target passed 100/100 separate Windows processes; clean 99/99, 45/45,
+fixture/package/policy, installed floor smoke, process/safety, and diff checks
+also passed. `CR-022` remains open pending fresh `RVW-001-002-010` and exact
+Actions rerun.
