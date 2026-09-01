@@ -130,3 +130,11 @@ Fresh `RVW-001-002-006` accepted exact commit `cd98df7a…` and resolved
 `CR-012`, `CR-015`, and `CR-016` without a new finding. Worker B's protocol,
 fake, fixture, and process boundary are accepted for Worker C integration.
 Full Slice-1 acceptance and real-emulator evidence remain open.
+
+## Worker C — DAP debug behavior (awaiting independent review)
+
+Commit `574dd8d0b44c2970656fe7e9c0c41dc5164896cb` completes the planned fake-backed
+DAP surface and maps AC-001–AC-009 in tests. Worker evidence passes 86/86,
+45/45 contract, and 23/23 focused AC tests plus package/install/safety checks.
+Fresh `RVW-001-002-003` is required; AC-010/011, real UI, and real-emulator
+verification remain open.
