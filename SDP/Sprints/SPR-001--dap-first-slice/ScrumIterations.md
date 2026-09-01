@@ -536,3 +536,16 @@ gaps keep Worker C paused:
 
 `CR-012` remains partial until `CR-015` is resolved. A fresh narrow correction
 and `RVW-001-002-006` are required.
+
+### Worker B second corrective result
+
+**Corrective commit:** `cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`
+
+The fresh worker changed only the client, fake, and contract tests. Negative
+decode traversal now validates the full offset-magnitude/count geometry and
+placeholder prefix, while raw negotiated breakpoint limits remain distinct
+from the local 1024-entry work cap. Worker evidence passed clean install,
+lint/build, 63/63 full tests, 45/45 contract tests, fixture, package/contents,
+process/safety scans, and diff checks. Worker-stage VSIX SHA-256 is
+`2597B75E34A609A5680F126427BED6D01C4F9304042961BC98CC218F78118A36`.
+`CR-012`, `CR-015`, and `CR-016` remain pending `RVW-001-002-006`.

@@ -121,3 +121,7 @@ Independent re-review is still required before Worker C.
 changes-required for `CR-015` (negative decode traversal geometry) and
 `CR-016` (raw negotiated breakpoint limit versus private work cap). `CR-012`
 therefore remains partial.
+
+Second corrective commit `cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`
+addresses the residual traversal/limit findings with 63/63 and 45/45 worker
+tests. Fresh `RVW-001-002-006` is active; no acceptance is inferred yet.

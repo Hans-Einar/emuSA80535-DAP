@@ -52,10 +52,10 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh corrective worker addresses only `CR-015` and `CR-016`, adds direct
-regressions for negative traversal geometry and raw-versus-clamped breakpoint
-limits, and produces one commit for fresh `RVW-001-002-006`. It must preserve
-the already accepted `CR-013`/`CR-014` behavior. Worker C remains paused.
+A fresh reviewer performs `RVW-001-002-006` against exact corrective commit
+`cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`, independently probes the full
+negative traversal matrix and raw-versus-local breakpoint limits, and ensures
+accepted `CR-013`/`CR-014` behavior remains intact. Worker C remains paused.
 
 ## Verification completed
 
