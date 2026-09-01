@@ -116,3 +116,8 @@ client contract.
 Corrective commit `6000ec8235ee8f568db80c4d6fe02f84d1982045` addresses
 `CR-012`–`CR-014`; worker evidence passes 60/60 and 42/42 contract tests.
 Independent re-review is still required before Worker C.
+
+`RVW-001-002-005` resolved `CR-013` and `CR-014`, but returned
+changes-required for `CR-015` (negative decode traversal geometry) and
+`CR-016` (raw negotiated breakpoint limit versus private work cap). `CR-012`
+therefore remains partial.

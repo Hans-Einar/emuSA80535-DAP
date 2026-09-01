@@ -515,3 +515,24 @@ contract tests, fixture check, package/content/safety policy, process cleanup,
 and diff whitespace. Worker-stage VSIX SHA-256 is
 `58F3679C554D7457485B75BBFA33647BDD657B46C84FF17184C66359FC0983B0`.
 The findings remain in progress pending fresh `RVW-001-002-005`.
+
+### Worker B corrective re-review `RVW-001-002-005`
+
+**Reviewed commit:** `6000ec8235ee8f568db80c4d6fe02f84d1982045`
+
+**Review commit:** `2610bf783b27fe3302bd097f7a02961c18096ace`
+
+**Disposition:** **changes-required**
+
+The fresh reviewer accepted `CR-013` and `CR-014` as resolved and confirmed
+the original `CR-012` hostile classes now fail and reap the child. Two residual
+gaps keep Worker C paused:
+
+- `CR-015` (blocking/high): with a negative instruction offset whose magnitude
+  exceeds the returned count, the client can accept a decode window that has
+  already reached/crossed the base reference too early.
+- `CR-016` (medium): a valid server-advertised breakpoint limit above the
+  client's undisclosed local hard cap is rejected when echoed by the response.
+
+`CR-012` remains partial until `CR-015` is resolved. A fresh narrow correction
+and `RVW-001-002-006` are required.

@@ -52,10 +52,10 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh reviewer performs `RVW-001-002-005` against exact corrective commit
-`6000ec8235ee8f568db80c4d6fe02f84d1982045`, independently reruns all original
-invalid-response/fake-bound/Windows-resolver probes, and decides
-`CR-012`–`CR-014`. Worker C remains paused until acceptance.
+A fresh corrective worker addresses only `CR-015` and `CR-016`, adds direct
+regressions for negative traversal geometry and raw-versus-clamped breakpoint
+limits, and produces one commit for fresh `RVW-001-002-006`. It must preserve
+the already accepted `CR-013`/`CR-014` behavior. Worker C remains paused.
 
 ## Verification completed
 
