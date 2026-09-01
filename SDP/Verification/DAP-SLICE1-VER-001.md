@@ -1020,3 +1020,118 @@ reproduced against merged emulator commit `1a6aa397…` without changing the
 frozen contract.
 
 **READY**
+
+### Current-master delta addendum — `d9f80eba172dd9d7281aaa9e5cfef461b6b9709b`
+
+**Reverified:** 2026-09-01
+**Prior fully verified runtime merge:**
+`1a6aa397993d3f24cef8d41248ae2928d352966a`
+**Exact current emulator `origin/master`:**
+`d9f80eba172dd9d7281aaa9e5cfef461b6b9709b`
+**Frozen DAP product HEAD:**
+`36639b48ddb2ffbafa14c00da794fe1734f7483b`
+
+During Master integration, emulator `master` advanced by five documentation
+commits. This verifier fetched the new default, created fresh detached exact
+worktrees, and repeated the current-runtime gate without changing emulator,
+DAP, or the frozen protocol.
+
+#### Ancestry and exact blob identity
+
+`git merge-base --is-ancestor 1a6aa397... d9f80eba...` passed. The entire
+delta is exactly 550 inserted lines in three added files:
+
+```text
+doc/P1000/P1000_CPU_TARGET_REFERENCE.md
+doc/P1000/P1000_SIMULATOR_BOUNDARY.md
+doc/P1000/README.md
+```
+
+There are zero paths outside `doc/P1000/`. No Makefile, README, C source,
+header, test, SDP, DAP, or protocol file changed. Direct Git object comparison
+proved identical blobs/trees at both revisions:
+
+| Path | Identical Git object |
+|---|---|
+| `Makefile` | `dc0f10b6ec1bec6c4ca68130d0834a5381f6ebb0` |
+| `README.md` | `d4b539a72d6ce1f0b0e4d77c82d0fcae95e4e741` |
+| `emu_debug_server.c` | `4b5b32b4774843c50d1691a7bb5c15d7aa3db4bc` |
+| `emu_debug.c` | `c8112f695d6bf3fd0e64df0d5216c258fd8bdccc` |
+| `emu_debug.h` | `d7418d6efed146bd22cdbeec899082a7ea490d79` |
+| `core.c` | `1e8ee57ed982b6b7f0db180d89b27a42b82c4245` |
+| `opcodes.c` | `19ff17061078c511942e73a7ec0a9c594e1baafe` |
+| `disasm.c` | `81e5e9aad5085adc451e4b2732acecb4904bca23` |
+| `binary_loader.c` | `f40c0f015f939e4b81115e07ff68111a83d62a7e` |
+| complete `tests/` tree | `74dfb206a0b379cdc4cc55c9e17ed92db17f38bc` |
+
+The new documents explicitly classify themselves as target evidence and state
+that P1000 board decode, device identity, connector, valve, protocol, physical
+I/O, and machine semantics must remain outside the generic CPU/runtime. They
+therefore reinforce rather than alter the frozen boundary.
+
+Runtime scans at exact current master found no P1000/Ponsse/D71055,
+hydraulic/valve, serial/GPIO/CAN/fieldbus/physical endpoint, `/dev/`, socket,
+Winsock, termios, or device API in `emu_debug_server.c`, `emu_debug.c`, or
+`emu_debug.h`. The exact DAP adapter/extension/fixture/manifest scan was also
+clean. The frozen contract SHA-256 remains
+`1de8a7b1915f35a0e79d4e742261b0471e1fced938d928508bf9beb679f726d4`.
+
+#### Current-master executable rerun
+
+Windows 11 / GCC 12.2 ran:
+
+```text
+make clean
+make core-test
+make DEBUG_COMMIT=d9f80eba172dd9d7281aaa9e5cfef461b6b9709b emu-debug
+make debug-test
+make dap-integration-test DAP_ROOT=<exact-36639b48-worktree>
+```
+
+All Stage-0, IRQ, Timer, UART, SLC-010 port/MOVX, facade, and full
+process/protocol tests passed. The rebuilt executable reported exact commit
+`d9f80eba...`, had SHA-256
+`478064074a922ae8c6db5fb117b2f39b3a00c7c554084c1f16ef6fd6343fe182`,
+and imported only `KERNEL32.dll` and `msvcrt.dll`.
+
+The exact DAP worktree also reran clean `npm ci`, lint, 99/99 full tests,
+45/45 contract tests, and the exact fixture/hash gate. Its unchanged real
+contract/equivalence/DAP-session F5 gate passed against the current-stamped
+Windows executable.
+
+WSL2 openSUSE Leap 15.5 / GCC 7.5 / Node 24.11 ran the same current-master
+emulator regression, facade, process/protocol, and real DAP gates:
+
+```text
+make clean
+make core-test
+make DEBUG_COMMIT=d9f80eba172dd9d7281aaa9e5cfef461b6b9709b emu-debug
+make debug-test PYTHON=/root/miniconda3/bin/python
+node tests/test_dap_real.mjs <exact-36639b48-worktree> ./emu-debug
+```
+
+Every gate passed. The Linux ELF reported exact current master, had SHA-256
+`b852dbdf2ebf28aa177e916c6f5bdb5980f0b8aef73667007d9177999ce0b9bc`,
+linked only libc/loader, and passed unchanged DAP real
+contract/equivalence/F5 with no product mutation.
+
+The preceding full installed-VSIX Windows/Linux evidence remains directly
+applicable because the complete runtime/build/test graph is byte-identical;
+the fresh dual-platform executions additionally prove that the only generated
+runtime difference, the advertised commit string, is exactly current master
+and is accepted by the unchanged adapter.
+
+#### Delta disposition
+
+- `EMU-BLK-001..010`: **all remain SATISFIED** (`004` preserved).
+- `AC-001..AC-011`: **all remain PASS**.
+- Frozen `emu-debug` 1.0 contract: **UNCHANGED**.
+- New P1000/runtime or DAP coupling: **NONE**.
+- New finding: **NONE**.
+- Verification disposition against current emulator master:
+  **PASSED / READY**.
+
+`VER-001-002-003` therefore applies to exact current emulator default
+`d9f80eba172dd9d7281aaa9e5cfef461b6b9709b`.
+
+**READY**
