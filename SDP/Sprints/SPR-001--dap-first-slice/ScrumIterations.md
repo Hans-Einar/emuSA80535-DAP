@@ -608,3 +608,19 @@ then raised three findings:
 AC-003 is changes-required. AC-001/002/004–009 have passing required paths but
 the set remains unaccepted pending correction. A fresh worker and
 `RVW-001-002-007` are required before final verification.
+
+### Worker C corrective result
+
+**Corrective commit:** `8728a965cd04bc43816cd8401638869b2615f861`
+
+The fresh corrective worker changed only session behavior, the fake server, and
+DAP integration tests. A structured rejected step now preserves the exact
+stopped epoch/snapshot/handles without events; the fake records a predecessor
+only for actual non-wrapping sequential fall-through; and raw `stackTrace`
+pagination requires nonnegative safe integers and preserves state on failure.
+
+Worker evidence passed clean install, lint/build, 89/89 full tests, 45/45
+contract tests, 26/26 focused tests, fixture, package/contents, isolated install,
+process/safety scans, and diff checks. Worker-stage VSIX SHA-256 is
+`984924E85C2FED0BEE62D6D78326D8B8F400B0E904AE1C85647B11F78BF2C36D`.
+Findings remain open pending fresh `RVW-001-002-007`.

@@ -52,11 +52,10 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Exact next step
 
-A fresh corrective worker addresses only `CR-017`–`CR-019`: rejected step must
-leave the exact current epoch/handles intact, the fake must record sequential
-predecessors only for actual sequential completion, and raw `stackTrace`
-pagination types/ranges must fail stably. Add direct regressions, then fresh
-`RVW-001-002-007`. Final verification waits.
+A fresh reviewer performs `RVW-001-002-007` against exact corrective commit
+`8728a965cd04bc43816cd8401638869b2615f861`, reproduces all three original
+defects, verifies no AC regression, and decides `CR-017`–`CR-019`. Final
+verification waits.
 
 ## Verification completed
 

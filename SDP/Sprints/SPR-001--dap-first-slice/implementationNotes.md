@@ -143,3 +143,7 @@ Independent `RVW-001-002-003` returned changes-required: `CR-017` forbids
 silent epoch mutation after rejected step, `CR-018` fixes false sequential
 predecessor evidence in the contract fake, and `CR-019` adds strict raw
 `stackTrace` pagination validation. AC-003 is blocked until correction.
+
+Corrective commit `8728a965cd04bc43816cd8401638869b2615f861` addresses
+`CR-017`–`CR-019` with 89/89, 45/45, and 26/26 worker tests. The correction
+remains unaccepted until fresh `RVW-001-002-007`.
