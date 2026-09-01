@@ -750,3 +750,28 @@ floor smoke, process/safety, and diff checks. Real client timeout/kill/reap
 tests remain intact and product behavior is unchanged. No new finding exists.
 `CR-020`/`CR-021` remain open until all four Ubuntu/Windows push/PR jobs pass a
 new integrated HEAD.
+
+### Corrective re-verification `VER-001-002-002`
+
+**Verified HEAD:** `3bb4264e2dd9166e38c1140216501b6e1eae5238`
+
+**Verification commit:** `5bdb025487f04a250fcaf29ea37e4675315cba56`
+
+**Disposition:** **CORRECTIONS VERIFIED; EXTERNALLY BLOCKED — NOT_READY**
+
+All four exact Actions jobs passed genuine clean install, lint, full/contract
+tests, fixture, package/contents/policy, and installed VSIX extension-host smoke
+at VS Code 1.95.0: Linux PR `99730638857`, Linux push `99730630653`, Windows PR
+`99730638636`, and Windows push `99730630555`.
+
+Each packaged smoke reached entry stop through the installed extension and
+packaged adapter against the contract fake, disconnected cleanly, emitted one
+termination, and left zero orphans. `CR-020` and `CR-021` are resolved.
+
+Final AC status is PASS for AC-002 and AC-005–009; BLOCKED for
+AC-001/003/004/010/011 because their strict final disposition still depends on
+the accepted real emulator/F5/disassembly/safety gate. Exact emulator default
+remains `c0cd6f26bd8984c9fed10eb81716619cb1bb96e6` with
+`EMU-BLK-001/002/003/005/010` missing, `006/007/008/009` partial, and `004`
+core-only. No compatible real runtime exists; Slice 1 stays implemented and
+reviewed but not accepted READY.

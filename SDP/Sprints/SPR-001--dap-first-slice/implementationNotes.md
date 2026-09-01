@@ -178,3 +178,10 @@ Windows process runs. Fresh review and exact-head Actions rerun remain required.
 Fresh `RVW-001-002-009` accepted the deterministic test correction with no new
 finding. Exact-head four-job Actions re-verification is the remaining CR-020/021
 closure gate before `VER-001-002-002` can disposition AC-010.
+
+`VER-001-002-002` passed all four exact Ubuntu/Windows package/install/fake
+entry-smoke jobs and resolved `CR-020`/`CR-021`. The repository-correctable
+Slice-1 work is implemented, independently reviewed, and verified. Final
+acceptance remains externally blocked: emulator default `c0cd6f26…` has no
+compatible real `emu-debug` 1.0 runtime, so real F5/disassembly/safety gates and
+AC-001/003/004/010/011 remain BLOCKED. Disposition is NOT_READY.

@@ -2,11 +2,10 @@
 
 ## Current objective
 
-Issue #3 has activated `IT-001-002 / SL-001-002-001` on branch
-`codex/dap-first-slice`. Implement the complete narrow Slice 1 through separate
-Worker A/B/C and independent reviewer passes. Preserve all completed fake-backed
-work if the real runtime is unavailable, but report `NOT_READY` until the
-real-emulator contract and VS Code smoke gates pass.
+Repository-correctable work for `IT-001-002 / SL-001-002-001` is implemented,
+independently reviewed, and verified on branch `codex/dap-first-slice`. Final
+disposition is `NOT_READY` only because the accepted real-emulator contract and
+VS Code F5/disassembly/safety gates cannot run on current emulator default.
 
 ## Authoritative source documents
 
@@ -45,17 +44,19 @@ real-emulator contract and VS Code smoke gates pass.
 
 ## Not done
 
-- Worker B/C product implementation and complete Slice-1 integration.
+- Real-emulator contract integration and real VS Code F5/disassembly/safety
+  acceptance.
 - Any emulator-repository change, Issue, or PR.
-- Product implementation/review/verification for `IT-001-002`.
-- Steering approval of the decisions below and merge disposition for PR #2.
+- Merge disposition for implementation PR #4; it remains draft and unmerged by
+  Issue #3 authority.
 
 ## Exact next step
 
-Master pushes the review-integrated HEAD and requires all four Ubuntu/Windows
-push/PR jobs to pass. Only then may fresh `VER-001-002-002` close
-`CR-020`/`CR-021`, disposition AC-010, revalidate the real emulator default and
-final AC table, and record the continuing external blockers.
+Monitor `Hans-Einar/emuSA80535-N` for an accepted real headless `emu-debug` 1.0
+runtime satisfying every Slice-1 `EMU-BLK`. When one exists, record its exact
+commit/release, rerun the same contract suite plus real VS Code F5/disassembly
+smoke on Linux and Windows, and re-open final verification. Do not change the
+protocol or mark READY while default remains `c0cd6f26…`.
 
 ## Verification completed
 
@@ -67,9 +68,13 @@ static Mermaid structure, P1000 neutrality, README status, and PR #2 state.
 The report records the bounded npmjs automation response and lack of a local
 Mermaid renderer as non-blocking limitations.
 
-For Issue #3, Master revalidated `emuSA80535-N/master` at
+For Issue #3, final `VER-001-002-002` revalidated `emuSA80535-N/master` at
 `c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`. No real Slice-1 integration
-evidence exists yet.
+evidence exists because that tree has no compatible server.
+
+All four exact Ubuntu/Windows push/PR jobs on `3bb4264…` passed build/test,
+contract, fixture, package policy, isolated VSIX floor install, packaged fake
+entry-stop, clean disconnect, exactly-one termination, and zero-orphan checks.
 
 ## Traceability IDs in play
 
@@ -78,17 +83,18 @@ evidence exists yet.
 `RVW-001-000-001`, `CR-001`–`CR-007`, `IT-001-001`,
 `SL-001-001-001`, `RVW-001-001-001`, `VER-001-001-001`, `CR-008`,
 `SL-001-001-002`, `RVW-001-001-002`, `VER-001-001-002`, `IT-001-002`,
-and `SL-001-002-001`, `RVW-001-002-001`–`RVW-001-002-003`, and
-`VER-001-002-001`.
+and `SL-001-002-001`, `RVW-001-002-001`–`RVW-001-002-009`,
+`CR-009`–`CR-021`, `VER-001-002-001`, and `VER-001-002-002`.
 
 ## Traceability update state
 
-- CurrentIndex: `SPR-001`/`IT-001-002` active and `SL-001-002-001` in progress;
-  three reviews and final verification are planned.
-- Relations: the active product slice is linked to all three reviews and final
-  verification in addition to its requirement/design chain.
-- Ledger: Issue #3 activation and `slice_started` are appended after the
-  historical documentation events.
+- CurrentIndex: `SPR-001`/`IT-001-002` remain active for the external gate;
+  `SL-001-002-001` is implemented/current; reviews are closed; both final
+  verifications are blocked/current; all repo-correctable findings are resolved.
+- Relations: implementation, every review/finding, and both verification passes
+  are linked to the slice and requirements.
+- Ledger: complete through corrective re-verification and the NOT_READY
+  external-blocker checkpoint.
 
 ## Steering decisions and remaining gate
 
@@ -102,8 +108,8 @@ out of scope. The remaining external gate is:
    partial/missing part of `EMU-BLK-001`–`EMU-BLK-010` in `emuSA80535-N`;
    `EMU-BLK-004` is already satisfied by the current core.
 
-The exact supported VS Code/Node floor must be pinned and proven during package
-and disassembly-UI acceptance, not guessed from the earlier study.
+VS Code floor 1.95.0 and Node CI 22.20.0 are pinned and proven for package
+install/fake-entry smoke. Real disassembly/F5 acceptance remains blocked.
 
 The breakpoint minimum is not open: protocol negotiates
 `maxBreakpoints >= 1`, and Slice-1 acceptance uses exactly one. Emulator
@@ -128,4 +134,4 @@ Marketplace publication remain later scoped decisions.
 The branch is `codex/dap-first-slice`, based on PR #2 branch HEAD `ede8226`.
 PR #2 still targets `main`; the Slice-1 implementation PR must also target
 `main` so its accepted SDP ancestry is visible, and it must not be merged.
-No worker/reviewer agent is intentionally left idle.
+No worker/reviewer/verifier agent is intentionally left open.

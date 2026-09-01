@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-01T03:48:55Z"
+updatedAt: "2026-09-01T03:58:53Z"
 items:
   - id: M-001
     kind: mandate
@@ -609,7 +609,7 @@ items:
   - id: CR-020
     kind: review_finding
     title: CI lacks Windows lane and package install launch smoke
-    status: open
+    status: resolved
     state: current
     doc: SDP/Verification/DAP-SLICE1-VER-001.md
 
@@ -623,14 +623,14 @@ items:
   - id: VER-001-002-002
     kind: verification
     title: Re-verify Slice 1 after AC-010 correction
-    status: in_progress
-    state: target
+    status: blocked
+    state: current
     doc: SDP/Verification/DAP-SLICE1-VER-001.md
 
   - id: CR-021
     kind: review_finding
     title: AC-006 timeout test applies run bound during launch
-    status: open
+    status: resolved
     state: current
     doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
 
