@@ -1,5 +1,6 @@
 # Emulator debug-point protocol extension requirements
 
+**Traceability:** `DP-CAP-001`–`DP-CAP-006` support `R-032`–`R-050`.
 **Status:** DAP consumer requirements pending emulator contract freeze.  
 **Base protocol:** accepted `emu-debug` 1.0 remains unchanged.  
 **Primary emulator authority:** `emuSA80535-N` Issue #14 and its accepted successor wire-integration slice.

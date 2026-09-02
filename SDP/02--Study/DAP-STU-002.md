@@ -1,5 +1,6 @@
 # DAP-STU-002 — Emulator-owned breakpoints, watchpoints and tracepoints
 
+**Traceability:** `S-002` supports `M-001`, `R-032`–`R-055`, and `SPR-002`.
 **State:** Steering rebaseline after accepted DAP Slice 1.  
 **Extends:** `DAP-STU-001`; it does not invalidate the verified Slice-1 design.  
 **Emulator authorities:** `emuSA80535-N` PR #11, PR #12, preserved SLC-017 WIP `356836637d5ff432d91fc508fd55b2f17b45cdb3`, and takeover Issue #14.  

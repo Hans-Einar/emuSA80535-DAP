@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-01T21:26:56Z"
+updatedAt: "2026-09-02T10:16:33Z"
 items:
   - id: M-001
     kind: mandate
@@ -188,6 +188,7 @@ items:
     status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
+    summary: Historical deferred phase classification retained; S-002 and R-032 through R-050 supersede its roadmap phase subject to emulator dependencies.
   - id: R-028
     kind: requirement
     title: Opt-in state mutation
@@ -661,3 +662,278 @@ items:
     status: closed
     state: current
     doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: S-002
+    kind: study
+    title: Emulator-owned debug points and trace integration study
+    status: in_review
+    state: target
+    doc: SDP/02--Study/DAP-STU-002.md
+
+  - id: R-032
+    kind: requirement
+    title: Emulator is sole debug-point semantic owner
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-033
+    kind: requirement
+    title: Optional additive extension preserves Slice 1
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-034
+    kind: requirement
+    title: Truthful DAP data-breakpoint capability
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-035
+    kind: requirement
+    title: Opaque session-owned dataId
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-036
+    kind: requirement
+    title: Atomic DAP-owned watch replacement
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-037
+    kind: requirement
+    title: Safe-boundary data-breakpoint stop
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-038
+    kind: requirement
+    title: Emulator-owned RMW semantics
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-039
+    kind: requirement
+    title: Bounded deterministic conditions
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-040
+    kind: requirement
+    title: Tracepoints never stop execution
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-041
+    kind: requirement
+    title: Emulator-owned bounded trace retention
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-042
+    kind: requirement
+    title: Versioned extension-specific trace controls
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-043
+    kind: requirement
+    title: Non-authoritative bounded DAP console output
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-044
+    kind: requirement
+    title: Lossless bounded non-destructive trace paging
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-045
+    kind: requirement
+    title: Low-volume coalescible trace notifications
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-046
+    kind: requirement
+    title: Emulator-owned sessions routes gates and interrupt policy
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-047
+    kind: requirement
+    title: Backward-compatible instruction breakpoints
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-048
+    kind: requirement
+    title: Fake-real debug-point semantic equivalence
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-049
+    kind: requirement
+    title: Cross-platform lifecycle framing and safety
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-050
+    kind: requirement
+    title: No P1000 hard-coding in debug points
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-051
+    kind: requirement
+    title: Address-preserving memory identities
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-052
+    kind: requirement
+    title: Event-driven logical stack and stepping
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-053
+    kind: requirement
+    title: Source logpoints after source mapping
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-054
+    kind: requirement
+    title: Prohibit arbitrary JavaScript event evaluation
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+  - id: R-055
+    kind: requirement
+    title: Defer file export remote trace and attach
+    status: planned
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-002.md
+
+  - id: A-009
+    kind: architecture
+    title: Emulator-owned debug-point and trace integration boundary
+    status: in_review
+    state: target
+    doc: SDP/04--Architecture/DAP-ARCH-002.md
+
+  - id: D-011
+    kind: design
+    title: DAP frontend design for emulator-owned debug points
+    status: in_review
+    state: target
+    doc: SDP/05--Design/DAP-DES-002.md
+
+  - id: DP-CAP-001
+    kind: interface_requirement
+    title: Stopping watchpoint extension semantics
+    status: planned
+    state: target
+    doc: protocol/EMU_DEBUG_POINTS_EXTENSION_REQUIREMENTS.md
+  - id: DP-CAP-002
+    kind: interface_requirement
+    title: Safe-boundary watch stop result
+    status: planned
+    state: target
+    doc: protocol/EMU_DEBUG_POINTS_EXTENSION_REQUIREMENTS.md
+  - id: DP-CAP-003
+    kind: interface_requirement
+    title: Trace configuration extension semantics
+    status: planned
+    state: target
+    doc: protocol/EMU_DEBUG_POINTS_EXTENSION_REQUIREMENTS.md
+  - id: DP-CAP-004
+    kind: interface_requirement
+    title: Bounded trace retrieval extension semantics
+    status: planned
+    state: target
+    doc: protocol/EMU_DEBUG_POINTS_EXTENSION_REQUIREMENTS.md
+  - id: DP-CAP-005
+    kind: interface_requirement
+    title: Low-volume trace notifications
+    status: planned
+    state: target
+    doc: protocol/EMU_DEBUG_POINTS_EXTENSION_REQUIREMENTS.md
+  - id: DP-CAP-006
+    kind: interface_requirement
+    title: Condition capabilities and limits
+    status: planned
+    state: target
+    doc: protocol/EMU_DEBUG_POINTS_EXTENSION_REQUIREMENTS.md
+
+  - id: RVW-002-000-000
+    kind: review
+    title: Steering debug-point design rebaseline
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-STEERING-REBASELINE-002.md
+
+  - id: SPR-002
+    kind: sprint
+    title: DAP debug-point and trace integration
+    status: planned
+    state: target
+    doc: SDP/Sprints/SPR-002--debug-points-trace-integration/sprint.md
+
+  - id: IT-002-000
+    kind: iteration
+    title: Phase A independent SDP review
+    status: active
+    state: current
+    doc: SDP/Sprints/SPR-002--debug-points-trace-integration/ScrumIterations.md
+
+  - id: SL-002-000-001
+    kind: slice
+    title: Review and reconcile Slice-2 debug-point SDP
+    status: in_review
+    state: target
+    doc: SDP/Sprints/SPR-002--debug-points-trace-integration/ScrumIterations.md
+
+  - id: RVW-002-000-001
+    kind: review
+    title: Independent review of Slice-2 debug-point rebaseline
+    status: in_progress
+    state: target
+    doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
+
+  - id: VER-002-000-001
+    kind: verification
+    title: Verify Phase-A Slice-2 SDP and dependency state
+    status: planned
+    state: target
+    doc: SDP/Verification/DAP-SLICE2-VER-001.md
+
+  - id: IT-002-001
+    kind: iteration
+    title: Candidate Slice-2 product implementation
+    status: planned
+    state: target
+    doc: SDP/Sprints/SPR-002--debug-points-trace-integration/ScrumIterations.md
+
+  - id: SL-002-001-001
+    kind: slice
+    title: Candidate debug-point and trace product slice
+    status: planned
+    state: target
+    doc: SDP/Sprints/SPR-002--debug-points-trace-integration/sprint.md
+
+  - id: DEP-002-001
+    kind: external_dependency
+    title: Accepted emulator Issue 14 runtime facade
+    status: blocked
+    state: target
+    doc: SDP/Sprints/SPR-002--debug-points-trace-integration/Handoff.md
+    summary: Issue 14 and takeover PR 16 are open; no accepted merge commit exists.
+
+  - id: DEP-002-002
+    kind: external_dependency
+    title: Accepted additive emu-debug wire extension
+    status: blocked
+    state: target
+    doc: SDP/Sprints/SPR-002--debug-points-trace-integration/Handoff.md
+    summary: No accepted wire-extension issue, PR, release, or commit exposes CPU producers and safe-boundary watch stops.

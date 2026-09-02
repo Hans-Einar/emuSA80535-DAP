@@ -1,5 +1,6 @@
 # DAP-DES-002 — DAP design for emulator-owned debug points
 
+**Traceability:** `D-011` refines `A-009` for candidate Slice 2.
 **State:** implementation-planning design.  
 **Extends:** `DAP-DES-001`.  
 **Important:** provisional wire names in this document are examples only until the emulator wire-extension contract is accepted.

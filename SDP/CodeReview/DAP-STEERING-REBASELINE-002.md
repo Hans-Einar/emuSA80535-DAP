@@ -1,5 +1,7 @@
 # DAP-STEERING-REBASELINE-002 — Post-Slice-1 debugger model rebaseline
 
+**Traceability:** `RVW-002-000-000` provides Steering design direction for
+`SPR-002`; it is not the independent Phase-A review.
 **Disposition:** ACCEPTED AS STEERING DESIGN DIRECTION; implementation remains dependency-gated.
 
 ## Reason

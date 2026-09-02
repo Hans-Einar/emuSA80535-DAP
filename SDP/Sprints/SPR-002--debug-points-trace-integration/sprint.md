@@ -1,8 +1,15 @@
 # SPR-002 — DAP debug-point and trace integration
 
+**Traceability:** `SPR-002`; pre-implementation review iteration
+`IT-002-000 / SL-002-000-001`; candidate product iteration
+`IT-002-001 / SL-002-001-001`.
+
 ## Status
 
 **PLANNED / dependency-gated. Implementation not started.**
+
+Phase A documentation review is active under Issue #6. This does not activate
+the candidate product iteration or relax any dependency gate.
 
 This sprint consumes the emulator-owned breakpoint/watchpoint/tracepoint runtime after its stable facade and wire extension are independently accepted.
 

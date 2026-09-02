@@ -1,5 +1,6 @@
 # DAP-ARCH-002 — Debug-point and trace integration architecture
 
+**Traceability:** `A-009` realizes `R-032`–`R-050` and constrains `SPR-002`.
 **State:** planned post-Slice-1 architecture.  
 **Extends:** `DAP-ARCH-001` without changing its verified launch/process boundary.
 
