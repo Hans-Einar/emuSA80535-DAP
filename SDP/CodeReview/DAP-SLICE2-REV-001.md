@@ -275,3 +275,230 @@ frontends. The documents need the five corrections above before Phase-A review
 can be accepted. A fresh re-review and independent verification must assess the
 corrected exact HEAD. PR #5 must remain unmerged, Slice 1 remains accepted and
 closed, and `SPR-002` remains planned/dependency-gated.
+
+## Corrective re-review `RVW-002-000-002`
+
+**Disposition:** **ACCEPTED**
+
+### Exact review boundary
+
+- Steering/Master authority: DAP Issue #6, reread in full.
+- Original PR #5 baseline:
+  `6fc619845f159f4ff0fb1b2caa608c9073b58de4`.
+- Original reviewed HEAD and review commit:
+  `4659c7be9b3218880dea205f0f8fcb7284324e92` and
+  `9bf20caea217259b73ed9addf71f2feb1642ae0f`.
+- Review/trace integration parent:
+  `81098bbccfb52da7f8bfbe4e831c34ea63ac3a62`.
+- Exact corrective commit reviewed:
+  `1e83b25bc3c6b6964d1915bc1b7626524f04d31f`.
+- Accepted Slice-1 comparison base:
+  `b1b1c2d55d8379fff74110372c8095e3095920cf`; accepted product commit
+  `36639b48ddb2ffbafa14c00da794fe1734f7483b` remains an ancestor.
+
+This was a fresh independent review, not a continuation by the original
+reviewer. No source document, traceability file, sprint file, product file, or
+wire contract was edited by this reviewer; this section is the only review
+change.
+
+### Official DAP and native VS Code evidence
+
+The normative DAP reference remains Microsoft Debug Adapter Protocol 1.71.0
+at tag/commit `51d95ea4e692b34c5d06601bbd1bebc1ff3fbdd4`:
+
+- https://microsoft.github.io/debug-adapter-protocol/specification
+- https://raw.githubusercontent.com/microsoft/debug-adapter-protocol/v1.71.0/debugAdapterProtocol.json
+
+The schema requires the `name` argument, permits `variablesReference` plus
+`name` for a child variable, makes `supportsDataBreakpoints` the capability
+gate, reserves `bytes`/`asAddress` for `supportsDataBreakpointBytes`, requires
+`dataId` or null plus a description, defines `canPersist` as cross-session
+persistence, replaces the entire data-breakpoint set, returns corresponding
+ordered `Breakpoint` elements, and defines `data breakpoint` plus integer
+`hitBreakpointIds` for a hit. It also explicitly separates the lifetime of a
+discovered `dataId` from an already installed data breakpoint.
+
+Current official VS Code source was also inspected at
+`c3a0ee2b9889e58a2640b16087e91ccbea8e2121`. Its Variables view calls
+`dataBreakpointInfo(variable.name, variable.parent.reference)`, so the accepted
+Slice-1 Registers container can originate exactly the required native request.
+The breakpoint model then stores the returned variable `dataId` and reuses it
+in `setDataBreakpoints`; no custom Add Watchpoint command is needed.
+
+DAP describes a `dataId` discovered through `variablesReference` as valid in
+the current suspended state and separately allows the installed breakpoint to
+outlive that discovery identity. The corrected contract preserves that
+required current-stop validity and deliberately gives this adapter's resolved,
+opaque static-SFR token a bounded stronger acceptance window: current session
+plus target/configuration generation. DAP does not require an adapter to reject
+such an opaque token immediately after resume. This is an adapter guarantee,
+not a portable client assumption or a persistent identity: `canPersist` is
+false, the source Registers handle itself remains stop-epoch-scoped, and
+restart/process/variant/load/reset/disconnect/new-session boundaries invalidate
+the token as documented.
+
+### Finding-by-finding disposition
+
+#### `CR-023` — RESOLVED
+
+The contract now has a real native origin over the existing Slice-1 Registers
+request path. Exact, case-sensitive `A`, `B`, `PSW`, and `SP` children resolve
+to byte-wide SFR targets `0xe0`, `0xf0`, `0xd0`, and `0x81`, respectively,
+with `read`, `write`, and `readWrite`. `PC`, composite `DPTR`, bank-selected
+`R0`-`R7`, unknown/non-exact children, and supported-shape expression/frame or
+address/range origins return `dataId: null`; malformed or stale/foreign
+nonzero handles fail actionably. `supportsDataBreakpointBytes` remains
+false/omitted, the product acceptance begins in the packaged VS Code Variables
+view, and the full memory browser remains outside Slice 2A.
+
+#### `CR-024` — RESOLVED
+
+The corrected requirements, architecture, design, sprint acceptance, and wire
+consumer requirements consistently separate:
+
+- the stop-epoch Registers `variablesReference`;
+- opaque session/target-generation discovery `dataId` with
+  `canPersist: false`;
+- installed positive integer DAP `Breakpoint.id`;
+- public emulator frontend correlation identity;
+- exact accepted emulator configuration revision; and
+- trace cursor/generation/sequence domains.
+
+Resume/new-stop preserves the bounded static-target token and installed watch.
+Restart, process replacement, variant/configuration change, load, reset,
+disconnect, and a new session invalidate discovery tokens conservatively;
+explicit trace clear does not. Token expiry alone never mutates an installed
+watch. Load/reset effects on installed emulator configuration remain deferred
+to the accepted emulator lifecycle result, so these DAP rules do not invent or
+force unaccepted emulator lifecycle semantics.
+
+`setDataBreakpoints` prevalidates the complete input before mutation, rejects
+stale/unsupported/duplicate/conflicting input atomically, preserves the prior
+set/correlation map/ids/revision on failure, and returns one actionable DAP
+`Breakpoint` per input in input order. Successful unchanged normalized watches
+retain their DAP ids; changed/removed watches retire ids without session-local
+reuse. Safe-boundary hits use the standard `stopped.reason = "data breakpoint"`
+and all available public trigger correlation is mapped to installed integer
+`hitBreakpointIds`. No private pointer, C layout, private emulator token, or
+provisional wire name is exposed.
+
+#### `CR-025` — RESOLVED
+
+`SPR-002` remains the planned dependency-gated umbrella, but product execution
+is now split before activation. `IT-002-001 / SL-002-001-001` is a coherent
+thin Slice 2A limited to optional negotiation and one native stopping-watch
+vertical: Registers discovery, DAP replacement/lifecycle, exact accepted
+access/RMW/condition behavior, emulator-owned safe stop and correlation,
+Slice-1 coexistence/absence regression, and per-platform fake/real/package
+proof. It contains no trace configuration, paging, output, notification, view,
+or other rich-trace product work.
+
+`IT-002-002 / SL-002-002-001` separately retains the rich non-stopping trace
+model and is planned, dependency-gated, and unactivated. It may be split again
+before activation. Sprint scope, requirement levels, acceptance criteria,
+handoff, CurrentIndex entries, and relation allocation agree with that split.
+Nonempty `condition`/`hitCondition` text is either compiled only to an exact
+future accepted bounded emulator subset or rejected atomically; it is never
+evaluated against live state in TypeScript/JavaScript.
+
+#### `CR-026` — RESOLVED
+
+`R-027` retains its historical Deferred evidence and a separate
+`contextualized_by S-002` relation. Its machine-readable phase-supersession
+relations now point directly to replacement requirements `R-036` for stopping
+watches and `R-040` for the separately planned trace vertical. The prose,
+CurrentIndex summary, relations, and target/planned states agree.
+
+#### `CR-027` — RESOLVED
+
+Both exact gates pass without output:
+
+- `git diff --check 81098bbccfb52da7f8bfbe4e831c34ea63ac3a62 1e83b25bc3c6b6964d1915bc1b7626524f04d31f`
+- `git diff --check b1b1c2d55d8379fff74110372c8095e3095920cf 1e83b25bc3c6b6964d1915bc1b7626524f04d31f`
+
+No whitespace regression remains.
+
+### Rechecked Issue #6 semantics
+
+| Review concern | Corrective result |
+|---|---|
+| Native data-breakpoint mapping and usable origin | **PASS** |
+| `dataId` opacity/lifecycle and separate installed/correlation identities | **PASS** |
+| Emulator-owned safe-boundary stop and standard DAP reason/correlation | **PASS (dependency-gated)** |
+| Canonical RMW; no adapter synthesis | **PASS (dependency-gated)** |
+| Bounded accepted condition compilation; no JavaScript evaluation | **PASS (dependency-gated)** |
+| Tracepoints remain non-stopping | **PASS (planned Slice 2B only)** |
+| Emulator-owned bounded retention/paging/loss; no DAP firehose | **PASS (planned Slice 2B only)** |
+| Custom trace requests/events only where native DAP lacks semantics | **PASS (planned Slice 2B only)** |
+| Separate Slice-1 CODE, DAP stopping-watch, and rich-trace ownership domains | **PASS (dependency-gated)** |
+| Reset/load/clear and stale identity separation | **PASS (exact emulator result still gated)** |
+| Lossless wide revision/sequence/counter representation | **PASS (dependency-gated)** |
+| Optional-extension absence preserves all Slice-1 behavior | **PASS** |
+| Firmware/P1000/physical-I/O neutrality | **PASS** |
+| Thin coherent first product slice | **PASS** |
+
+All semantics accepted by `RVW-002-000-001` remain intact. Suggested
+`emu.*`/`emuTrace*` names are explicitly future DAP-extension UI/API
+suggestions, not frozen emulator wire names. No exact emulator capability,
+command, event, schema, condition subset, RMW rule, or lifecycle result has
+been invented.
+
+### Mechanical and regression evidence
+
+- The corrective diff from `81098bb...` to `1e83b25...` changes exactly 12
+  documentation/traceability files under `SDP/` and `protocol/`; it changes no
+  adapter, extension, fake, test, script, manifest, package, build, or emulator
+  product path.
+- The complete rebaseline delta from accepted `b1b1c2d...` to `1e83b25...`
+  contains 14 documentation/traceability paths only. The accepted Slice-1
+  product and authority documents are byte-unchanged, PR #4 is merged, and
+  `SPR-001`, `IT-001-002`, `SL-001-002-001`, and
+  `VER-001-002-003` remain verified/current or closed as applicable.
+- All seven repository JSON fences parse. The corrected Slice-2 files add no
+  JSON/NDJSON fence masquerading as a single JSON object.
+- `CurrentIndex.yaml` and `Relations.yaml` parse with `js-yaml`:
+  152 items/152 unique IDs and 383 unique relations, with no duplicate relation
+  or unknown endpoint.
+- All 87 `Ledger.ndjson` lines parse and all 87 event IDs are unique.
+- Local Markdown links have no missing target. The only backtick-named future
+  document not yet present is the explicitly planned
+  `SDP/Verification/DAP-SLICE2-VER-001.md`, which the next independent verifier
+  is expected to create; it is not cited as existing evidence.
+- `npm test` passes: 99 tests, 99 pass, 0 fail/cancel/skip/todo, including the
+  TypeScript build and accepted Slice-1 regression suite.
+
+### Fresh dependency disposition
+
+External GitHub state was re-read rather than inherited from the prior review:
+
+- emulator `master` is exactly
+  `bc86d2633b6057529e6fd1e666896c24d72822aa`;
+- emulator Issue #14 remains **OPEN** with no accepted/READY closure;
+- takeover PR #16 remains **OPEN**, clean, unmerged, and without a recorded
+  GitHub review decision at
+  `1e588d28fb168a7c5a42c4c7dc4b51f84d29d1ed`;
+- PR #11 remains open at
+  `9144567d07ff73e43eb914add5e81fe9717aa980`;
+- PR #12 remains open at
+  `f25e7ebee46f78405bc3ec713724a56401aec8c0`; and
+- the complete current emulator issue/PR/release inventory contains no
+  separately authorized and accepted additive `emu-debug` debug-point wire
+  extension.
+
+PR #16 remains evidence only and explicitly excludes CPU producer hookup,
+safe-boundary CPU stop application, and the `emu-debug` wire extension.
+Consequently Gate A is **NOT SATISFIED** and Gate B is **NOT SATISFIED**. No
+exact Slice-2 wire schema can be frozen and no product/fake implementation is
+authorized.
+
+### Corrective reviewer conclusion
+
+`CR-023` through `CR-027` are resolved by exact corrective commit
+`1e83b25bc3c6b6964d1915bc1b7626524f04d31f`. No new review finding is raised.
+The corrected Phase-A documentation is accepted for independent verification.
+
+PR #5 must remain unmerged pending that fresh verification/Master disposition.
+Slice 1 remains accepted and closed; `SPR-002`, Slice 2A, and Slice 2B remain
+planned and dependency-gated. The current dependency result is:
+
+**`WAITING_FOR_EMULATOR_CONTRACT`**
