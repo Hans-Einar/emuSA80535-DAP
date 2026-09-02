@@ -502,3 +502,105 @@ Slice 1 remains accepted and closed; `SPR-002`, Slice 2A, and Slice 2B remain
 planned and dependency-gated. The current dependency result is:
 
 **`WAITING_FOR_EMULATOR_CONTRACT`**
+
+## Handoff-correction review `RVW-002-000-003`
+
+**Disposition:** **ACCEPTED**
+
+### Exact review boundary
+
+- Steering/Master authority: DAP Issue #6, reread in full on 2026-09-02.
+- Original PR #5 Steering baseline:
+  `6fc619845f159f4ff0fb1b2caa608c9073b58de4`.
+- Accepted corrective Phase-A review:
+  `c8a387df6a99279816d5856f1c2c9170128fe672`.
+- Failed Phase-A verification report commit and its exact verified HEAD:
+  `92b7d3843b592644500c4041d8b808c180241de2` and
+  `f20e10f348a5923f3731383f30055839279400da`.
+- Review/verification integration parent:
+  `f206d9f654a1c504ec7ccf11469c1a08aa5db48e`.
+- Exact one-file corrective commit reviewed:
+  `56eb23c3690b27fe9046cf1915ea6edfd04bde35`.
+
+This was a fresh independent review limited to the bounded `CR-028` Handoff
+correction. No sprint, traceability, product, protocol, fake, test, issue, PR,
+or emulator source was edited by this reviewer; this appended section is the
+only review change.
+
+### `CR-028` disposition
+
+**RESOLVED FOR REVIEW.** The correction removes the false claim that
+`RVW-002-000-002` is pending and that `CR-023` through `CR-027` remain open.
+It now states the accepted review commit exactly, records those five findings
+as resolved, and records that no new review finding was raised.
+
+The replacement paragraph also represents `VER-002-000-001` accurately: every
+other semantic, mechanical, regression, scope, traceability, and dependency
+check passed, but the stale Handoff contradiction caused `PHASE_A_FAIL` and
+raised `CR-028`. The Handoff correctly leaves `CR-028` open/in-progress at the
+pre-review correction checkpoint and requires this fresh review followed by
+fresh `VER-002-000-002`. After this accepted review is integrated, the next
+independent action is therefore `VER-002-000-002`; Master remains responsible
+for updating the machine trace and Handoff current-state wording around that
+transition.
+
+No new finding is raised.
+
+### Scope, consistency, and mechanical checks
+
+- The parent relationship is exact:
+  `56eb23c3690b27fe9046cf1915ea6edfd04bde35^` resolves to
+  `f206d9f654a1c504ec7ccf11469c1a08aa5db48e`.
+- The complete corrective diff changes exactly
+  `SDP/Sprints/SPR-002--debug-points-trace-integration/Handoff.md`, with 16
+  insertions and 8 deletions. `git diff --check` reports no diagnostic.
+- The diff changes current review/verification status and next-action prose
+  only. It does not alter any debug-point semantic, DAP mapping, acceptance
+  criterion, traceability relation, dependency identity, emulator wire
+  capability/command/event/schema, source, fake, test, or product path.
+- The corrected Handoff is internally consistent with `ScrumIterations.md`,
+  `implementationNotes.md`, `CurrentIndex.yaml`, `Relations.yaml`, ledger
+  events `LE-000088` through `LE-000091`, the accepted corrective review, and
+  the failed verification report.
+- Slice 1 remains accepted and closed: `SPR-001` and
+  `SL-001-002-001` remain verified/current, `IT-001-002` remains
+  closed/current, and `VER-001-002-003` remains verified/current.
+- `SPR-002`, `IT-002-001 / SL-002-001-001` (Slice 2A), and
+  `IT-002-002 / SL-002-002-001` (Slice 2B) remain planned, target,
+  dependency-gated, and not activated. The documentation-only Phase-A
+  iteration remains the sole active SPR-002 work.
+- No Slice-2 product code or fake implementation has started, no provisional
+  emulator wire name has been introduced, and the frozen `emu-debug` 1.0
+  contract remains unchanged.
+
+### Fresh dependency disposition
+
+Live emulator state was re-read on 2026-09-02:
+
+- emulator `master` remains exactly
+  `bc86d2633b6057529e6fd1e666896c24d72822aa`;
+- emulator Issue #14 remains **OPEN** with no READY/accepted closure;
+- takeover PR #16 remains **OPEN**, clean, mergeable, unmerged, and without a
+  recorded review decision at
+  `1e588d28fb168a7c5a42c4c7dc4b51f84d29d1ed`; and
+- the current emulator issue/PR inventory still contains no separately
+  authorized and accepted additive `emu-debug` debug-point wire extension.
+
+PR #16 still explicitly excludes CPU producer hookup, safe-boundary CPU stop
+application, and wire exposure. Gate A is therefore **NOT SATISFIED**, and
+Gate B is **NOT SATISFIED**. No exact Slice-2 emulator capability, command,
+event, schema, condition subset, RMW rule, lifecycle result, or paging schema
+is frozen, and no product activation is authorized.
+
+### Reviewer conclusion
+
+Exact corrective commit `56eb23c3690b27fe9046cf1915ea6edfd04bde35`
+resolves the bounded Handoff defect `CR-028` for review with no new finding.
+The corrected exact integrated HEAD is accepted for fresh independent
+`VER-002-000-002`.
+
+PR #5 must remain open and unmerged until that verification and Master
+disposition. Slice 1 remains accepted/closed, and `SPR-002`, Slice 2A, and
+Slice 2B remain planned/dependency-gated. The dependency disposition remains:
+
+**`WAITING_FOR_EMULATOR_CONTRACT`**
