@@ -24,10 +24,9 @@ Current dependency evidence:
 
 ## DAP Codex next action
 
-A fresh reviewer completes `RVW-002-000-001` against the fourteen Issue #6
-review points. A separate correction worker handles findings, then a fresh
-verifier checks documentation scope/traceability/dependencies. Do not reconcile
-to exact wire names until Gate B supplies accepted names.
+A fresh correction worker addresses only `CR-023`–`CR-027`, followed by fresh
+`RVW-002-000-002` and `VER-002-000-001`. Do not reconcile to exact wire names
+until Gate B supplies accepted names, and do not activate product work.
 
 Only after Steering activates Slice 2 should it implement `SPR-002`.
 

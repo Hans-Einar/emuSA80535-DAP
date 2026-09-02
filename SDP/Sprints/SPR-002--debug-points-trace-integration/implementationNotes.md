@@ -13,3 +13,8 @@ review, correction, traceability reconciliation, and verification.
 
 Gate A and Gate B are both unsatisfied at activation. The expected Phase-A
 checkpoint is `WAITING_FOR_EMULATOR_CONTRACT`, not product readiness.
+
+Fresh `RVW-002-000-001` returned CHANGES_REQUIRED with `CR-023`–`CR-027`:
+native watchable origin, DAP data identity lifecycle/correlation, product-slice
+width, R-027 supersession linkage, and whitespace. No product or wire work was
+performed. A fresh correction worker and re-review are required.

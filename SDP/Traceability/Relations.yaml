@@ -331,6 +331,28 @@ relations:
   - { from: R-048, type: allocated_to, to: SPR-002 }
   - { from: R-049, type: allocated_to, to: SPR-002 }
   - { from: R-050, type: allocated_to, to: SPR-002 }
+  - { from: RVW-002-000-001, type: raises, to: CR-023 }
+  - { from: RVW-002-000-001, type: raises, to: CR-024 }
+  - { from: RVW-002-000-001, type: raises, to: CR-025 }
+  - { from: RVW-002-000-001, type: raises, to: CR-026 }
+  - { from: RVW-002-000-001, type: raises, to: CR-027 }
+  - { from: CR-023, type: blocks, to: SL-002-000-001 }
+  - { from: CR-024, type: blocks, to: SL-002-000-001 }
+  - { from: CR-025, type: blocks, to: SL-002-000-001 }
+  - { from: CR-026, type: concerns, to: SL-002-000-001 }
+  - { from: CR-027, type: concerns, to: SL-002-000-001 }
+  - { from: CR-023, type: concerns, to: R-035 }
+  - { from: CR-023, type: concerns, to: R-051 }
+  - { from: CR-024, type: concerns, to: R-035 }
+  - { from: CR-024, type: concerns, to: R-037 }
+  - { from: CR-025, type: concerns, to: SPR-002 }
+  - { from: CR-026, type: concerns, to: R-027 }
+  - { from: SL-002-000-001, type: addresses, to: CR-023 }
+  - { from: SL-002-000-001, type: addresses, to: CR-024 }
+  - { from: SL-002-000-001, type: addresses, to: CR-025 }
+  - { from: SL-002-000-001, type: addresses, to: CR-026 }
+  - { from: SL-002-000-001, type: addresses, to: CR-027 }
+  - { from: SL-002-000-001, type: reviewed_by, to: RVW-002-000-002 }
 
   - { from: VER-001-001-001, type: raises, to: CR-008 }
   - { from: CR-008, type: concerns, to: S-001 }

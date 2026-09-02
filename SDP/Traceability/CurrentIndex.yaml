@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-02T10:16:33Z"
+updatedAt: "2026-09-02T10:36:35Z"
 items:
   - id: M-001
     kind: mandate
@@ -890,15 +890,15 @@ items:
   - id: SL-002-000-001
     kind: slice
     title: Review and reconcile Slice-2 debug-point SDP
-    status: in_review
+    status: in_progress
     state: target
     doc: SDP/Sprints/SPR-002--debug-points-trace-integration/ScrumIterations.md
 
   - id: RVW-002-000-001
     kind: review
     title: Independent review of Slice-2 debug-point rebaseline
-    status: in_progress
-    state: target
+    status: closed
+    state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: VER-002-000-001
@@ -928,7 +928,7 @@ items:
     status: blocked
     state: target
     doc: SDP/Sprints/SPR-002--debug-points-trace-integration/Handoff.md
-    summary: Issue 14 and takeover PR 16 are open; no accepted merge commit exists.
+    summary: Issue 14 and takeover PR 16 at 1e588d28 are open; no accepted merge commit exists. Emulator master observed at bc86d263.
 
   - id: DEP-002-002
     kind: external_dependency
@@ -937,3 +937,45 @@ items:
     state: target
     doc: SDP/Sprints/SPR-002--debug-points-trace-integration/Handoff.md
     summary: No accepted wire-extension issue, PR, release, or commit exposes CPU producers and safe-boundary watch stops.
+
+  - id: CR-023
+    kind: review_finding
+    title: Native dataBreakpointInfo lacks a concrete watchable origin
+    status: open
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
+
+  - id: CR-024
+    kind: review_finding
+    title: DAP data identity lifecycle and correlation are incomplete
+    status: open
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
+
+  - id: CR-025
+    kind: review_finding
+    title: Candidate Slice 2 combines too much trace and watch scope
+    status: open
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
+
+  - id: CR-026
+    kind: review_finding
+    title: R-027 phase supersession points to study rather than requirements
+    status: open
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
+
+  - id: CR-027
+    kind: review_finding
+    title: Phase-A documentation has trailing whitespace
+    status: open
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
+
+  - id: RVW-002-000-002
+    kind: review
+    title: Corrective re-review of Slice-2 debug-point SDP
+    status: planned
+    state: target
+    doc: SDP/CodeReview/DAP-SLICE2-REV-001.md

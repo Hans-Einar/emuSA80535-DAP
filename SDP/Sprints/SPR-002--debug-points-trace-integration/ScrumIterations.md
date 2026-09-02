@@ -71,3 +71,30 @@ accepted.
 Implementation requires accepted Gates A and B, exact wire names reconciled
 into the DAP authority, fake/real contract parity, and a separate Steering
 activation. Phase A authorizes no product code.
+
+### Independent review `RVW-002-000-001`
+
+**Reviewed HEAD:** `4659c7be9b3218880dea205f0f8fcb7284324e92`
+
+**Review commit:** `9bf20caea217259b73ed9addf71f2feb1642ae0f`
+
+**Disposition:** **CHANGES_REQUIRED**
+
+The fresh reviewer accepted the central emulator-ownership, safe-stop, RMW
+non-synthesis, bounded-condition, non-stopping trace, paging/backpressure,
+custom-surface, ownership-domain, uint64, optional-absence, neutrality, and
+non-wire-name direction. Five documentation findings remain:
+
+- `CR-023` HIGH — no concrete native `dataBreakpointInfo` origin exists while
+  address-preserving watchable identities remain only near-term `R-051`.
+- `CR-024` HIGH — `dataId`, `canPersist`, stale identity, installed breakpoint
+  identity, and stop correlation are not normatively separated per DAP 1.71.
+- `CR-025` HIGH — candidate product Slice 2 is too broad; the stopping-watch
+  vertical must be separated from rich trace/session/route/gate/paging/UI work.
+- `CR-026` MEDIUM — machine traceability points R-027 phase supersession to the
+  study rather than replacement requirements authority.
+- `CR-027` LOW — ten trailing-whitespace diff-check failures.
+
+A fresh corrective documentation worker addresses only these findings. Fresh
+`RVW-002-000-002` must accept the correction before Phase-A verification.
+Product `IT-002-001 / SL-002-001-001` remains planned and dependency-gated.
