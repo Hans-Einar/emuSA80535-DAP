@@ -391,6 +391,11 @@ relations:
   - { from: SL-002-000-001, type: addresses, to: CR-026 }
   - { from: SL-002-000-001, type: addresses, to: CR-027 }
   - { from: SL-002-000-001, type: reviewed_by, to: RVW-002-000-002 }
+  - { from: RVW-002-000-002, type: resolves, to: CR-023 }
+  - { from: RVW-002-000-002, type: resolves, to: CR-024 }
+  - { from: RVW-002-000-002, type: resolves, to: CR-025 }
+  - { from: RVW-002-000-002, type: resolves, to: CR-026 }
+  - { from: RVW-002-000-002, type: resolves, to: CR-027 }
 
   - { from: VER-001-001-001, type: raises, to: CR-008 }
   - { from: CR-008, type: concerns, to: S-001 }

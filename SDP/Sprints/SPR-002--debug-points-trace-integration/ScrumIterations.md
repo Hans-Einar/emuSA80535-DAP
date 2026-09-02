@@ -119,3 +119,27 @@ non-wire-name direction. Five documentation findings remain:
 A fresh corrective documentation worker addresses only these findings. Fresh
 `RVW-002-000-002` must accept the correction before Phase-A verification.
 Both product iterations remain planned and dependency-gated.
+
+### Corrective re-review `RVW-002-000-002`
+
+**Reviewed correction:** `1e83b25bc3c6b6964d1915bc1b7626524f04d31f`
+
+**Review commit:** `c8a387df6a99279816d5856f1c2c9170128fe672`
+
+**Disposition:** **ACCEPTED; no blocking Phase-A finding remains**
+
+The fresh reviewer independently confirmed the A/B/PSW/SP native SFR origin,
+opaque `canPersist:false` data discovery token, separate installed breakpoint /
+emulator correlation / revision identities, atomic stale-token behavior,
+watch-only Slice 2A, separately planned rich-trace Slice 2B, R-027 supersession
+to R-036/R-040, and clean diff. `CR-023`–`CR-027` are resolved with no new
+finding.
+
+DAP 1.71's current-suspended-state wording remains the portable client
+guarantee. Any bounded internal token acceptance beyond a resume is explicitly
+an adapter implementation guarantee within the same session/target generation,
+not persistence advertised to the client; `canPersist:false` and lifecycle
+invalidation prevent cross-session or structurally stale reuse.
+
+Phase-A verification may proceed. Product Slice 2A/2B remain unactivated and
+dependency-gated.

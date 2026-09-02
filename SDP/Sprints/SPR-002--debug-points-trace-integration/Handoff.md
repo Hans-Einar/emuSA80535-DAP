@@ -41,10 +41,10 @@ Both remain under `SPR-002` and dependency-gated.
 
 ## DAP Codex next action
 
-Run fresh `RVW-002-000-002` on the corrective documentation commit, then
-`VER-002-000-001`. Do not mark `CR-023`–`CR-027` resolved before those
-independent dispositions. Do not reconcile to exact wire names until Gate B
-supplies accepted names, and do not activate product work.
+Run fresh `VER-002-000-001` on the accepted corrective documentation: exact
+semantics, traceability, Slice-1 preservation, docs-only scope, PR #5 state,
+and current Gate A/B evidence. Do not reconcile to exact wire names until Gate
+B supplies accepted names, and do not activate product work.
 
 Only after Steering activates Slice 2 should it implement `SPR-002`.
 

@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-02T10:52:08Z"
+updatedAt: "2026-09-02T11:17:47Z"
 items:
   - id: M-001
     kind: mandate
@@ -666,8 +666,8 @@ items:
   - id: S-002
     kind: study
     title: Emulator-owned debug points and trace integration study
-    status: in_review
-    state: target
+    status: implemented
+    state: current
     doc: SDP/02--Study/DAP-STU-002.md
 
   - id: R-032
@@ -818,15 +818,15 @@ items:
   - id: A-009
     kind: architecture
     title: Emulator-owned debug-point and trace integration boundary
-    status: in_review
-    state: target
+    status: implemented
+    state: current
     doc: SDP/04--Architecture/DAP-ARCH-002.md
 
   - id: D-011
     kind: design
     title: DAP frontend design for emulator-owned debug points
-    status: in_review
-    state: target
+    status: implemented
+    state: current
     doc: SDP/05--Design/DAP-DES-002.md
 
   - id: DP-CAP-001
@@ -890,8 +890,8 @@ items:
   - id: SL-002-000-001
     kind: slice
     title: Review and reconcile Slice-2 debug-point SDP
-    status: in_progress
-    state: target
+    status: implemented
+    state: current
     doc: SDP/Sprints/SPR-002--debug-points-trace-integration/ScrumIterations.md
 
   - id: RVW-002-000-001
@@ -904,7 +904,7 @@ items:
   - id: VER-002-000-001
     kind: verification
     title: Verify Phase-A Slice-2 SDP and dependency state
-    status: planned
+    status: in_progress
     state: target
     doc: SDP/Verification/DAP-SLICE2-VER-001.md
 
@@ -955,41 +955,41 @@ items:
   - id: CR-023
     kind: review_finding
     title: Native dataBreakpointInfo lacks a concrete watchable origin
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: CR-024
     kind: review_finding
     title: DAP data identity lifecycle and correlation are incomplete
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: CR-025
     kind: review_finding
     title: Candidate Slice 2 combines too much trace and watch scope
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: CR-026
     kind: review_finding
     title: R-027 phase supersession points to study rather than requirements
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: CR-027
     kind: review_finding
     title: Phase-A documentation has trailing whitespace
-    status: in_progress
+    status: resolved
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: RVW-002-000-002
     kind: review
     title: Corrective re-review of Slice-2 debug-point SDP
-    status: planned
-    state: target
+    status: closed
+    state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
