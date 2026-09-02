@@ -143,3 +143,21 @@ invalidation prevent cross-session or structurally stale reuse.
 
 Phase-A verification may proceed. Product Slice 2A/2B remain unactivated and
 dependency-gated.
+
+### Phase-A verification `VER-002-000-001`
+
+**Verified HEAD:** `f20e10f348a5923f3731383f30055839279400da`
+
+**Verification commit:** `92b7d3843b592644500c4041d8b808c180241de2`
+
+**Disposition:** **PHASE_A_FAIL**
+
+All fourteen semantic checks, DAP 1.71 mapping, JSON/YAML/NDJSON/traceability,
+99/99 Slice-1 regression, docs-only scope, product/authority blob preservation,
+and live dependency classification passed. One handoff inconsistency remains:
+lines 12–16 still say `RVW-002-000-002` is pending and `CR-023`–`CR-027` are
+open despite the accepted review and resolved registry state.
+
+`CR-028` requires a one-file Handoff correction, fresh
+`RVW-002-000-003`, and fresh `VER-002-000-002`. Gates A and B remain blocked;
+product slices remain planned/unactivated.

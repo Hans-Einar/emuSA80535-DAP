@@ -48,3 +48,7 @@ still planned/dependency-gated and the expected external disposition remains
 Fresh `RVW-002-000-002` accepted corrective commit `1e83b25…`, resolved
 `CR-023`–`CR-027`, and raised no new finding. Phase-A verification is active;
 both product slices remain planned/dependency-gated.
+
+`VER-002-000-001` passed every substantive semantic/mechanical/dependency check
+but failed Phase A on stale Handoff status text. `CR-028` captures the bounded
+one-file consistency correction; no product or contract state changes.

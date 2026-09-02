@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-02T11:17:47Z"
+updatedAt: "2026-09-02T11:41:17Z"
 items:
   - id: M-001
     kind: mandate
@@ -904,8 +904,8 @@ items:
   - id: VER-002-000-001
     kind: verification
     title: Verify Phase-A Slice-2 SDP and dependency state
-    status: in_progress
-    state: target
+    status: blocked
+    state: current
     doc: SDP/Verification/DAP-SLICE2-VER-001.md
 
   - id: IT-002-001
@@ -993,3 +993,24 @@ items:
     status: closed
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
+
+  - id: CR-028
+    kind: review_finding
+    title: Phase-A Handoff retains stale review and finding status
+    status: open
+    state: current
+    doc: SDP/Verification/DAP-SLICE2-VER-001.md
+
+  - id: RVW-002-000-003
+    kind: review
+    title: Review Phase-A Handoff consistency correction
+    status: planned
+    state: target
+    doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
+
+  - id: VER-002-000-002
+    kind: verification
+    title: Re-verify Phase-A Slice-2 SDP after Handoff correction
+    status: planned
+    state: target
+    doc: SDP/Verification/DAP-SLICE2-VER-001.md
