@@ -1,8 +1,8 @@
 # Emulator debug-point protocol extension requirements
 
-**Traceability:** `DP-CAP-001`–`DP-CAP-006` support `R-032`–`R-050`.
-**Status:** DAP consumer requirements pending emulator contract freeze.  
-**Base protocol:** accepted `emu-debug` 1.0 remains unchanged.  
+**Traceability:** `DP-CAP-001`–`DP-CAP-006` support `R-032`–`R-051`.
+**Status:** DAP consumer requirements pending emulator contract freeze.
+**Base protocol:** accepted `emu-debug` 1.0 remains unchanged.
 **Primary emulator authority:** `emuSA80535-N` Issue #14 and its accepted successor wire-integration slice.
 
 ## Compatibility rule
@@ -19,24 +19,30 @@ Absence of this optional extension must not break existing Slice-1 `emu-debug` 1
 
 The wire extension shall support bounded atomic configuration of stopping watchpoints using the accepted emulator point/watch model.
 
-It must represent at minimum:
+It must represent at minimum, without prescribing wire field or command names:
 
-- stable point/watch identity;
+- a public frontend correlation identity distinct from private emulator identity;
 - enabled state;
 - canonical event/address-space selector;
 - inclusive address/range where supported;
 - access kind including architectural RMW semantics;
 - bounded deterministic condition form;
 - stop action;
-- accepted/rejected results and configuration revision.
+- one accepted/rejected result per proposed watch in request order and an exact configuration revision.
 
-Replacement/ownership rules must distinguish DAP-owned data breakpoints from richer trace/watch configurations so one frontend update cannot silently delete another configuration domain.
+Replacement/ownership rules must distinguish DAP-owned data breakpoints from
+richer trace/watch configurations so one frontend update cannot silently
+delete another configuration domain. A rejected replacement is atomic and
+leaves the prior DAP-owned set, public correlation identities, and revision
+unchanged.
 
 ### DP-CAP-002 — safe-boundary stop result
 
 When a stopping watch matches, the emulator shall apply the stop request at the accepted next safe execution boundary and return an atomic stopped snapshot plus bounded trigger metadata.
 
-Trigger metadata should include, when known:
+Trigger metadata must carry the public frontend correlation identity for each
+matched stopping watch so the adapter can map it to a DAP `Breakpoint.id`.
+Bounded metadata should additionally include, when known:
 
 - watch/point id;
 - canonical source event sequence;
@@ -45,7 +51,7 @@ Trigger metadata should include, when known:
 - old/new known/value fields;
 - generation/session identity needed for correlation.
 
-The adapter maps this to DAP `data breakpoint`; the emulator does not emit DAP vocabulary.
+The adapter maps this to DAP `data breakpoint` and `hitBreakpointIds`; the emulator does not emit DAP vocabulary.
 
 ### DP-CAP-003 — trace configuration
 
@@ -94,26 +100,36 @@ The DAP adapter consumes these semantics as data. It shall not infer missing can
 
 Reset/load/clear semantics must follow the accepted debugger runtime contract, including configuration preservation/invalidation, generation/sequence behavior and CODE-selector invalidation.
 
-The extension must define which debug-point identities remain valid after reset/load and how configuration revisions change. The DAP adapter must invalidate stale `dataId`/point mappings when required by that contract.
+The extension must define which public correlation identities and installed
+debug-point configurations remain valid after reset/load and how configuration
+revisions change. This emulator lifecycle identity is separate from the
+adapter's opaque discovery `dataId`. Until exact lifecycle behavior is
+accepted, the adapter invalidates outstanding discovery tokens on reset/load
+by advancing its target generation, but token expiry alone must not silently
+mutate an installed emulator watch set. Explicit trace clear must not alter the
+DAP-owned stopping-watch domain.
 
 ## Base breakpoint compatibility
 
 Existing `replaceCodeBreakpoints` remains supported by the accepted 1.0 base. The emulator may internally implement it using the common debug-point engine, but the wire extension shall not require a DAP-side migration of existing instruction-breakpoint configuration.
 
-## Required process verification
+## Required process verification by product slice
 
-The accepted emulator implementation must include Linux and Windows process-level tests for:
+Before Slice 2A activation/acceptance, the accepted emulator implementation must include Linux and Windows process-level tests for:
 
 - optional capability negotiation;
-- atomic point/trace mutation;
+- atomic stopping-watch mutation and ordered public correlation results;
 - stopping watchpoint safe-boundary result;
-- trace non-stop execution;
-- bounded page retrieval and loss reporting;
 - malformed/oversized configuration rejection;
-- lifecycle reset/load/clear behavior;
+- stopping-watch lifecycle reset/load behavior;
 - coexistence with existing CODE breakpoint configuration;
 - stdout protocol isolation and cleanup/no orphan process;
 - no physical host-I/O side effect.
+
+Before the later Slice 2B acceptance, process tests additionally cover atomic
+trace mutation, trace non-stop execution, bounded page retrieval/loss,
+trace clear, routing/gates/interrupt policy, notifications, and exact wide
+sequence/revision consumption.
 
 ## DAP acceptance dependency
 

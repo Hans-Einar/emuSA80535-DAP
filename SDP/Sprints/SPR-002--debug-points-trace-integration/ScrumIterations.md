@@ -35,7 +35,8 @@ Slice-2 activation.
 
 **Traceability:** `M-001`, `S-002`, `R-027`, `R-032`–`R-055`, `A-009`,
 `D-011`, `DP-CAP-001`–`DP-CAP-006`, `RVW-002-000-000`, `SPR-002`,
-`IT-002-000`, `SL-002-000-001`, `RVW-002-000-001`, and
+`IT-002-000`, `SL-002-000-001`, `RVW-002-000-001`,
+`IT-002-001`, `SL-002-001-001`, `IT-002-002`, `SL-002-002-001`, and
 `VER-002-000-001`.
 
 **Required review:** challenge all fourteen Issue #6 review points, exact DAP
@@ -62,15 +63,35 @@ accepted.
 - Preserved WIP `356836637d5ff432d91fc508fd55b2f17b45cdb3` and PRs #11/#12
   are inputs, not accepted external contracts.
 
-## IT-002-001 — Candidate Slice-2 product implementation
+## IT-002-001 — Candidate stopping-watchpoint product implementation
 
 **State:** Planned / dependency-gated / not activated
 
-**Slice:** `SL-002-001-001`
+**Slice:** `SL-002-001-001` — thin native stopping-watchpoint vertical
 
 Implementation requires accepted Gates A and B, exact wire names reconciled
 into the DAP authority, fake/real contract parity, and a separate Steering
 activation. Phase A authorizes no product code.
+
+Bounded scope: optional negotiation; existing Registers-origin `A/B/PSW/SP`
+identity; native `dataBreakpointInfo`/`setDataBreakpoints`; session/generation
+token and installed-breakpoint lifecycle; exact access/RMW semantics;
+safe-boundary stop and public trigger correlation; atomic rollback; exact
+accepted bounded condition subset or rejection of unsupported/nonempty forms;
+optional-absence/Slice-1 regression; and Linux/Windows fake-real/package/native
+VS Code evidence. It contains no trace controls, paging, output, notification,
+or UI product work.
+
+## IT-002-002 — Planned rich non-stopping trace product implementation
+
+**State:** Planned / dependency-gated / not activated
+
+**Slice:** `SL-002-002-001` — tracepoints/sessions/routes/gates/paging/output/UI
+
+This later iteration preserves the emulator-owned rich trace model and may be
+split further before activation. It requires accepted Gates A and B, exact
+wire reconciliation, and separate Steering activation. It does not form part
+of the thin stopping-watchpoint Slice 2A contract.
 
 ### Independent review `RVW-002-000-001`
 
@@ -97,4 +118,4 @@ non-wire-name direction. Five documentation findings remain:
 
 A fresh corrective documentation worker addresses only these findings. Fresh
 `RVW-002-000-002` must accept the correction before Phase-A verification.
-Product `IT-002-001 / SL-002-001-001` remains planned and dependency-gated.
+Both product iterations remain planned and dependency-gated.

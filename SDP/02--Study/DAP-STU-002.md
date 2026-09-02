@@ -1,9 +1,9 @@
 # DAP-STU-002 — Emulator-owned breakpoints, watchpoints and tracepoints
 
 **Traceability:** `S-002` supports `M-001`, `R-032`–`R-055`, and `SPR-002`.
-**State:** Steering rebaseline after accepted DAP Slice 1.  
-**Extends:** `DAP-STU-001`; it does not invalidate the verified Slice-1 design.  
-**Emulator authorities:** `emuSA80535-N` PR #11, PR #12, preserved SLC-017 WIP `356836637d5ff432d91fc508fd55b2f17b45cdb3`, and takeover Issue #14.  
+**State:** Steering rebaseline after accepted DAP Slice 1.
+**Extends:** `DAP-STU-001`; it does not invalidate the verified Slice-1 design.
+**Emulator authorities:** `emuSA80535-N` PR #11, PR #12, preserved SLC-017 WIP `356836637d5ff432d91fc508fd55b2f17b45cdb3`, and takeover Issue #14.
 **DAP baseline:** Slice 1 merged through PR #4.
 
 ## Executive decision
@@ -40,7 +40,33 @@ Sources:
 
 DAP data breakpoints are the preferred standard frontend for stopping watchpoints.
 
-The adapter shall treat `dataId` as opaque session-owned identity. It must not expose emulator pointers or depend on retained C structure layout. A data breakpoint maps to one emulator watchpoint configuration with a stable adapter-side correlation id.
+The accepted Slice-1 Registers scope supplies the first concrete native origin
+without requiring a full memory browser. While stopped, VS Code may issue
+`dataBreakpointInfo` with the current Registers `variablesReference` and the
+exact child name `A`, `B`, `PSW`, or `SP`. Those four byte-wide children have
+stable SFR identities (`0xe0`, `0xf0`, `0xd0`, and `0x81`, respectively). `PC`
+is not an SFR data target; `DPTR` is a composite; and `R0`–`R7` are selected by
+the current register bank. They therefore return `dataId: null`, as do
+aggregate, dynamic, unknown, or other children without one exact identity.
+The adapter does not guess an address from a displayed value.
+
+The adapter shall treat `dataId` as an opaque discovery token. It must not
+expose emulator pointers, private identities, or retained C structure layout.
+The token is valid only in the current debug session and target/configuration
+generation and reports `canPersist: false`. The current Registers
+`variablesReference` used to discover it is still a stop-epoch handle, but the
+resolved token is not keyed by a stop epoch. Resume/new-stop alone does not
+change the static SFR identity or target generation. Restart, process
+replacement, debuggee-variant change, load, and reset invalidate outstanding
+tokens conservatively until an accepted emulator lifecycle contract permits a
+narrower rule. A stale or foreign token rejects the complete proposed
+replacement before emulator mutation.
+
+Discovery identity, installed-breakpoint identity, and runtime trigger
+identity are distinct. After a successful `setDataBreakpoints`, the adapter
+owns a positive integer DAP `Breakpoint.id`, while the emulator owns a public
+correlation identity and configuration revision. Expiring a source `dataId`
+does not by itself delete or rewrite an already installed watch configuration.
 
 DAP `accessType` maps to the emulator access model where valid:
 
@@ -56,16 +82,13 @@ A matched stopping watchpoint completes the responsible instruction/machine cycl
 
 DAP condition strings are not authority to add arbitrary expression evaluation inside the emulator. The emulator design intentionally uses a bounded deterministic condition language.
 
-The adapter may compile a reviewed subset of DAP condition text into the emulator's bounded condition bytecode. Unsupported syntax must be rejected clearly rather than evaluated in JavaScript against live emulator state.
-
-Initial recommended subset:
-
-- scalar equality/inequality and ordered comparisons;
-- bit-mask any/all operations;
-- boolean `and`, `or`, `not`;
-- canonical fields such as old/new value and known flags.
-
-DAP `hitCondition` should initially support only explicitly documented deterministic forms. Advanced `changeOnly`, `bitMask`, skip/hit-limit and multi-event selectors remain available through the richer emulator-specific point configuration.
+The adapter may compile only an exact reviewed subset of DAP condition text
+that the accepted emulator wire contract exposes. No subset is frozen by this
+DAP planning document. Until the accepted contract names that subset, every
+non-empty `condition` or `hitCondition` is rejected clearly and atomically
+rather than evaluated in JavaScript against live emulator state. Advanced
+change-only, mask, skip/hit-limit, and multi-event behavior remains
+emulator-owned and can be exposed only through an accepted frontend mapping.
 
 ## Tracepoint mapping
 
@@ -128,18 +151,24 @@ Gate C — DAP integration:
 - the DAP adapter implements the negotiated extension without changing the frozen 1.0 base behavior;
 - fake and real emulator suites agree on point/watch/trace semantics.
 
-## Recommended next DAP slice
+## Recommended product slices
 
-The next DAP slice should focus on **debug points and trace integration**, not full memory browsing.
+`SPR-002` remains the planned dependency-gated umbrella, but product work is
+split before activation.
 
-Minimum useful vertical scope:
+The first product vertical, `IT-002-001 / SL-002-001-001` (Slice 2A), contains
+only optional negotiation and native stopping data breakpoints over the exact
+Slice-1 register origins above. It covers discovery-token lifecycle, atomic
+replacement, access/RMW mapping, safe-boundary stop/correlation, optional
+absence, Slice-1 regression, and fake/real packaged acceptance on Linux and
+Windows. It implements no trace UI or trace transport.
 
-- negotiate the new emulator debug-point capability;
-- native DAP data-breakpoint support for stopping watchpoints;
-- watchpoint stop details and safe-boundary semantics;
-- extension custom requests for tracepoint/session/gate configuration;
-- bounded trace-ring paging and console output;
-- low-volume custom trace status/availability events;
-- fake-vs-real equivalence tests on Linux/Windows.
+The separately planned and unactivated `IT-002-002 / SL-002-002-001` (Slice
+2B) consumes the same emulator-owned model for rich non-stopping tracepoints,
+sessions, routes, gates, interrupt policies, bounded paging, output,
+notifications, and extension UI. That later slice may be decomposed again when
+the accepted wire surface makes an even thinner vertical possible.
 
-Full SFR/IRAM/XDATA memory views, arbitrary evaluate expressions, source maps and logical call/IRQ stack remain later slices unless a narrow dependency is demonstrated.
+Full SFR/IRAM/XDATA memory views remain near-term after the four minimal SFR
+origins. Arbitrary evaluate expressions, source maps, and the logical call/IRQ
+stack also remain later work unless separately authorized.

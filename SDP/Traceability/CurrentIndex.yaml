@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-02T10:36:35Z"
+updatedAt: "2026-09-02T10:52:08Z"
 items:
   - id: M-001
     kind: mandate
@@ -188,7 +188,7 @@ items:
     status: target
     state: target
     doc: SDP/03--Requirements/DAP-REQ-001.md
-    summary: Historical deferred phase classification retained; S-002 and R-032 through R-050 supersede its roadmap phase subject to emulator dependencies.
+    summary: Historical deferred phase classification retained; replacement requirements R-036 and R-040 supersede its roadmap phase for planned dependency-gated stopping-watch and trace slices, while S-002 remains context.
   - id: R-028
     kind: requirement
     title: Opt-in state mutation
@@ -690,7 +690,7 @@ items:
     doc: SDP/03--Requirements/DAP-REQ-002.md
   - id: R-035
     kind: requirement
-    title: Opaque session-owned dataId
+    title: Exact SFR-origin opaque session-generation dataId
     status: planned
     state: target
     doc: SDP/03--Requirements/DAP-REQ-002.md
@@ -786,7 +786,7 @@ items:
     doc: SDP/03--Requirements/DAP-REQ-002.md
   - id: R-051
     kind: requirement
-    title: Address-preserving memory identities
+    title: Minimal stable SFR origins and later address-preserving memory identities
     status: planned
     state: target
     doc: SDP/03--Requirements/DAP-REQ-002.md
@@ -910,14 +910,28 @@ items:
 
   - id: IT-002-001
     kind: iteration
-    title: Candidate Slice-2 product implementation
+    title: Candidate stopping-watchpoint product implementation
     status: planned
     state: target
     doc: SDP/Sprints/SPR-002--debug-points-trace-integration/ScrumIterations.md
 
   - id: SL-002-001-001
     kind: slice
-    title: Candidate debug-point and trace product slice
+    title: Thin native stopping-watchpoint product slice
+    status: planned
+    state: target
+    doc: SDP/Sprints/SPR-002--debug-points-trace-integration/sprint.md
+
+  - id: IT-002-002
+    kind: iteration
+    title: Planned rich non-stopping trace product implementation
+    status: planned
+    state: target
+    doc: SDP/Sprints/SPR-002--debug-points-trace-integration/ScrumIterations.md
+
+  - id: SL-002-002-001
+    kind: slice
+    title: Rich tracepoint session route gate paging and UI slice
     status: planned
     state: target
     doc: SDP/Sprints/SPR-002--debug-points-trace-integration/sprint.md
@@ -928,7 +942,7 @@ items:
     status: blocked
     state: target
     doc: SDP/Sprints/SPR-002--debug-points-trace-integration/Handoff.md
-    summary: Issue 14 and takeover PR 16 at 1e588d28 are open; no accepted merge commit exists. Emulator master observed at bc86d263.
+    summary: Issue 14 is open and takeover PR 16 is open, clean, and unmerged at 1e588d28fb168a7c5a42c4c7dc4b51f84d29d1ed; no accepted merge commit exists. Emulator master remains bc86d2633b6057529e6fd1e666896c24d72822aa.
 
   - id: DEP-002-002
     kind: external_dependency
@@ -941,35 +955,35 @@ items:
   - id: CR-023
     kind: review_finding
     title: Native dataBreakpointInfo lacks a concrete watchable origin
-    status: open
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: CR-024
     kind: review_finding
     title: DAP data identity lifecycle and correlation are incomplete
-    status: open
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: CR-025
     kind: review_finding
     title: Candidate Slice 2 combines too much trace and watch scope
-    status: open
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: CR-026
     kind: review_finding
     title: R-027 phase supersession points to study rather than requirements
-    status: open
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 
   - id: CR-027
     kind: review_finding
     title: Phase-A documentation has trailing whitespace
-    status: open
+    status: in_progress
     state: current
     doc: SDP/CodeReview/DAP-SLICE2-REV-001.md
 

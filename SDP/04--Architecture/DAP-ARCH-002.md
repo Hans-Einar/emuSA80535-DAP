@@ -1,7 +1,7 @@
 # DAP-ARCH-002 — Debug-point and trace integration architecture
 
-**Traceability:** `A-009` realizes `R-032`–`R-050` and constrains `SPR-002`.
-**State:** planned post-Slice-1 architecture.  
+**Traceability:** `A-009` realizes `R-032`–`R-051` and constrains `SPR-002`.
+**State:** planned post-Slice-1 architecture.
 **Extends:** `DAP-ARCH-001` without changing its verified launch/process boundary.
 
 ## Ownership invariant
@@ -28,12 +28,12 @@ sequenceDiagram
     participant V as VS Code
     participant A as DAP adapter
     participant E as Emulator
-    V->>A: dataBreakpointInfo(variable/location)
+    V->>A: dataBreakpointInfo(current Registers ref + A/B/PSW/SP)
     A-->>V: opaque dataId + accessTypes
     V->>A: setDataBreakpoints(full set)
     A->>E: replace negotiated stopping-watch set
     E-->>A: accepted/rejected + revision
-    A-->>V: verified/rejected Breakpoints
+    A-->>V: one ordered verified/rejected Breakpoint per input
     V->>A: continue
     loop bounded run chunks
         A->>E: run
@@ -41,7 +41,7 @@ sequenceDiagram
         E->>E: finish instruction/cycles -> safe boundary
         E-->>A: architectural stop + watch trigger detail
     end
-    A-->>V: stopped(reason="data breakpoint")
+    A-->>V: stopped(reason="data breakpoint", hitBreakpointIds)
 ```
 
 A watchpoint is not implemented by inspecting memory after each DAP run chunk. The stop decision originates in the emulator runtime and is applied at its accepted safe boundary.
@@ -73,17 +73,21 @@ sequenceDiagram
 
 Tracepoint activity does not create a DAP stop epoch and therefore does not invalidate frame/scope/variable handles merely because a trace record was produced.
 
-## Adapter components
+The native VS Code path is the Variables view data-breakpoint action on one of
+the four exact register children. It is not an extension-only Add Watchpoint
+command. Full memory views are not a prerequisite for this first vertical.
 
-| Component | Responsibility |
-|---|---|
-| `dataBreakpoints` mapper | Standard DAP `dataBreakpointInfo`/`setDataBreakpoints`, opaque identity and verified/rejected mapping. |
-| condition compiler | Compile the explicitly supported bounded DAP condition subset to emulator condition form; reject all other syntax. |
-| debug-point client | Versioned optional emulator commands/capabilities; no private structs. |
-| trace control service | Custom requests for tracepoints, traces, routes, gates and enable/disable operations. |
-| trace page client | Non-destructive bounded retrieval using accepted cursor/after-sequence semantics. |
-| trace presenter | Render console actions through DAP `output`; expose canonical pages/status to extension UI. |
-| custom-event bridge | Low-volume trace-available/loss/suppression/status notifications only. |
+## Adapter components and slice allocation
+
+| Component | Planned slice | Responsibility |
+|---|---|---|
+| `dataBreakpoints` mapper | 2A | Standard DAP `dataBreakpointInfo`/`setDataBreakpoints`, exact SFR-origin resolution, opaque token table, ordered response and installed-id mapping. |
+| condition compiler | 2A only if exact subset accepted | Compile only the accepted bounded DAP subset to emulator condition form; otherwise reject all non-empty conditions. |
+| debug-point client | 2A minimum, later extended by 2B | Versioned optional emulator integration; no private structs or provisional wire names. |
+| trace control service | 2B | Custom controls for tracepoints, sessions, routes, gates and enable/disable operations. |
+| trace page client | 2B | Non-destructive bounded retrieval using accepted cursor/after-sequence semantics. |
+| trace presenter | 2B | Render console actions through DAP `output`; expose canonical pages/status to extension UI. |
+| custom-event bridge | 2B | Low-volume trace-available/loss/suppression/status notifications only. |
 
 ## Capability negotiation
 
@@ -99,18 +103,75 @@ The adapter shall distinguish at least these semantic capability groups once the
 
 The exact capability strings and command names are not frozen by this DAP document; they must be copied from the accepted emulator wire-extension authority. Missing optional capabilities disable only the corresponding Slice-2 UI/features and must not break launch, instruction breakpoints, disassembly, registers, continue/pause or step.
 
-## Data identity
+## Data discovery and installed identities
 
-DAP `dataId` is opaque to VS Code. The adapter owns a session table mapping each `dataId` to a canonical watchable target/specification. A `dataId` shall contain no raw C pointer or lifetime-sensitive emulator token.
+DAP `dataId` is opaque to VS Code. Slice 2A owns a bounded session table that
+maps each token to a canonical watchable target/specification plus the current
+target/configuration generation. A `dataId` contains no raw C pointer, emulator
+identity, address encoding promised to clients, or lifetime-sensitive private
+token. It reports `canPersist: false` and is never reused across sessions.
 
-The stable conceptual target includes:
+The conceptual target includes:
 
 - address space (`iram-lower`, `iram-upper`, `sfr`, `xdata`, and later other accepted spaces);
 - inclusive address/range when supported;
 - allowable access kinds;
 - optional byte/bit width metadata.
 
-The adapter may encode this into a bounded opaque string or keep a handle table, but the semantic target is validated before sending it to the emulator.
+Slice 2A admits only these targets:
+
+| Registers child | Space | Inclusive range | Width |
+|---|---|---|---|
+| `A` | SFR | `0xe0..0xe0` | 1 byte |
+| `B` | SFR | `0xf0..0xf0` | 1 byte |
+| `PSW` | SFR | `0xd0..0xd0` | 1 byte |
+| `SP` | SFR | `0x81..0x81` | 1 byte |
+
+`dataBreakpointInfo` produces a token only for a stopped session, the current
+Registers `variablesReference`, and one exact table name. A stale/foreign
+nonzero variables reference or malformed argument fails the request clearly.
+A well-formed current Registers origin naming `PC`, `DPTR`, `R0`–`R7`, or any
+other non-exact child succeeds with `dataId: null`; so does a well-formed
+`frameId`/expression or address/byte-range origin. The adapter does not infer a
+target. Slice 2A leaves `supportsDataBreakpointBytes` false/omitted.
+
+The Registers handle is stop-epoch-scoped. A resolved `dataId` is instead
+session- and target-generation-scoped so the static SFR token is not coupled
+to the stop epoch. Resume/new-stop does not change its target generation.
+Restart, process replacement, variant/configuration change, load, reset,
+disconnect, or a new session invalidates outstanding tokens conservatively;
+the exact accepted emulator lifecycle may later narrow only the load/reset
+rule. Explicit trace clear and ordinary trace mutation do not affect the data
+token domain.
+
+An installed watch has separate identities: its positive integer DAP
+`Breakpoint.id`, the emulator's public correlation identity, and the accepted
+configuration revision. Token expiry alone does not mutate it. A successful
+replacement retains a DAP id only for an unchanged normalized watch
+(target/access/condition/hit condition), retires removed/changed ids, and does
+not reuse retired ids in that debug session. The exact revision representation
+must remain lossless and changes only as reported by a successful accepted
+emulator mutation.
+
+Before any mutation, the adapter resolves every source token, validates
+generation/access/condition, and detects malformed or duplicate inputs. If any
+input fails, or the emulator rejects the atomic proposal, the prior installed
+set, correlation mapping, and revision remain unchanged. The DAP response has
+one `Breakpoint` for every input in the same order. Each rejected result has
+`verified: false` plus actionable `message`/`reason`; transaction peers explain
+that atomic replacement was not applied.
+
+Lifecycle effects remain separated:
+
+| Event | Discovery token | Installed DAP watch configuration |
+|---|---|---|
+| resume or new stopped epoch | retained in same target generation | unchanged |
+| successful `setDataBreakpoints` | retained if generation still current | atomically replaced; empty set explicitly clears |
+| failed/stale replacement | unchanged except stale lookup remains unusable | unchanged, including revision and ids |
+| trace clear/configuration | unchanged | unchanged |
+| reset/load before exact lifecycle freeze | invalidated by generation change | reconciled only from the accepted emulator lifecycle result; token expiry alone performs no mutation |
+| restart/process/variant replacement | invalidated | ended or reconciled only by explicit new-process configuration |
+| disconnect/new session | destroyed | destroyed; ids are never carried to another session |
 
 ## Stop details
 
@@ -123,7 +184,13 @@ On a watchpoint stop the adapter creates a normal stopped epoch from the emulato
 - old/new value known/value fields;
 - matched action/condition summary.
 
-The DAP stop reason remains the standard `data breakpoint`. Rich details may be surfaced through breakpoint metadata, variables, a custom trace/debug-point view or diagnostic output; they must not require a non-standard stopped reason.
+The DAP stop reason remains the standard `data breakpoint`. Where the accepted
+emulator result supplies sufficient public trigger correlation, the adapter
+maps every trigger to the installed positive integer DAP `Breakpoint.id` and
+sets `hitBreakpointIds`; private emulator identities never leak. Rich details
+may be surfaced through breakpoint metadata, variables, a later custom
+trace/debug-point view or diagnostic output; they must not require a
+non-standard stopped reason.
 
 ## Trace transport and backpressure
 
