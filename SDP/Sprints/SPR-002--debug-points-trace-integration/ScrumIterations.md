@@ -161,3 +161,17 @@ open despite the accepted review and resolved registry state.
 `CR-028` requires a one-file Handoff correction, fresh
 `RVW-002-000-003`, and fresh `VER-002-000-002`. Gates A and B remain blocked;
 product slices remain planned/unactivated.
+
+### Handoff corrective re-review `RVW-002-000-003`
+
+**Reviewed correction:** `56eb23c3690b27fe9046cf1915ea6edfd04bde35`
+
+**Review commit:** `0d294f19efcb1950239dd7b117dd01d39a23f1a7`
+
+**Disposition:** **ACCEPTED**
+
+The fresh reviewer confirmed the one-file correction removes stale
+`RVW-002-000-002` / `CR-023`–`CR-027` status, accurately records the first
+verification and `CR-028`, preserves Gate A/B and product gating, and changes
+no semantic contract or traceability. `CR-028` is resolved for review with no
+new finding. Fresh `VER-002-000-002` may run.

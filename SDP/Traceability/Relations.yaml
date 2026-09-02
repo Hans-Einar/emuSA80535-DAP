@@ -401,6 +401,7 @@ relations:
   - { from: SL-002-000-001, type: addresses, to: CR-028 }
   - { from: SL-002-000-001, type: reviewed_by, to: RVW-002-000-003 }
   - { from: SL-002-000-001, type: verified_by, to: VER-002-000-002 }
+  - { from: RVW-002-000-003, type: resolves, to: CR-028 }
 
   - { from: VER-001-001-001, type: raises, to: CR-008 }
   - { from: CR-008, type: concerns, to: S-001 }

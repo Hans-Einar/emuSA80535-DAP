@@ -52,3 +52,6 @@ both product slices remain planned/dependency-gated.
 `VER-002-000-001` passed every substantive semantic/mechanical/dependency check
 but failed Phase A on stale Handoff status text. `CR-028` captures the bounded
 one-file consistency correction; no product or contract state changes.
+
+Fresh `RVW-002-000-003` accepted one-file correction `56eb23c…` and resolved
+`CR-028` for review with no new finding. Fresh `VER-002-000-002` is active.

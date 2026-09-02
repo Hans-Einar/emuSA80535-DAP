@@ -15,8 +15,10 @@ Issue #6. Corrective `RVW-002-000-002` was accepted at review commit
 and no new review finding was raised. `VER-002-000-001` passed every other
 semantic, mechanical, regression, scope, and dependency check but returned
 `PHASE_A_FAIL` and raised `CR-028` for this bounded one-file Handoff correction.
-`CR-028` remains open/in-progress pending fresh `RVW-002-000-003` and
-`VER-002-000-002`.
+One-file correction `56eb23c3690b27fe9046cf1915ea6edfd04bde35` was accepted
+by fresh `RVW-002-000-003` at `0d294f19efcb1950239dd7b117dd01d39a23f1a7`;
+`CR-028` is resolved for review with no new finding. Fresh
+`VER-002-000-002` is the remaining Phase-A gate.
 
 Current dependency evidence:
 
@@ -44,8 +46,7 @@ Both remain under `SPR-002` and dependency-gated.
 
 ## DAP Codex next action
 
-Run fresh `RVW-002-000-003` on only the bounded `CR-028` Handoff correction,
-then run fresh `VER-002-000-002` on the corrected exact integrated HEAD. PR #5
+Run fresh `VER-002-000-002` on the corrected exact integrated HEAD. PR #5
 must remain unmerged until that fresh review and verification are accepted.
 Do not reconcile to exact wire names until Gate B supplies accepted names, and
 do not activate product work. Gate A remains unsatisfied while emulator Issue
