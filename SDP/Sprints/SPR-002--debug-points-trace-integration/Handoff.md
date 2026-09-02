@@ -10,10 +10,13 @@ Implementation is **not activated**. The sprint is dependency-gated on:
 2. a separately reviewed emulator wire-extension slice exposing the accepted debug-point runtime, required CPU event producers and safe-boundary watchpoint stop path.
 
 Phase A documentation-only `IT-002-000 / SL-002-000-001` is active under DAP
-Issue #6. Fresh `RVW-002-000-001` returned CHANGES_REQUIRED against reviewed
-HEAD `4659c7be9b3218880dea205f0f8fcb7284324e92`. The corrective worker has
-submitted `CR-023`–`CR-027` for independent `RVW-002-000-002`; findings remain
-open/in-progress until that re-review and `VER-002-000-001` disposition them.
+Issue #6. Corrective `RVW-002-000-002` was accepted at review commit
+`c8a387df6a99279816d5856f1c2c9170128fe672`: `CR-023`–`CR-027` are resolved
+and no new review finding was raised. `VER-002-000-001` passed every other
+semantic, mechanical, regression, scope, and dependency check but returned
+`PHASE_A_FAIL` and raised `CR-028` for this bounded one-file Handoff correction.
+`CR-028` remains open/in-progress pending fresh `RVW-002-000-003` and
+`VER-002-000-002`.
 
 Current dependency evidence:
 
@@ -41,10 +44,15 @@ Both remain under `SPR-002` and dependency-gated.
 
 ## DAP Codex next action
 
-Run fresh `VER-002-000-001` on the accepted corrective documentation: exact
-semantics, traceability, Slice-1 preservation, docs-only scope, PR #5 state,
-and current Gate A/B evidence. Do not reconcile to exact wire names until Gate
-B supplies accepted names, and do not activate product work.
+Run fresh `RVW-002-000-003` on only the bounded `CR-028` Handoff correction,
+then run fresh `VER-002-000-002` on the corrected exact integrated HEAD. PR #5
+must remain unmerged until that fresh review and verification are accepted.
+Do not reconcile to exact wire names until Gate B supplies accepted names, and
+do not activate product work. Gate A remains unsatisfied while emulator Issue
+#14 and PR #16 are open; Gate B remains unsatisfied because no accepted
+successor wire extension exists. If the bounded local correction passes, the
+expected Phase-A dependency disposition remains
+`WAITING_FOR_EMULATOR_CONTRACT`.
 
 Only after Steering activates Slice 2 should it implement `SPR-002`.
 
