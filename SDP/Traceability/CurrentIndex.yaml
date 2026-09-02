@@ -1,6 +1,6 @@
 version: 1
 project: emuSA80535-DAP
-updatedAt: "2026-09-02T11:53:53Z"
+updatedAt: "2026-09-02T12:10:02Z"
 items:
   - id: M-001
     kind: mandate
@@ -666,7 +666,7 @@ items:
   - id: S-002
     kind: study
     title: Emulator-owned debug points and trace integration study
-    status: implemented
+    status: verified
     state: current
     doc: SDP/02--Study/DAP-STU-002.md
 
@@ -818,14 +818,14 @@ items:
   - id: A-009
     kind: architecture
     title: Emulator-owned debug-point and trace integration boundary
-    status: implemented
+    status: verified
     state: current
     doc: SDP/04--Architecture/DAP-ARCH-002.md
 
   - id: D-011
     kind: design
     title: DAP frontend design for emulator-owned debug points
-    status: implemented
+    status: verified
     state: current
     doc: SDP/05--Design/DAP-DES-002.md
 
@@ -883,14 +883,14 @@ items:
   - id: IT-002-000
     kind: iteration
     title: Phase A independent SDP review
-    status: active
+    status: closed
     state: current
     doc: SDP/Sprints/SPR-002--debug-points-trace-integration/ScrumIterations.md
 
   - id: SL-002-000-001
     kind: slice
     title: Review and reconcile Slice-2 debug-point SDP
-    status: implemented
+    status: verified
     state: current
     doc: SDP/Sprints/SPR-002--debug-points-trace-integration/ScrumIterations.md
 
@@ -1011,6 +1011,6 @@ items:
   - id: VER-002-000-002
     kind: verification
     title: Re-verify Phase-A Slice-2 SDP after Handoff correction
-    status: in_progress
-    state: target
+    status: verified
+    state: current
     doc: SDP/Verification/DAP-SLICE2-VER-001.md

@@ -9,7 +9,8 @@ Implementation is **not activated**. The sprint is dependency-gated on:
 1. `emuSA80535-N` Issue #14 accepting SLC-015..017 and freezing facade/versioning/paging; and
 2. a separately reviewed emulator wire-extension slice exposing the accepted debug-point runtime, required CPU event producers and safe-boundary watchpoint stop path.
 
-Phase A documentation-only `IT-002-000 / SL-002-000-001` is active under DAP
+Phase A documentation-only `IT-002-000 / SL-002-000-001` is closed/verified
+under DAP
 Issue #6. Corrective `RVW-002-000-002` was accepted at review commit
 `c8a387df6a99279816d5856f1c2c9170128fe672`: `CR-023`–`CR-027` are resolved
 and no new review finding was raised. `VER-002-000-001` passed every other
@@ -17,8 +18,8 @@ semantic, mechanical, regression, scope, and dependency check but returned
 `PHASE_A_FAIL` and raised `CR-028` for this bounded one-file Handoff correction.
 One-file correction `56eb23c3690b27fe9046cf1915ea6edfd04bde35` was accepted
 by fresh `RVW-002-000-003` at `0d294f19efcb1950239dd7b117dd01d39a23f1a7`;
-`CR-028` is resolved for review with no new finding. Fresh
-`VER-002-000-002` is the remaining Phase-A gate.
+`CR-028` is verified resolved with no new finding. Fresh `VER-002-000-002`
+passed at report commit `a7df71152d660e39b09744e67234cff1dbe815b1`.
 
 Current dependency evidence:
 
@@ -46,17 +47,22 @@ Both remain under `SPR-002` and dependency-gated.
 
 ## DAP Codex next action
 
-Run fresh `VER-002-000-002` on the corrected exact integrated HEAD. PR #5
-must remain unmerged until that fresh review and verification are accepted.
-Do not reconcile to exact wire names until Gate B supplies accepted names, and
-do not activate product work. Gate A remains unsatisfied while emulator Issue
-#14 and PR #16 are open; Gate B remains unsatisfied because no accepted
-successor wire extension exists. If the bounded local correction passes, the
-expected Phase-A dependency disposition remains
-`WAITING_FOR_EMULATOR_CONTRACT`.
+Wait for Gate A: accepted/merged emulator Issue #14 runtime facade with exact
+commit. Then wait for Gate B: separately accepted additive `emu-debug` wire
+extension with CPU producers and safe-boundary stop application. Only then
+reconcile this repository to exact capability/command/event schemas and seek
+separate Steering activation for stopping-watch Slice 2A. Do not implement or
+invent names while either gate is missing.
+
+PR topology: Phase-A corrections remain on existing PR #5 branch
+`steering/debug-points-rebaseline`; no replacement PR or product branch exists.
+PR #5 remains unmerged.
 
 Only after Steering activates Slice 2 should it implement `SPR-002`.
 
 The later Slice-2A worker must preserve the complete accepted Slice-1
 regression suite and prove optional-extension absence leaves Slice-1 behavior
 unchanged.
+
+No worker/reviewer/verifier agent remains open. Final Phase-A disposition is
+`WAITING_FOR_EMULATOR_CONTRACT`.

@@ -9,8 +9,8 @@
 
 **PLANNED / dependency-gated. Implementation not started.**
 
-Phase A documentation review is active under Issue #6. This does not activate
-either planned product iteration or relax any dependency gate.
+Phase A documentation review is **PASS / closed** under Issue #6. This does not
+activate either planned product iteration or relax any dependency gate.
 
 This sprint consumes the emulator-owned breakpoint/watchpoint/tracepoint runtime after its stable facade and wire extension are independently accepted.
 
@@ -34,11 +34,17 @@ The planned sprint shall eventually provide:
 
 `Hans-Einar/emuSA80535-N` Issue #14 must be READY and SLC-015..017 accepted, including stable facade/versioning/paging decisions.
 
+Current status: **NOT SATISFIED** — Issue #14 and PR #16 are open/unmerged;
+current emulator master is `bc86d2633b6057529e6fd1e666896c24d72822aa`.
+
 ### Gate B — emulator wire integration
 
 A separately authorized emulator slice must expose the accepted runtime through a versioned additive `emu-debug` extension, including CPU producer hookup and safe-boundary watchpoint stop application where required.
 
 The exact emulator commit/release and wire schema become frozen dependencies for this sprint.
+
+Current status: **NOT SATISFIED** — no accepted successor wire issue, PR,
+release, or commit exposes CPU producers and safe-boundary watch stops.
 
 ### Gate C — Steering activation
 

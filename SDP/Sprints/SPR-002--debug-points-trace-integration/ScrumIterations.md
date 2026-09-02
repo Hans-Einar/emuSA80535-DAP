@@ -2,7 +2,7 @@
 
 ## IT-002-000 — Phase A independent SDP review
 
-**State:** Active documentation-only review
+**State:** Closed / verified by `VER-002-000-002`
 
 **Slice:** `SL-002-000-001`
 
@@ -175,3 +175,25 @@ The fresh reviewer confirmed the one-file correction removes stale
 verification and `CR-028`, preserves Gate A/B and product gating, and changes
 no semantic contract or traceability. `CR-028` is resolved for review with no
 new finding. Fresh `VER-002-000-002` may run.
+
+### Phase-A re-verification `VER-002-000-002`
+
+**Verified HEAD:** `530c8788bc4a423d651859e145bf31f4ea70bf14`
+
+**Verification commit:** `a7df71152d660e39b09744e67234cff1dbe815b1`
+
+**Disposition:** **PHASE_A_PASS / WAITING_FOR_EMULATOR_CONTRACT**
+
+Fresh verification reproduced CR-028 closure and passed all fourteen Issue #6
+semantic points, official DAP 1.71 assertions, JSON/YAML/NDJSON/traceability,
+five diff-check ranges, internal references, docs-only scope, 64/64 Slice-1
+authority/product blob preservation, and 99/99 tests. `CR-023`–`CR-028` are
+verified resolved.
+
+Gate A remains not satisfied: emulator master is `bc86d263…`, Issue #14 is
+open, and PR #16 is open/unmerged at `1e588d28…`. Gate B remains not satisfied:
+PR #16 explicitly excludes CPU producers, safe-boundary CPU stop application,
+and wire exposure, and no accepted successor wire contract exists.
+
+`IT-002-000 / SL-002-000-001` close verified. `SPR-002`, stopping-watch Slice
+2A, and rich-trace Slice 2B remain planned/dependency-gated and unactivated.
