@@ -1,0 +1,9 @@
+{
+  "format": "raw-code-64k",
+  "architecture": "sab80535",
+  "size": 65536,
+  "sha256": "1550101bc337eba836f6fc6a3012b80677b9dfe6a0c658fcf615194be54e5b88",
+  "entryAddress": "0x0000",
+  "reachableBreakpoint": "0x0002",
+  "neutralFill": "0x00"
+}

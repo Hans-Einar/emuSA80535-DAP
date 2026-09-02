@@ -1,0 +1,663 @@
+version: 1
+project: emuSA80535-DAP
+updatedAt: "2026-09-01T21:26:56Z"
+items:
+  - id: M-001
+    kind: mandate
+    title: Offline VS Code DAP integration for emuSA80535-N
+    status: active
+    state: target
+    doc: SDP/01--Mandate/DAP-MND-001.md
+    summary: Safe firmware-generic debugger boundary with Slice 1 verified READY; later feature scope remains target.
+
+  - id: S-001
+    kind: study
+    title: DAP, VS Code, packaging, and current-emulator study
+    status: active
+    state: current
+    doc: SDP/02--Study/DAP-STU-001.md
+    summary: Current d9f80eba real-runtime evidence (runtime merge 1a6aa397) plus explicitly dated a20815e and 5dc6812/62f4012 historical observations.
+
+  - id: UC-001
+    kind: use_case
+    title: Launch and instruction-debug a synthetic SAB80535 image
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+    summary: Deterministic launch, entry/register view, disassembly, breakpoint, continue, pause, and step.
+
+  - id: R-001
+    kind: requirement
+    title: Emulator protocol compatibility handshake
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-002
+    kind: requirement
+    title: Deterministic launch lifecycle and raw CODE load
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-003
+    kind: requirement
+    title: Coherent session state
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-004
+    kind: requirement
+    title: PC and canonical CODE references
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-005
+    kind: requirement
+    title: Instruction breakpoints
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-006
+    kind: requirement
+    title: Bounded continue
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-007
+    kind: requirement
+    title: Adapter-local bounded pause
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-008
+    kind: requirement
+    title: Instruction stepIn
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-009
+    kind: requirement
+    title: Call-aware step over
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-010
+    kind: requirement
+    title: Logical-frame step out
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-011
+    kind: requirement
+    title: One logical MCU thread
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-012
+    kind: requirement
+    title: Truthful current-PC frame
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-013
+    kind: requirement
+    title: Atomic basic-register scope
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-014
+    kind: requirement
+    title: Side-effect-free SFR presentation
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-015
+    kind: requirement
+    title: Variant-aware IRAM reads
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-016
+    kind: requirement
+    title: Distinct CODE and XDATA reads
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-017
+    kind: requirement
+    title: Minimal authoritative disassembly
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-018
+    kind: requirement
+    title: Source mapping and source breakpoints
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-019
+    kind: requirement
+    title: Generic symbol map
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-020
+    kind: requirement
+    title: Observed logical stack
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-021
+    kind: requirement
+    title: Interrupt state on one thread
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-022
+    kind: requirement
+    title: Structured DAP errors and diagnostics
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-023
+    kind: requirement
+    title: Semantically versioned VSIX
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-024
+    kind: requirement
+    title: Linux and Windows support
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-025
+    kind: requirement
+    title: Hardware-free automated tests
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-026
+    kind: requirement
+    title: Graceful protocol and process failure
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-027
+    kind: requirement
+    title: Data breakpoints and watchpoints
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-028
+    kind: requirement
+    title: Opt-in state mutation
+    status: target
+    state: target
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-029
+    kind: requirement
+    title: No physical host I/O
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-030
+    kind: requirement
+    title: No P1000 hard-coding
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+  - id: R-031
+    kind: requirement
+    title: Launch-owned disconnect and termination lifecycle
+    status: verified
+    state: current
+    doc: SDP/03--Requirements/DAP-REQ-001.md
+
+  - id: A-001
+    kind: architecture
+    title: VS Code adapter emulator process boundary
+    status: target
+    state: target
+    doc: SDP/04--Architecture/DAP-ARCH-001.md
+  - id: A-002
+    kind: architecture
+    title: Launch and configuration lifecycle
+    status: target
+    state: target
+    doc: SDP/04--Architecture/DAP-ARCH-001.md
+  - id: A-003
+    kind: architecture
+    title: Breakpoint continue stop flow
+    status: target
+    state: target
+    doc: SDP/04--Architecture/DAP-ARCH-001.md
+  - id: A-004
+    kind: architecture
+    title: Current and logical stack data flow
+    status: target
+    state: target
+    doc: SDP/04--Architecture/DAP-ARCH-001.md
+  - id: A-005
+    kind: architecture
+    title: Generic source and symbol mapping
+    status: target
+    state: target
+    doc: SDP/04--Architecture/DAP-ARCH-001.md
+  - id: A-006
+    kind: architecture
+    title: Protocol version and capability negotiation
+    status: target
+    state: target
+    doc: SDP/04--Architecture/DAP-ARCH-001.md
+  - id: A-007
+    kind: architecture
+    title: VSIX packaging boundary
+    status: target
+    state: target
+    doc: SDP/04--Architecture/DAP-ARCH-001.md
+  - id: A-008
+    kind: architecture
+    title: Runtime state and failure isolation
+    status: target
+    state: target
+    doc: SDP/04--Architecture/DAP-ARCH-001.md
+
+  - id: D-001
+    kind: design
+    title: Proposed source layout
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+  - id: D-002
+    kind: design
+    title: Launch configuration
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+  - id: D-003
+    kind: design
+    title: Emulator control envelope and commands
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+  - id: D-004
+    kind: design
+    title: Adapter state machine
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+  - id: D-005
+    kind: design
+    title: DAP mappings and disassembly
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+  - id: D-006
+    kind: design
+    title: Replacement breakpoint table
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+  - id: D-007
+    kind: design
+    title: Memory-space references
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+  - id: D-008
+    kind: design
+    title: Logical frame model
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+  - id: D-009
+    kind: design
+    title: Generic symbol map schema
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+  - id: D-010
+    kind: design
+    title: Error logging and fake interfaces
+    status: target
+    state: target
+    doc: SDP/05--Design/DAP-DES-001.md
+
+  - id: SPR-001
+    kind: sprint
+    title: DAP first implementation slice
+    status: verified
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
+    summary: Verified READY vertical slice with all AC-001 through AC-011 passing against current emulator d9f80eba on Windows and Linux.
+
+  - id: IT-001-000
+    kind: iteration
+    title: SDP foundation and Slice-1 readiness
+    status: rework
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: SL-001-000-001
+    kind: slice
+    title: Architecture documentation through READY-FOR-SLICE-1
+    status: rework
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/sprint.md
+    summary: Worker pass reviewed; blocking documentation corrections and re-review required.
+
+  - id: RVW-001-000-001
+    kind: review
+    title: Independent review of SDP foundation
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+
+  - id: CR-001
+    kind: review_finding
+    title: Correct DAP instruction-breakpoint stopped reason
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-002
+    kind: review_finding
+    title: Separate DAP memory references from disassembly addresses
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-003
+    kind: review_finding
+    title: Freeze advertised stepping-granularity semantics
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-004
+    kind: review_finding
+    title: Define defensible backward disassembly behavior
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-005
+    kind: review_finding
+    title: Remove or justify accidental Slice-1 CODE read
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-006
+    kind: review_finding
+    title: Define child state across bounded run yields
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+  - id: CR-007
+    kind: review_finding
+    title: Make handshake example fence structurally valid
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+
+  - id: VER-001-000-001
+    kind: verification
+    title: Verification of SDP foundation and traceability
+    status: blocked
+    state: target
+    doc: SDP/Verification/DAP-SDP-VER-001.md
+
+  - id: IT-001-001
+    kind: iteration
+    title: Corrective SDP review closure
+    status: closed
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: SL-001-001-001
+    kind: slice
+    title: Resolve SDP foundation review findings
+    status: implemented
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: RVW-001-001-001
+    kind: review
+    title: Corrective re-review of SDP foundation
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+
+  - id: VER-001-001-001
+    kind: verification
+    title: Final verification of SDP foundation and traceability
+    status: blocked
+    state: target
+    doc: SDP/Verification/DAP-SDP-VER-001.md
+
+  - id: CR-008
+    kind: review_finding
+    title: Refresh emulator baseline after dependency merges
+    status: resolved
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: SL-001-001-002
+    kind: slice
+    title: Refresh merged emulator baseline
+    status: verified
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: RVW-001-001-002
+    kind: review
+    title: Review merged-emulator baseline refresh
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SDP-REV-001.md
+
+  - id: VER-001-001-002
+    kind: verification
+    title: Final verification after emulator baseline refresh
+    status: verified
+    state: current
+    doc: SDP/Verification/DAP-SDP-VER-001.md
+
+  - id: IT-001-002
+    kind: iteration
+    title: DAP first product implementation iteration
+    status: closed
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: SL-001-002-001
+    kind: slice
+    title: DAP launch, registers, disassembly, breakpoint and step
+    status: verified
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: RVW-001-002-001
+    kind: review
+    title: Review package, extension, and DAP foundation
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: RVW-001-002-002
+    kind: review
+    title: Review emulator protocol client and contract fake
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: RVW-001-002-003
+    kind: review
+    title: Review Slice-1 debug behavior and lifecycle
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: VER-001-002-001
+    kind: verification
+    title: Verify complete Slice 1 against fake and real emulator
+    status: blocked
+    state: current
+    doc: SDP/Verification/DAP-SLICE1-VER-001.md
+
+  - id: CR-009
+    kind: review_finding
+    title: In-flight launch can reopen terminated session
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-010
+    kind: review_finding
+    title: Raw DAP launch types are not validated strictly
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-011
+    kind: review_finding
+    title: README overstates Worker B and C integration
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: RVW-001-002-004
+    kind: review
+    title: Corrective re-review of Worker A foundation
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-012
+    kind: review_finding
+    title: Client accepts invalid command-specific response semantics
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-013
+    kind: review_finding
+    title: Fake violates required capability ID and record bounds
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-014
+    kind: review_finding
+    title: Windows resolver selects unspawnable batch wrappers
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: RVW-001-002-005
+    kind: review
+    title: Corrective re-review of Worker B protocol and fake
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-015
+    kind: review_finding
+    title: Negative decode window may reach base too early
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-016
+    kind: review_finding
+    title: Client rejects valid raw server breakpoint limit
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: RVW-001-002-006
+    kind: review
+    title: Second corrective re-review of Worker B protocol
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-017
+    kind: review_finding
+    title: Rejected step silently changes stop epoch and handles
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-018
+    kind: review_finding
+    title: Fake records taken branch as sequential predecessor
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-019
+    kind: review_finding
+    title: StackTrace pagination accepts invalid raw values
+    status: resolved
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: RVW-001-002-007
+    kind: review
+    title: Corrective re-review of Worker C behavior
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: CR-020
+    kind: review_finding
+    title: CI lacks Windows lane and package install launch smoke
+    status: resolved
+    state: current
+    doc: SDP/Verification/DAP-SLICE1-VER-001.md
+
+  - id: RVW-001-002-008
+    kind: review
+    title: Review cross-platform package install and launch smoke correction
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: VER-001-002-002
+    kind: verification
+    title: Re-verify Slice 1 after AC-010 correction
+    status: blocked
+    state: current
+    doc: SDP/Verification/DAP-SLICE1-VER-001.md
+
+  - id: CR-021
+    kind: review_finding
+    title: AC-006 timeout test applies run bound during launch
+    status: resolved
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: CR-022
+    kind: review_finding
+    title: Repeated-yield pause test depends on wall-clock child timing
+    status: resolved
+    state: current
+    doc: SDP/Sprints/SPR-001--dap-first-slice/ScrumIterations.md
+
+  - id: RVW-001-002-010
+    kind: review
+    title: Review repeated-yield pause test determinism
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md
+
+  - id: VER-001-002-003
+    kind: verification
+    title: Final real-runtime Slice 1 acceptance against merged emu-debug 1.0
+    status: verified
+    state: current
+    doc: SDP/Verification/DAP-SLICE1-VER-001.md
+
+  - id: RVW-001-002-009
+    kind: review
+    title: Review cross-platform AC-006 timeout test determinism
+    status: closed
+    state: current
+    doc: SDP/CodeReview/DAP-SLICE1-REV-001.md

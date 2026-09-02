@@ -1,0 +1,894 @@
+# Scrum iterations — SPR-001
+
+## IT-001-000 — SDP foundation and Slice-1 readiness
+
+**State:** Historical rework; superseded by `IT-001-001`
+**Slice:** `SL-001-000-001`
+**Authority:** GitHub Issue #1
+
+### Why now
+
+The repository had only bootstrap folders. DAP semantics, process ownership,
+actual emulator seams, cross-repository prerequisites, packaging, and the first
+vertical acceptance path had to be frozen before implementation could safely
+start.
+
+### Worker assignment
+
+Author only the documents and traceability named in the slice contract. Inspect
+the current emulator and public primary sources. Make target/current labels
+explicit. Do not create production/test code, manifests, build configuration,
+Issues, PRs, review conclusions, or verification conclusions.
+
+### Worker result
+
+The documentation implementation pass produced the planned authored artifacts
+and a frozen minimum `emu-debug` 1.0 requirement. It selected:
+
+- external Node.js/TypeScript adapter on DAP stdio;
+- separate launch-owned headless emulator child on NDJSON stdio;
+- launch-first, separately installed emulator resolution;
+- raw 64-KiB/address-level Slice 1 with one thread/current frame/registers,
+  authoritative minimal disassembly, one accepted instruction breakpoint,
+  bounded continue/adapter-local pause, and instruction `stepIn`.
+
+It identified `EMU-BLK-001`–`EMU-BLK-010` as hard cross-repository
+prerequisites. `SPR-001` remains planned/not started.
+
+### Required next passes
+
+1. Fresh reviewer performs `RVW-001-000-001` and records findings in
+   `SDP/CodeReview/DAP-SDP-REV-001.md`.
+2. If blocking findings exist, Master opens a corrective documentation
+   iteration and assigns a fresh worker.
+3. Fresh verifier performs `VER-001-000-001` only after accepted review and
+   records repeatable evidence in `SDP/Verification/DAP-SDP-VER-001.md`.
+4. Master reconciles sprint documents and traceability, opens the
+   documentation-only PR, and decides whether the gate is
+   `READY-FOR-SLICE-1`.
+
+### Verification plan
+
+- required-document and substantive-content checks;
+- authoritative URL and emulator permalink checks;
+- fenced JSON parsing, YAML parsing, and NDJSON per-line parsing;
+- Mermaid block inventory/syntax review;
+- requirement ID definition/reference and relation-chain checks;
+- repository diff allowlist proving documentation-only changes;
+- no production code/config/test/fixture creation and no P1000 semantic;
+- review of DAP sequencing, breakpoint replacement, handle epochs, stopped
+  reasons, disassemble count, pause bound, and launch-owned cleanup.
+
+### Carry-forward
+
+Open Steering decisions are documented in `Handoff.md`. No product
+implementation task may be inferred or started from this iteration.
+
+### Independent review `RVW-001-000-001`
+
+**Reviewed commit:** `ab231769fb78bcb44a11ecdc5791d1f69b66ea3c`
+
+**Disposition:** **changes-required**
+
+**Next iteration:** corrective documentation; product Slice 1 remains not started
+
+The fresh review confirmed the default-emulator/candidate-PR distinction,
+process boundary, private-internal exclusion, firmware neutrality, logical
+stack restraint, broad deferrals, and the credible Linux/Windows VSIX path. It
+raised these blocking findings:
+
+- `CR-001`: instruction-breakpoint hits use the wrong DAP stopped reason;
+- `CR-002`: `code:HHHH` memory references are conflated with DAP numeric
+  disassembly addresses;
+- `CR-003`: `supportsSteppingGranularity` is advertised without complete
+  request semantics;
+- `CR-004`: authoritative backward decoding is not defensible for ambiguous
+  variable-length raw CODE without a rule;
+- `CR-005`: raw CODE `readMemory` is an unused accidental Slice-1 blocker;
+- `CR-006`: child state across bounded `run` yields and adapter-local pause is
+  undefined;
+- `CR-007`: the two-record handshake fence is NDJSON, not one valid JSON value.
+
+Full evidence and required corrections are in
+`SDP/CodeReview/DAP-SDP-REV-001.md`. `VER-001-000-001` must not start until a
+fresh corrective worker resolves these findings and a separate re-review
+accepts the correction.
+
+## IT-001-001 — Corrective SDP review closure
+
+**State:** Closed after `VER-001-001-002`
+
+**Slices:** `SL-001-001-001` (implemented; historical verification block) and
+`SL-001-001-002` (verified)
+
+**Authority:** Issue #1 plus `RVW-001-000-001` / `CR-001`–`CR-007`
+
+### Goal
+
+Resolve all seven blocking review findings at documentation level, normalize
+the traceability status vocabulary, and make the candidate product slice
+traceable as planned without implementing it.
+
+### Files expected to change
+
+- `SDP/02--Study/DAP-STU-001.md`
+- `SDP/03--Requirements/DAP-REQ-001.md`
+- `SDP/04--Architecture/DAP-ARCH-001.md`
+- `SDP/05--Design/DAP-DES-001.md`
+- `protocol/EMU_DEBUG_API_REQUIREMENTS.md`
+- sprint planning/handoff/notes in this folder
+- `SDP/CodeReview/DAP-SDP-REV-001.md` only for a reviewer-owned re-review addendum
+- `SDP/Traceability/CurrentIndex.yaml`, `Relations.yaml`, and `Ledger.ndjson`
+
+### Invariants and non-goals
+
+- Preserve the selected external TypeScript adapter and launch-owned child
+  boundary unless review evidence proves it invalid.
+- Preserve the original evidence-cut current/candidate labels as dated history;
+  do not silently rewrite what the first review observed.
+- Use exact DAP wire semantics and separate them from emulator-internal terms.
+- Keep Slice 1 address-level, hardware-free, and firmware-generic.
+- Do not create product/test code, package manifests, build configuration,
+  fixtures, Issues, PRs, or emulator-repository changes.
+
+### Required corrections
+
+1. Map an emulator CODE-breakpoint stop to DAP reason `instruction breakpoint`.
+2. Separate opaque `memoryReference` values from numeric disassembly addresses
+   and freeze the VS Code instruction-breakpoint round trip.
+3. Define `statement`, `instruction`, omitted, and unsupported `line` stepping
+   granularity behavior; `next` and `stepOut` must fail explicitly because DAP
+   has no capability flags for them.
+4. Replace the unsupported claim of authoritative backward disassembly with an
+   honest deterministic exact-count placeholder/boundary rule.
+5. Remove raw CODE read from the Slice-1 minimum when `decodeCode` is the only
+   disassembly consumer; leave debugger `readMemory` near-term.
+6. Separate adapter logical running state from an idle child at synchronous
+   chunk boundaries and define every yield/pause/error transition.
+7. Make each `json` fence one valid JSON document.
+8. Normalize traceability statuses to the repository status model and add a
+   planned product iteration/slice distinct from this documentation rework.
+
+### Traceability and verification
+
+`SL-001-001-001` addresses `CR-001`–`CR-007`, is re-reviewed by
+`RVW-001-001-001`, and is verified by `VER-001-001-001`. Re-review must
+reproduce the corrected DAP/schema semantics. Verification must parse all
+examples, YAML, and NDJSON; validate relations; check links and Mermaid; and
+prove the final diff remains documentation-only.
+
+### Completion signal
+
+The re-review resolves `CR-001`–`CR-007` with no new blocker. Only then may the
+independent verifier run; the product sprint remains planned/not started.
+
+### Corrective worker result
+
+The documentation pass distinguishes the child `breakpoint` reason from DAP
+`instruction breakpoint`; separates opaque `code:HHHH` references from numeric
+`0xHHHH` disassembly addresses and freezes reference/offset canonicalization;
+defines every stepping granularity plus explicit `next`/`stepOut` failure;
+defines honest exact-count backward disassembly placeholders; removes raw CODE
+read from the minimum emulator contract; and separates adapter logical state
+from synchronous child command state across yield, pause, timeout, disconnect,
+and snapshot invalidation. Every `json` fence is intended to contain one JSON
+document.
+
+The worker also normalized the traceability status vocabulary and retained the
+candidate product work as planned `IT-001-002` / `SL-001-002-001`. No product
+or test implementation was created. `CR-001`–`CR-007` remain `in_progress`,
+not resolved, pending independent `RVW-001-001-001`; the corrective slice is
+therefore handed off as `in_review`.
+
+### Corrective re-review `RVW-001-001-001`
+
+**Reviewed commit:** `e76936c02957fa92b784d947a86837c1fe3be70f`
+
+**Disposition:** **accepted; no blocking review finding remains**
+
+The fresh reviewer reproduced the corrected DAP instruction-breakpoint reason,
+opaque-versus-numeric address and offset round trip, complete Slice-1 stepping
+failure semantics, honest exact-count negative disassembly placeholders,
+minimum contract without raw CODE read, separate adapter/child states through
+yield/pause/timeout/disconnect, and single-document JSON fences. YAML, NDJSON,
+relation endpoints, status vocabulary, fence balance, and the documentation-only
+diff also passed re-review.
+
+`CR-001`–`CR-007` are resolved, `RVW-001-001-001` is closed, and
+`SL-001-001-001` is implemented awaiting `VER-001-001-001`. The corrective
+iteration remains active only for verification and Master integration. Product
+`IT-001-002` / `SL-001-002-001` remains planned and must not start.
+
+## SL-001-001-002 — Refresh merged emulator baseline
+
+**State:** In review after factual correction
+
+**Authority:** `VER-001-001-001` live-state check and `CR-008`
+
+### Why this correction exists
+
+During final verification, `emuSA80535-N` PR #1 and the stacked Stage-1 PR #3
+were merged. Default `master` moved to `a20815e24778760a308130cf1f9aa6d0f55b6af3`.
+The architecture package was accurate at its earlier evidence cut, but its
+current-state labels became stale before READY-FOR-SLICE-1.
+
+### Goal and files
+
+Refresh the factual current-emulator baseline and blocker classifications in
+the mandate, study, requirements, architecture, protocol contract, sprint
+notes/handoff, and traceability. Preserve the first study/review observations
+as explicitly dated history. No runtime, transport, DAP scope, source layout,
+or candidate product acceptance decision changes merely because the emulator
+dependency advanced.
+
+### Required evidence and invariants
+
+- Record current default `master` at `a20815e…`, Stage-0 merge `0cf6792…`, and
+  Stage-1 merge/PR #3 at `a20815e…` with permanent links.
+- Re-inspect the merged headers/source. Classify deterministic reset/raw load,
+  bounded run/exact step, one core breakpoint, generic trace, and IRQ
+  observer/state as current core seams.
+- Keep missing headless NDJSON/version handshake, debugger snapshot,
+  `decodeCode` wire command, and replacement breakpoint table explicit.
+- Mark satisfied/partial prerequisites honestly rather than calling merged APIs
+  absent. Do not remove a protocol requirement only because its lower-level
+  core primitive now exists.
+- Keep IRQ-aware frames and interrupt scopes outside candidate Slice 1.
+- Keep P1000 and physical host I/O outside the contract.
+- Make documentation/traceability changes only; do not alter either repository's
+  product code, create emulator work, or start product Slice 1.
+
+### Traceability and completion
+
+`SL-001-001-002` addresses `CR-008`, is reviewed by `RVW-001-001-002`, and is
+verified by `VER-001-001-002`. Completion requires a fresh review of the live
+baseline and a full verification rerun against the open DAP PR #2.
+
+### Worker handoff
+
+The worker refreshed mandate, study, requirements, architecture, protocol
+contract, sprint/notes/handoff, and traceability against live default
+`a20815e`. The original `5dc6812`/then-unmerged `62f4012` study and first-review
+observations remain explicitly dated history. Current core seams are separated
+from the missing versioned process contract, and the protocol blocker IDs now
+carry satisfied/partial/missing status without changing the frozen target
+behavior. Product `IT-001-002` / `SL-001-002-001` remains planned and unstarted.
+
+`CR-008` remains `in_progress` for independent review. The slice moves to
+`in_review`; `RVW-001-001-002` and `VER-001-001-002` remain planned and must be
+performed by fresh agents.
+
+### Baseline-refresh review `RVW-001-001-002`
+
+**Reviewed commit:** `4982f34143d465107758d5101f9973057928d7a0`
+
+**Disposition:** **accepted; no blocking review finding remains**
+
+The fresh reviewer independently confirmed live emulator `master` at
+`a20815e`, the PR #1/PR #3 merge states and commits, the cited current core
+seams, and the satisfied/partial/missing `EMU-BLK-001`–`010` matrix. The dated
+`5dc6812`/`62f4012` record is retained as history and explicitly superseded for
+live-state use. Stage-1 IRQ support remains outside candidate Slice 1, and the
+architecture, requirements, protocol contract, and sprint remain consistent.
+
+`CR-008` is resolved, `RVW-001-001-002` is closed/current, and
+`SL-001-001-002` is implemented awaiting `VER-001-001-002`. Product
+`IT-001-002` / `SL-001-002-001` remains planned and unstarted.
+
+### Final verification `VER-001-001-002`
+
+**Verified content commit:** `e210c4bbfb8e8690f0d4b82f6cc4be2c3853950f`
+
+**Disposition:** **PASS — READY-FOR-SLICE-1**
+
+The fresh verifier reconfirmed live emulator `master` at `a20815e`, merged PR
+#1/#3 state, exact source claims, and the `EMU-BLK` classification. The full
+Issue #1 deliverable set, corrected DAP semantics, generic symbol schema,
+documentation-only allowlist, JSON/YAML/NDJSON parsing, traceability chains,
+internal links, bounded external links, static Mermaid structure, README
+status, and open PR #2 state passed. The npmjs HTML page rejected automated
+HEAD access, but the npm registry queries succeeded; Mermaid was statically
+checked without installing a renderer. Both are documented non-blocking
+limitations in `SDP/Verification/DAP-SDP-VER-001.md`.
+
+`IT-001-001` is closed and `SL-001-001-002` is verified. The historical
+`VER-001-000-001` and `VER-001-001-001` blocked records are retained. Product
+`SPR-001`, `IT-001-002`, and `SL-001-002-001` remain planned and unstarted.
+Readiness authorizes no implementation; Steering decisions in `Handoff.md` and
+explicit Master activation remain mandatory.
+
+## IT-001-002 — DAP first product implementation
+
+**State:** Active under Issue #3
+
+**Slice:** `SL-001-002-001`
+
+**Authority:** GitHub Issue #3, accepted PR #2 baseline, and
+`SteeringActivation.md`
+
+### Slice contract
+
+**Goal:** Implement only Slice 1: a packaged Node.js/TypeScript VS Code
+debugger that launches a separate contract-compatible emulator, stops at entry,
+exposes one MCU thread/current frame/basic-register scope, disassembles CODE,
+replaces one instruction breakpoint, continues with bounded chunks, pauses at a
+proven boundary, and executes exact instruction-level `stepIn`.
+
+**Why now:** `VER-001-001-002` established the documentation gate and Issue #3
+explicitly re-baselined the start gate so adapter work may use a
+contract-faithful fake. The same tests must later pass against an accepted real
+emulator before READY.
+
+**Expected modules/files:** repository-root package/build/CI configuration;
+`extension/`; `adapter/`; `test-fixtures/fake-emulator/`;
+`test-fixtures/firmware/`; automated unit/contract/DAP/package tests; and the
+active sprint, review, verification, and traceability records.
+
+**Invariants:** DAP and child NDJSON use separate pipes; the child is launched
+without a shell; protocol stdout is never human logging; state is exposed only
+from proven stopped epochs; addresses never wrap; breakpoints replace globally;
+pause schedules no next chunk; timeouts never promote an unproven boundary;
+child cleanup and `terminated` are exactly once; no emulator private structs,
+P1000 semantics, physical I/O, fake-only product command, or bundled emulator.
+
+**Non-goals:** every item in Issue #3's Non-scope section, including source
+breakpoints/maps, richer stacks, `readMemory`, `evaluate`, writes, watchpoints,
+attach/TCP, emulator bundling/auto-download, and Marketplace publication.
+
+**Traceability:** `M-001`, `S-001`, `UC-001`, Slice-1 requirements `R-001`–
+`R-008`, `R-011`–`R-013`, `R-017`, `R-022`–`R-026`, `R-029`–`R-031`,
+`A-001`–`A-008`, `D-001`–`D-010`, `SPR-001`, `IT-001-002`,
+`SL-001-002-001`, `RVW-001-002-001`–`RVW-001-002-003`, and
+`VER-001-002-001`.
+
+**Required verification:** automated `AC-001`–`AC-011`; focused protocol,
+address, scheduler, handle-epoch, lifecycle, safety, Linux/Windows, installable
+VSIX, and real VS Code smoke evidence listed in Issue #3; exact package/lock,
+Node/VS Code, adapter HEAD, and emulator commit capture; and a fresh
+`EMU-BLK-001`–`EMU-BLK-010` evidence map against the real default/runtime.
+
+**Expected completion signal:** all three responsibility passes independently
+reviewed with no blocking finding; complete verification PASS against both the
+fake and accepted real runtime; all ACs pass; the implementation PR remains
+open and unmerged. Without the real gate, disposition is `NOT_READY`.
+
+### Worker and review sequence
+
+1. Worker A — package/extension/DAP foundation; independent
+   `RVW-001-002-001`.
+2. Worker B — strict emulator protocol client and contract-faithful fake;
+   independent `RVW-001-002-002`.
+3. Worker C — stop epochs, registers, disassembly, breakpoints, bounded
+   continue/pause, and exact step; independent `RVW-001-002-003`.
+4. Fresh verifier — `VER-001-002-001`, including real-emulator and VS Code
+   integration gates.
+
+Each worker must keep changes within this single active Slice-1 contract,
+produce a reviewable commit, run focused checks, and hand off exact evidence.
+Review findings are recorded before the next responsibility pass begins.
+
+### Activation evidence
+
+- Branch: `codex/dap-first-slice`, based on accepted PR #2 HEAD
+  `ede8226f23c21a13c44b0da99fe63be9ac1ea1c4` (whose independently reviewed
+  content baseline is `cfe1871b180f7f93dc9cb9f47656ef1816b173d4`).
+- Revalidated `emuSA80535-N/master`:
+  `c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`.
+- At activation, the real default contains the Stage-1 timer merge but no
+  headless `emu-debug` server PR/issue evidence; real integration remains
+  blocked and cannot be inferred from the core seams.
+
+### Worker A result
+
+**Implementation commit:** `a30129bfcbd17c8fd0e57696700ff9f2440bb639`
+
+Worker A added the repository-root manifest/lockfile, pinned TypeScript/lint/test
+tooling, VS Code debugger contribution and launch schema/setting, external
+adapter-process descriptor, DAP lifecycle skeleton, VSIX allowlist/packaging,
+Linux CI foundation, README usage, and six focused foundation tests. Launch
+fails explicitly with `EMU_INTEGRATION_PENDING` rather than claiming an
+emulator integration that belongs to Worker B.
+
+Worker evidence passed `npm ci`, lint, build/test (6/6), VSIX package and
+contents policy, and local VSIX installation in VS Code 1.134.0 on Windows.
+The generated package contained no emulator binary; its worker-stage SHA-256
+was `92F8EC943F48E7F7A6F3B378EF9DA04AAD525E10E96310A806CD4386B6DDE04B`.
+Linux CI has been authored but not yet run remotely, and `actionlint` was not
+available locally. These remain review/verification items.
+
+The product slice remains in progress. `RVW-001-002-001` must independently
+review this exact commit before Worker B starts.
+
+### Worker A review `RVW-001-002-001`
+
+**Reviewed commit:** `a30129bfcbd17c8fd0e57696700ff9f2440bb639`
+
+**Review commit:** `bd1b8b7bac41c9cba71bb5d099ba21ca2fc024cd`
+
+**Disposition:** **changes-required**
+
+The fresh reviewer reproduced the worker checks and package/install boundary,
+then raised three persistent findings:
+
+- `CR-009` (blocking/high): an asynchronous launch can complete after
+  disconnect, emit `initialized` after `terminated`, and later succeed both
+  `configurationDone` and the stale launch request; cleanup rejection is also
+  swallowed.
+- `CR-010` (medium): raw DAP launch validation accepts wrong JSON types for
+  `stopOnEntry` and `emulatorPath`.
+- `CR-011` (low): README incorrectly says Worker B/C integration already
+  exists.
+
+Worker B remains paused. A fresh corrective worker must fix only these findings
+and add adversarial regression tests. A separate fresh reviewer performs
+`RVW-001-002-004` before forward work resumes.
+
+### Worker A corrective result
+
+**Corrective commit:** `a01c48c917186a98152d849565660081ff11746e`
+
+The fresh corrective worker addressed `CR-009`–`CR-011` without adding Worker
+B/C scope. The session now has monotonic lifecycle, launch/termination
+generations, post-await ownership guards, exactly-once pending-launch settling,
+configuration invalidation, duplicate/post-terminal request rejection,
+coalesced cleanup, and structured cleanup-failure reporting. Launch validation
+now rejects wrong runtime JSON types, and README states the real current limit.
+
+Worker evidence passed lint, build, 18/18 tests, VSIX package/content policy,
+and diff whitespace checks. The worker-stage VSIX SHA-256 was
+`8F0B006416483CABFFEB5E4BBB284D9BA952D6D6E509E58A18EE78094B17FEA7`.
+`CR-009`–`CR-011` remain in progress until independent
+`RVW-001-002-004` accepts the exact corrective commit.
+
+### Corrective re-review `RVW-001-002-004`
+
+**Reviewed commit:** `a01c48c917186a98152d849565660081ff11746e`
+
+**Review commit:** `6d4d09f89539d21f955e0b81445fe0132906960d`
+
+**Disposition:** **accepted; no blocking Worker A finding remains**
+
+The second fresh reviewer independently reproduced the original late-resolve
+and late-reject defect on `a30129b`, then proved monotonic termination,
+exactly-one launch settlement/termination, duplicate and post-terminal request
+rejection, cleanup-failure disposition, strict raw JSON types with an untouched
+backend, and truthful README on `a01c48c`. Lint/build, 18/18 tests, package,
+contents, isolated VSIX install, and safety/scope scans passed. `CR-009`–
+`CR-011` are resolved. Worker B may begin; complete Slice 1 remains in progress.
+
+### Worker B result
+
+**Implementation commit:** `33a83a5a62b3be827fac6ea052517cb588d899e2`
+
+Worker B added the strict serialized bounded UTF-8 NDJSON client, hello-first
+version/capability/limit validation, request correlation, timeout/fatal
+cleanup, no-shell executable/PATH resolution, exact image/hash launch
+orchestration, entry-stop session backend, typed command surface for Worker C,
+contract-faithful fake server, and reproducible generic 65,536-byte fixture.
+Fault scripting remains outside the product protocol, and no Worker C DAP
+capability/handler was added.
+
+Worker evidence passed lint/build, 41/41 full tests, 23/23 contract tests,
+fixture check, package/content policy, and diff whitespace. Fixture SHA-256 is
+`1550101bc337eba836f6fc6a3012b80677b9dfe6a0c658fcf615194be54e5b88`;
+worker-stage VSIX SHA-256 is
+`536fe3e8acce8d8e7fbbf0bbcc2121a9707d873a2b84aad350ff44dc20aed5b7`.
+The real-emulator gate remains unproven. `RVW-001-002-002` now reviews this
+exact commit before Worker C begins.
+
+### Worker B review `RVW-001-002-002`
+
+**Reviewed commit:** `33a83a5a62b3be827fac6ea052517cb588d899e2`
+
+**Review commit:** `34f30b6401db17265ddede1f9e3adf9d6edb6bb1`
+
+**Disposition:** **changes-required**
+
+The fresh reviewer reproduced three material gaps despite the green worker
+suite:
+
+- `CR-012` (blocking/high): the client accepts invalid command-specific
+  semantics, including unordered/incorrect `decodeCode`, forbidden
+  `run.reason=entry`, unadvertised snapshot variants, and insufficiently bound
+  breakpoint replacement results.
+- `CR-013` (blocking/high): the fake accepts unknown required capabilities and
+  reused request IDs, and can emit a response larger than its advertised
+  `maxRecordBytes`.
+- `CR-014` (medium): Windows resolution selects `.CMD`/`.BAT`, but mandatory
+  `shell:false` spawn fails them with `EINVAL`.
+
+Worker C remains paused. A fresh corrective worker addresses only these
+findings, followed by independent `RVW-001-002-005`.
+
+### Worker B corrective result
+
+**Corrective commit:** `6000ec8235ee8f568db80c4d6fe02f84d1982045`
+
+The fresh corrective worker tightened command-specific client validation,
+strict fake required-capability/request-ID/outbound-record behavior, and
+shell-free directly spawnable Windows resolution. It changed only the client,
+fake server, and contract tests and added adversarial coverage for every
+`CR-012`–`CR-014` reproduction.
+
+Worker evidence passed clean install, lint/build, 60/60 full tests, 42/42
+contract tests, fixture check, package/content/safety policy, process cleanup,
+and diff whitespace. Worker-stage VSIX SHA-256 is
+`58F3679C554D7457485B75BBFA33647BDD657B46C84FF17184C66359FC0983B0`.
+The findings remain in progress pending fresh `RVW-001-002-005`.
+
+### Worker B corrective re-review `RVW-001-002-005`
+
+**Reviewed commit:** `6000ec8235ee8f568db80c4d6fe02f84d1982045`
+
+**Review commit:** `2610bf783b27fe3302bd097f7a02961c18096ace`
+
+**Disposition:** **changes-required**
+
+The fresh reviewer accepted `CR-013` and `CR-014` as resolved and confirmed
+the original `CR-012` hostile classes now fail and reap the child. Two residual
+gaps keep Worker C paused:
+
+- `CR-015` (blocking/high): with a negative instruction offset whose magnitude
+  exceeds the returned count, the client can accept a decode window that has
+  already reached/crossed the base reference too early.
+- `CR-016` (medium): a valid server-advertised breakpoint limit above the
+  client's undisclosed local hard cap is rejected when echoed by the response.
+
+`CR-012` remains partial until `CR-015` is resolved. A fresh narrow correction
+and `RVW-001-002-006` are required.
+
+### Worker B second corrective result
+
+**Corrective commit:** `cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`
+
+The fresh worker changed only the client, fake, and contract tests. Negative
+decode traversal now validates the full offset-magnitude/count geometry and
+placeholder prefix, while raw negotiated breakpoint limits remain distinct
+from the local 1024-entry work cap. Worker evidence passed clean install,
+lint/build, 63/63 full tests, 45/45 contract tests, fixture, package/contents,
+process/safety scans, and diff checks. Worker-stage VSIX SHA-256 is
+`2597B75E34A609A5680F126427BED6D01C4F9304042961BC98CC218F78118A36`.
+`CR-012`, `CR-015`, and `CR-016` remain pending `RVW-001-002-006`.
+
+### Worker B second corrective re-review `RVW-001-002-006`
+
+**Reviewed commit:** `cd98df7a06e8f93386ac2a9c990d0e00c1f34fb4`
+
+**Review commit:** `19d837e1abaf7157c8f11c5de39d3155c908ce39`
+
+**Disposition:** **accepted; no blocking Worker B finding remains**
+
+The fresh reviewer independently passed a 31-case traversal/limit/fake/Windows
+probe plus clean lint/build, 63/63 full tests, 45/45 contract tests, fixture,
+package/contents, process cleanup, safety, and diff checks. `CR-012`, `CR-015`,
+and `CR-016` are resolved; `CR-013`/`CR-014` remain resolved; no new finding
+was raised. Worker B is accepted and Worker C may proceed. No AC, real-emulator,
+or READY disposition is implied.
+
+### Worker C result
+
+**Implementation commit:** `574dd8d0b44c2970656fe7e9c0c41dc5164896cb`
+
+Worker C implemented explicit logical/child state, monotone stop epochs and
+handles, one MCU thread/current frame/register scope, exact CODE reference
+parsing, disassembly mapping, global replacement instruction breakpoints,
+bounded continue/adapter-local pause, exact `stepIn`, frozen unsupported
+requests, and the four truthful Slice-1 capability flags. It retained
+monotonic cleanup and added unit plus end-to-end DAP tests mapping AC-001 through
+AC-009 against the accepted client and contract fake.
+
+Worker evidence passed clean install, lint/build, 86/86 full tests, 45/45
+contract tests, 23/23 focused AC tests, fixture, package/contents, isolated VS
+Code 1.134.0 install, process/safety/deferred scans, and diff checks.
+Worker-stage VSIX SHA-256 is
+`8B957E26FE52AC195D52024C1C50B1EE90E292D9605C162D95CD3A1EC1B4639C`.
+This is not accepted until fresh `RVW-001-002-003`; Linux/final/UI/real-emulator
+gates remain open.
+
+### Worker C review `RVW-001-002-003`
+
+**Reviewed commit:** `574dd8d0b44c2970656fe7e9c0c41dc5164896cb`
+
+**Review commit:** `e5abe7c0d1fb91be0daa15ee2d1595d48d896760`
+
+**Disposition:** **changes-required**
+
+The fresh reviewer passed the standard matrix and most fake-backed AC paths,
+then raised three findings:
+
+- `CR-017` (high/blocking): a structured rejected `stepInstruction` restores
+  the old snapshot through a new stop epoch, invalidating handles without a
+  new `stopped` event.
+- `CR-018` (high/blocking): the fake records a taken `SJMP` as a sequential
+  predecessor, causing a valid later negative-disassembly request to fail
+  schema validation.
+- `CR-019` (medium): raw string or negative `stackTrace` pagination values can
+  succeed instead of returning a stable failure.
+
+AC-003 is changes-required. AC-001/002/004–009 have passing required paths but
+the set remains unaccepted pending correction. A fresh worker and
+`RVW-001-002-007` are required before final verification.
+
+### Worker C corrective result
+
+**Corrective commit:** `8728a965cd04bc43816cd8401638869b2615f861`
+
+The fresh corrective worker changed only session behavior, the fake server, and
+DAP integration tests. A structured rejected step now preserves the exact
+stopped epoch/snapshot/handles without events; the fake records a predecessor
+only for actual non-wrapping sequential fall-through; and raw `stackTrace`
+pagination requires nonnegative safe integers and preserves state on failure.
+
+Worker evidence passed clean install, lint/build, 89/89 full tests, 45/45
+contract tests, 26/26 focused tests, fixture, package/contents, isolated install,
+process/safety scans, and diff checks. Worker-stage VSIX SHA-256 is
+`984924E85C2FED0BEE62D6D78326D8B8F400B0E904AE1C85647B11F78BF2C36D`.
+Findings remain open pending fresh `RVW-001-002-007`.
+
+### Worker C corrective re-review `RVW-001-002-007`
+
+**Reviewed commit:** `8728a965cd04bc43816cd8401638869b2615f861`
+
+**Review commit:** `a80f22305309693b8428f0462965f243912c1139`
+
+**Disposition:** **accepted; no blocking implementation finding remains**
+
+The fresh reviewer reproduced all three original defects on `574dd8d`, then
+proved exact epoch/handle/data preservation after rejected step, fresh handles
+after later successful step, fatal transport cleanup, taken-branch invalid
+predecessors, true sequential predecessors, wrap exclusion, and strict
+pagination/state preservation on `8728a965`. The clean 89/89, 45/45, 26/26,
+package/install/process/safety matrix passed. `CR-017`–`CR-019` are resolved and
+no new finding exists.
+
+Fake-backed AC-001 through AC-009 are accepted for final verification. AC-010,
+final AC-011 cross-platform evidence, real VS Code/F5, and the real emulator
+gate remain open. The implementation is ready for `VER-001-002-001`, not READY.
+
+### Final verification `VER-001-002-001`
+
+**Verified HEAD:** `fdb1ccd231e18bdb864fb43936538f54f1f1dfaa`
+
+**Verification commit:** `bce88f0c9d5a23a8ef3d261d15905ee38e424a82`
+
+**Disposition:** **CHANGES_REQUIRED_AND_EXTERNALLY_BLOCKED — NOT_READY**
+
+Exact Windows evidence, VS Code 1.95.0/current installs, all 89/45/26 tests,
+package/contents, safety/process checks, PR state, and traceability passed.
+Strict AC status was: AC-002 and AC-005–009 PASS; AC-001/003/004/011 BLOCKED by
+the real runtime/UI gate; AC-010 FAIL because CI has only a Linux
+build/test/package/content job with neither a Windows lane nor VSIX install/F5
+launch smoke on both platforms.
+
+The exact real emulator default remains
+`c0cd6f26bd8984c9fed10eb81716619cb1bb96e6`: `EMU-BLK-001/002/003/005/010`
+are missing, `EMU-BLK-006/007/008/009` partial, and `EMU-BLK-004` core-only.
+No compatible real server exists, so real contract/F5/disassembly smoke was not
+run or mislabeled.
+
+`CR-020` captures the repo-correctable AC-010 lane/install/smoke gap. A fresh
+worker, `RVW-001-002-008`, and `VER-001-002-002` re-verification follow. The
+external real-emulator blockers remain independent and mandatory.
+
+### AC-010 corrective worker result
+
+**Corrective commit:** `2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5`
+
+The fresh worker added true Ubuntu/Windows workflow jobs, a cross-platform exact
+VSIX archive policy, pinned official VS Code test-electron download support,
+isolated VSIX install at declared floor 1.95.0, and a test-only harness extension
+that launches the installed packaged adapter against the exact contract fake to
+entry stop and clean disconnect. Windows uses a test-only native wrapper to
+preserve separate stdio pipes without shell or fake-only product protocol.
+
+Local clean Windows evidence passed 99/99 full tests, 45/45 contract, fixture,
+exact 47-entry package policy, installed ID/version/path, entry-stop, exactly one
+termination, and zero orphans. Worker-stage VSIX SHA-256 is
+`594B9A09CCF6FCA6BC43E40069BEEC5E24CC28EED555D15A7DDE6EB4FF0DB8AB`.
+Linux semantics require actual Actions execution after review/push. Real
+emulator F5/disassembly remains explicitly unclaimed.
+
+### AC-010 corrective review `RVW-001-002-008`
+
+**Reviewed commit:** `2ecbec37e711c80c13b5e622ebe5f65d1f5eebc5`
+
+**Review commit:** `fd881a17397d6737593cf7874c910c00c59c4d60`
+
+**Disposition:** **accepted for exact-HEAD remote verification**
+
+The fresh reviewer independently reproduced the complete local Windows
+99/45/package/policy matrix and actual isolated installed-VSIX extension-host
+smoke at VS Code 1.95.0: entry stop, exact fake command order, clean disconnect,
+exactly one termination, no orphan or temp residue. Workflow/launcher/archive
+semantics were accepted with no new finding. `CR-020` remains open until both
+Ubuntu and Windows Actions jobs pass on the pushed integrated HEAD. Real F5/UI
+and emulator blockers remain external and unclaimed.
+
+### AC-010 exact-HEAD remote run result
+
+**Pushed HEAD:** `3b0e48270a1fae70030cbb84fa4f4709c062f33e`
+
+Ubuntu push and PR jobs passed, and the Windows push job passed. The Windows PR
+job failed one AC-006 timeout test before package smoke. Exact log evidence shows
+the test configured a global 50 ms child-command timeout to force a delayed
+`run` timeout; on one slower runner the same bound expired during launch, so
+`launchToConfiguration` received a failed response instead of `initialized`.
+The duplicate Windows push job passing the same HEAD confirms nondeterministic
+timing, not acceptance.
+
+`CR-021` captures this platform-speed-dependent harness defect. `CR-020` stays
+open. A fresh narrow worker/reviewer pass is required before rerunning both
+platform jobs and `VER-001-002-002`.
+
+### AC-006 remote determinism corrective result
+
+**Corrective commit:** `1e104a18a365b5ad7666e86faad4b8fa00f14715`
+
+The fresh worker changed only `test/dapBehavior.test.ts`. The test now uses a
+controllable test backend: launch succeeds without an artificial short bound,
+one `run` promise stays pending, pause is acknowledged, and the test explicitly
+rejects that run with `EMU_TRANSPORT_TIMEOUT`. It still proves diagnostic,
+no stopped promotion, one run, exactly one termination, and idempotent cleanup.
+Real client timeout/kill/reap remains covered in contract tests.
+
+The target passed 100/100 separate Windows processes; clean 99/99, 45/45,
+fixture/package/policy, installed floor smoke, process/safety, and diff checks
+also passed. `CR-021` remains open pending fresh `RVW-001-002-009` and remote
+rerun.
+
+### AC-006 determinism corrective review `RVW-001-002-009`
+
+**Reviewed commit:** `1e104a18a365b5ad7666e86faad4b8fa00f14715`
+
+**Review commit:** `bf26e6fa7a0dad85bb699fddfa3f2568f2a4d564`
+
+**Disposition:** **accepted for exact-HEAD remote re-verification**
+
+The fresh reviewer passed 100/100 separate Windows target processes, clean
+99/99 full and 45/45 contract tests, fixture/package/policy, installed VS Code
+floor smoke, process/safety, and diff checks. Real client timeout/kill/reap
+tests remain intact and product behavior is unchanged. No new finding exists.
+`CR-020`/`CR-021` remain open until all four Ubuntu/Windows push/PR jobs pass a
+new integrated HEAD.
+
+### Corrective re-verification `VER-001-002-002`
+
+**Verified HEAD:** `3bb4264e2dd9166e38c1140216501b6e1eae5238`
+
+**Verification commit:** `5bdb025487f04a250fcaf29ea37e4675315cba56`
+
+**Disposition:** **CORRECTIONS VERIFIED; EXTERNALLY BLOCKED — NOT_READY**
+
+All four exact Actions jobs passed genuine clean install, lint, full/contract
+tests, fixture, package/contents/policy, and installed VSIX extension-host smoke
+at VS Code 1.95.0: Linux PR `99730638857`, Linux push `99730630653`, Windows PR
+`99730638636`, and Windows push `99730630555`.
+
+Each packaged smoke reached entry stop through the installed extension and
+packaged adapter against the contract fake, disconnected cleanly, emitted one
+termination, and left zero orphans. `CR-020` and `CR-021` are resolved.
+
+Final AC status is PASS for AC-002 and AC-005–009; BLOCKED for
+AC-001/003/004/010/011 because their strict final disposition still depends on
+the accepted real emulator/F5/disassembly/safety gate. Exact emulator default
+remains `c0cd6f26bd8984c9fed10eb81716619cb1bb96e6` with
+`EMU-BLK-001/002/003/005/010` missing, `006/007/008/009` partial, and `004`
+core-only. No compatible real runtime exists; Slice 1 stays implemented and
+reviewed but not accepted READY.
+
+### Final checkpoint exact-HEAD rerun finding
+
+**Checkpoint HEAD:** `15822ef188111995d39c1584a844669b389aed78`
+
+Linux push/PR and Windows PR passed. Windows push failed the test
+`bounded continue remains logically running across repeated yields until pause`:
+the test used a real child, a 30 ms wall-clock sleep, and the client's global
+1,000 ms command timeout. Under heavy Windows runner scheduling, the fake
+response arrived after that bound and the test observed a transport diagnostic
+instead of the expected pause stop. The identical Windows PR job passed.
+
+`CR-022` records this separate test-determinism issue. It does not reopen
+resolved CR-020/021 or change the external emulator blocker, but the branch
+will not be handed off with a flaky exact-head job. A fresh narrow worker and
+`RVW-001-002-010` must replace wall-clock yield timing with controlled promises.
+
+### Repeated-yield determinism corrective result
+
+**Corrective commit:** `b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`
+
+The fresh worker changed only `test/dapBehavior.test.ts`. A queued deferred
+backend now exposes run #1–#3 explicitly. The test resolves two yields, pauses
+with #3 pending, verifies the pause response, promotes exactly the #3 boundary,
+and proves one pause stop, no `continued`, no run #4, final stopped state, and
+exactly-once cleanup.
+
+The target passed 100/100 separate Windows processes; clean 99/99, 45/45,
+fixture/package/policy, installed floor smoke, process/safety, and diff checks
+also passed. `CR-022` remains open pending fresh `RVW-001-002-010` and exact
+Actions rerun.
+
+### Repeated-yield determinism corrective review `RVW-001-002-010`
+
+**Reviewed commit:** `b4a48ddd52f4b2083c5f3bf6ecc19a16ae95ce1e`
+
+**Review commit:** `3b97f814ad988244af0e032f771ee4d317ed48a4`
+
+**Disposition:** **accepted for exact-HEAD remote re-verification**
+
+The fresh reviewer confirmed the complete three-run controlled schedule and no
+remaining wall-clock/real-child dependence. The target passed 120/120 separate
+Windows processes, clean 99/99 and 45/45, package/policy, installed floor smoke,
+and process/safety/diff checks. No new finding exists. `CR-022` remains open
+until fresh Ubuntu/Windows push/PR jobs all pass the same integrated HEAD.
+
+### CR-022 remote closure
+
+**Verified remote HEAD:** `e1411df03026557c216f680406ea9ebc2a1601d0`
+
+**Verification report commit:** `fd04969fddba6a74b54dadbffbb2006763954f2c`
+
+Fresh PR/push runs `33469530399` / `33469527082` passed all four jobs: Linux
+`99736266837` / `99736257099` and Windows `99736267045` / `99736257308`.
+Actual logs confirm full tests, contract, fixture, exact VSIX policy, installed
+VS Code 1.95.0 fake-entry smoke, and zero orphans. The repeated-yield target also
+passed 100/100 fresh local stress runs. `CR-022` is resolved.
+
+All repository-local corrections are now reviewed and verified. Final AC and
+READY disposition remain unchanged: PASS AC-002/005–009; BLOCKED
+AC-001/003/004/010/011 on the accepted real-emulator/F5/disassembly/safety gate;
+`NOT_READY` on emulator default `c0cd6f26…`.
+
+### Real-runtime final gate reactivation
+
+**Steering evidence received:** 2026-09-01
+
+**DAP candidate HEAD:** `36639b48ddb2ffbafa14c00da794fe1734f7483b`
+
+**Emulator candidate default:**
+`1a6aa397993d3f24cef8d41248ae2928d352966a`
+
+Emulator Issue #6 is closed/accepted and PR #9 merged as `1a6aa397…`.
+Steering evidence states every `EMU-BLK-001..010` is satisfied and the unchanged
+DAP candidate passed real contract/equivalence/F5/disassembly/register/
+breakpoint/step/continue/pause/package smoke on Windows and Linux.
+
+Master revalidated the remote and local `origin/master` commit and the exact
+frozen command/capability surface. No contract change is authorized or needed.
+`VER-001-002-003` is activated to independently rerun the real-runtime gates,
+close the previously blocked ACs only on reproduced evidence, and decide final
+READY versus a new verified incompatibility.
+
+### Final real-runtime verification `VER-001-002-003`
+
+**Verified DAP product HEAD:**
+`36639b48ddb2ffbafa14c00da794fe1734f7483b`
+
+**Verified emulator runtime merge:**
+`1a6aa397993d3f24cef8d41248ae2928d352966a`
+
+**Verified current emulator master:**
+`d9f80eba172dd9d7281aaa9e5cfef461b6b9709b`
+
+**Verification report commit:**
+`e04f0a70a35203d9a45ae78b3e26679a65686242`
+
+**Disposition:** **PASS — READY**
+
+Fresh independent Windows GCC/strict-Clang and Linux GCC/ASan+UBSan emulator
+regression/facade/process suites passed. The unchanged DAP passed clean
+99/99, 45/45 contract, fixture/hash, 47-file VSIX policy, and installed VS Code
+1.95 package smoke. Real Windows and Linux contract/equivalence/F5 runs passed
+entry/configuration, numeric disassembly round-trip, canonical offset
+breakpoints with pre-execution hit, one thread/frame/register scope, all allowed
+step granularities, frozen unsupported request behavior, breakpoint clear,
+bounded continue/pause, disconnect, exactly-one termination, and zero orphans.
+
+Current-master delta verification proves `1a6aa397…` is an ancestor of
+`d9f80eba…`; the delta contains only three P1000 boundary documents and every
+product/build/test blob is identical. Exact `d9f80eba…` Windows/Linux rebuild,
+process, real contract/equivalence, and F5 gates pass.
+
+AC-001 through AC-011 all PASS. `EMU-BLK-001` through `EMU-BLK-010` are all
+SATISFIED (`004` preserved). Safety/no-target/no-live checks pass. No fake/real
+incompatibility or new finding exists, and the frozen `emu-debug` 1.0 contract
+did not change. `SL-001-002-001`, `IT-001-002`, and `SPR-001` close READY.
